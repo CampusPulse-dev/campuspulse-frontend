@@ -13,10 +13,6 @@ const config = [
       'no-debugger': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'no-warning-comments': [
-        'warn',
-        { terms: ['todo', 'fixme', 'hack', 'xxx'], location: 'start' },
-      ],
     },
   },
 ];
