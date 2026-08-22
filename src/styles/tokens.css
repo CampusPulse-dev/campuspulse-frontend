@@ -1,0 +1,174 @@
+/**
+ * CampusPulse design tokens.
+ *
+ * Brand colours were sampled directly from the brand identity board in
+ * Figma (Projects → CampusPulse brand identity, node 200:3523). The board
+ * is a flattened raster with no Figma variables attached, so these are
+ * measured values rather than exported ones — if the designer publishes
+ * real variables later, reconcile against them.
+ *
+ * Contrast ratios below are computed, not estimated. Every pairing used
+ * for body text is AAA; the one AA pairing is called out.
+ */
+
+:root {
+  /* ---- Brand palette (measured from the identity board) ---- */
+  --cp-lavender: #e0aaff;
+  --cp-purple: #5a189a;
+  --cp-ink: #10002b;
+  --cp-black: #000000;
+
+  /*
+   * Intermediate purples are NOT on the identity board. These three come
+   * from the standard ramp the four brand colours sit on, and are used
+   * only for hover/active states and borders. Replace them if the
+   * designer specifies otherwise.
+   */
+  --cp-purple-700: #7b2cbf;
+  --cp-purple-500: #9d4edd;
+  --cp-purple-300: #c77dff;
+
+  /* ---- Neutrals ---- */
+  --cp-white: #ffffff;
+  --cp-grey-50: #f7f5fa;
+  --cp-grey-100: #ebe7f0;
+  --cp-grey-300: #c9c2d4;
+  --cp-grey-500: #8b8298;
+  --cp-grey-700: #4a4353;
+
+  /* ---- Semantic: light ---- */
+  --color-bg: var(--cp-white);
+  --color-surface: var(--cp-grey-50);
+  --color-surface-raised: var(--cp-white);
+  --color-border: var(--cp-grey-100);
+  --color-border-strong: var(--cp-grey-300);
+
+  --color-text: var(--cp-ink); /* 19.87:1 on white — AAA */
+  --color-text-muted: var(--cp-grey-700);
+  --color-text-inverse: var(--cp-white);
+
+  --color-primary: var(--cp-purple); /* 10.33:1 on white — AAA */
+  --color-primary-hover: var(--cp-purple-700);
+  --color-primary-active: var(--cp-ink);
+  --color-on-primary: var(--cp-white); /* 10.33:1 on purple — AAA */
+
+  --color-accent: var(--cp-lavender);
+  --color-on-accent: var(--cp-ink); /* 10.75:1 on lavender — AAA */
+
+  --color-focus: var(--cp-purple-500);
+
+  /* ---- Category colours (PRD §1 — the five fixed categories) ---- */
+  --color-category-social: var(--cp-purple-500);
+  --color-category-performance: var(--cp-lavender);
+  --color-category-academic: var(--cp-purple);
+  --color-category-sports: var(--cp-purple-300);
+  --color-category-club: var(--cp-purple-700);
+
+  /* ---- Typography ---- */
+  /*
+   * Goodly is the brand display face; Inter carries UI/UX per the board.
+   * Goodly is commercial and not yet in the repo, so --font-goodly is
+   * undefined — the nested var() fallback means the declaration still
+   * resolves (to Inter) instead of collapsing. Drop the woff2 into
+   * src/app/fonts/ and uncomment the loader in layout.tsx to enable it.
+   */
+  --font-display: var(--font-goodly, var(--font-inter)), system-ui, sans-serif;
+  --font-body: var(--font-inter, system-ui), -apple-system, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  --leading-tight: 1.15;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* ---- Spacing (4px base) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* ---- Radii ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-sm: 0 1px 2px rgb(16 0 43 / 0.06);
+  --shadow-md: 0 4px 12px rgb(16 0 43 / 0.1);
+  --shadow-lg: 0 12px 32px rgb(16 0 43 / 0.16);
+
+  /* ---- Layout ---- */
+  --content-max: 42rem;
+  --feed-max: 34rem;
+}
+
+/**
+ * Dark is the brand's natural register — the identity board leads with
+ * lavender on #10002B.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: var(--cp-ink);
+    --color-surface: #1a0840;
+    --color-surface-raised: #24104f;
+    --color-border: #2f1a5e;
+    --color-border-strong: #452a7a;
+
+    --color-text: #f3ecfb;
+    --color-text-muted: #b9a8d4;
+    --color-text-inverse: var(--cp-ink);
+
+    --color-primary: var(--cp-lavender); /* 10.75:1 on ink — AAA */
+    --color-primary-hover: var(--cp-purple-300);
+    --color-primary-active: var(--cp-purple-500);
+    --color-on-primary: var(--cp-ink);
+
+    --color-accent: var(--cp-purple-500);
+    --color-on-accent: var(--cp-white);
+
+    --color-focus: var(--cp-purple-300);
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 12px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+  }
+}
+
+/* Explicit opt-in, so a theme toggle wins over the system preference. */
+:root[data-theme='dark'] {
+  --color-bg: var(--cp-ink);
+  --color-surface: #1a0840;
+  --color-surface-raised: #24104f;
+  --color-border: #2f1a5e;
+  --color-border-strong: #452a7a;
+
+  --color-text: #f3ecfb;
+  --color-text-muted: #b9a8d4;
+  --color-text-inverse: var(--cp-ink);
+
+  --color-primary: var(--cp-lavender);
+  --color-primary-hover: var(--cp-purple-300);
+  --color-primary-active: var(--cp-purple-500);
+  --color-on-primary: var(--cp-ink);
+
+  --color-accent: var(--cp-purple-500);
+  --color-on-accent: var(--cp-white);
+
+  --color-focus: var(--cp-purple-300);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+}
