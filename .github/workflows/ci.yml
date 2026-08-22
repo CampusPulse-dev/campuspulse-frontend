@@ -24,6 +24,13 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
 
+      - name: API types match the backend spec
+        # Regenerates from campuspulse-backend's published openapi.json and
+        # fails if the committed types differ. This is what turns a backend
+        # contract change into a failing frontend build on the same day,
+        # rather than a broken flow discovered during hardening.
+        run: npm run codegen:check
+
   test:
     name: Tests
     runs-on: ubuntu-latest

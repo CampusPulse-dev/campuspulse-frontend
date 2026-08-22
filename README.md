@@ -49,16 +49,25 @@ hidden fallback. Never gate it behind the scanner failing.
 
 ## The API contract
 
-Types come from
-[`@campuspulse/contract`](https://github.com/CampusPulse-dev/campuspulse-contract) —
-the same schemas the backend validates with. Do not hand-write a request or
-response type; import it, and if the shape you need is missing, change the
-contract.
+Types are **generated** from `campuspulse-backend`'s OpenAPI spec into
+[`src/lib/api-schema.d.ts`](src/lib/api-schema.d.ts), which is committed.
+Do not hand-write a request or response type, and do not edit the generated
+file — if the shape you need is missing, add the schema in the backend.
 
-All requests go through [`src/lib/api.ts`](src/lib/api.ts), which parses
-responses against the contract schema. A backend change that breaks the
-contract throws there loudly instead of becoming `undefined` three
-components deeper.
+```bash
+npm run codegen          # regenerate from a local ../campuspulse-backend
+npm run codegen:remote   # regenerate from the backend's published main
+```
+
+CI runs `npm run codegen:check`, which regenerates from the published spec
+and fails if the committed types differ. That is what turns a backend
+contract change into a failing frontend build the same day.
+
+All requests go through [`src/lib/api.ts`](src/lib/api.ts). Note it does
+**not** validate responses at runtime — drift is caught by codegen and
+typecheck in CI, not at request time. See
+[ADR 0001](https://github.com/CampusPulse-dev/campuspulse-backend/blob/main/docs/adr/0001-tech-stack.md)
+for why that trade was made.
 
 ## Commands
 

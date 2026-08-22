@@ -18,15 +18,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "codegen": "openapi-typescript ../campuspulse-backend/openapi.json -o src/lib/api-schema.d.ts",
+    "codegen:remote": "openapi-typescript https://raw.githubusercontent.com/CampusPulse-dev/campuspulse-backend/main/openapi.json -o src/lib/api-schema.d.ts",
+    "codegen:check": "npm run codegen:remote && git diff --exit-code src/lib/api-schema.d.ts"
   },
   "dependencies": {
-    "@campuspulse/contract": "file:../campuspulse-contract",
     "@tanstack/react-query": "^5.66.0",
     "next": "^15.1.6",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "zod": "^3.24.1"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
@@ -45,6 +46,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.0.0",
     "lint-staged": "^15.4.3",
+    "openapi-typescript": "^7.6.1",
     "prettier": "^3.4.2",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
