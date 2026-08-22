@@ -69,5 +69,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
+      # Playwright's webServer runs `next start`, which needs a build.
+      - run: npm run build
       - run: npm run test:e2e
