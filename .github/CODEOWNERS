@@ -1,0 +1,10 @@
+# Ownership mirrors the portal split. Wave holds review oversight.
+
+*                      @Enochthedev
+
+/src/app/              @Enochthedev
+/src/components/       @Enochthedev
+/src/lib/              @Enochthedev
+
+/.github/              @Enochthedev
+/vercel.json           @Enochthedev
