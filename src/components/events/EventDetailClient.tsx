@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
@@ -9,23 +9,31 @@ import { Avatar, FriendAvatarStack } from '@/components/ui/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/lib/auth-context';
-import { formatWatDateTime, SEED_EVENTS, type EnrichedEvent } from '@/lib/campus-data';
+import { formatWatDateTime, type EnrichedEvent } from '@/lib/campus-data';
 import {
   buildIcsCalendarContent,
   getOfflineTicketForEvent,
   saveOfflineTicket,
   type OfflineTicketPass,
 } from '@/lib/offline-tickets';
+import { apiFetch, fetchEventBySlug, type CreateRsvpResponse } from '@/lib/api';
+import { DEMO_MODE } from '@/lib/mode';
+import { loadOfflineTickets } from '@/lib/offline-tickets';
 import { fadeInUp } from '@/lib/motion';
 import styles from './EventDetail.module.css';
 
 export interface EventDetailViewProps {
   event: EnrichedEvent;
   isSignedOutPreview?: boolean;
+  returnTo?: string;
 }
 
-export function EventDetailView({ event, isSignedOutPreview = false }: EventDetailViewProps) {
-  const { user, interestedEventIds, toggleInterested } = useAuth();
+export function EventDetailView({
+  event,
+  isSignedOutPreview = false,
+  returnTo,
+}: EventDetailViewProps) {
+  const { user, accessToken, privacy, interestedEventIds, toggleInterested } = useAuth();
   const { pushToast } = useToast();
 
   const [savedTicket, setSavedTicket] = useState<OfflineTicketPass | null>(() =>
@@ -40,6 +48,14 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
   const [reportReason, setReportReason] = useState('');
   const [afterPartyAdded, setAfterPartyAdded] = useState(false);
 
+  useEffect(() => {
+    if (user)
+      void loadOfflineTickets()
+        .then(() => setSavedTicket(getOfflineTicketForEvent(event.id)))
+        .catch(() => {});
+  }, [user, event.id]);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const isInterested = interestedEventIds.includes(event.id);
   const wat = formatWatDateTime(event.startsAt);
   const spotsLeft = event.capacity !== null ? Math.max(0, event.capacity - event.rsvpCount) : null;
@@ -49,30 +65,63 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
   const activeTicket =
     savedTicket ?? (!isSignedOutPreview ? getOfflineTicketForEvent(event.id) : null);
 
-  function handleRsvpClick() {
-    const selectedShowtime = event.showtimes?.find((st) => st.id === selectedShowtimeId);
-    const ticket = saveOfflineTicket({
-      event,
-      attendeeName: user?.displayName ?? 'Tobi Adeyemi',
-      isVerifiedStudent: user?.isVerifiedStudent ?? true,
-      showtimeLabel: selectedShowtime?.label ?? null,
+  async function reserve(target: EnrichedEvent) {
+    if (!user) throw new Error('Sign in to RSVP.');
+    const selected = target.showtimes?.find((s) => s.id === selectedShowtimeId);
+    if (selected && selected.spotsLeft <= 0)
+      throw new Error('This showtime is full. Choose another time.');
+    if (target.studentsOnly && !user.isVerifiedStudent)
+      throw new Error('Verify your student status before RSVPing.');
+    if (!DEMO_MODE && !accessToken) throw new Error('Reconnect and sign in to RSVP.');
+    const rsvp = DEMO_MODE
+      ? undefined
+      : await apiFetch<CreateRsvpResponse>('/attendance/rsvps', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({
+            eventId: target.id,
+            hideFromFriends: privacy.hideFromFriends || privacy.stealthRsvp,
+            showtimeId: selectedShowtimeId ?? undefined,
+            ambassadorCode: new URLSearchParams(window.location.search).get('ref') ?? undefined,
+            inviteCode: new URLSearchParams(window.location.search).get('invite') ?? undefined,
+          }),
+        });
+    return saveOfflineTicket({
+      accountId: user.id,
+      event: target,
+      attendeeName: user.displayName,
+      isVerifiedStudent: user.isVerifiedStudent,
+      showtimeLabel: target.showtimes?.find((s) => s.id === selectedShowtimeId)?.label,
+      rsvp,
     });
-    setSavedTicket(ticket);
-    setShowConfirmSheet(true);
-    pushToast('Free RSVP confirmed! QR pass saved offline.', 'success');
   }
-
-  function handleAddAfterParty() {
+  async function handleRsvpClick() {
+    setActionError(null);
+    setBusy(true);
+    try {
+      const ticket = await reserve(event);
+      setSavedTicket(ticket);
+      setShowConfirmSheet(true);
+      pushToast(
+        ticket.status === 'WAITLISTED' ? 'You are on the waitlist.' : 'RSVP saved on this device.',
+        'success',
+      );
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Unable to RSVP. Please retry.');
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function handleAddAfterParty() {
     if (!event.linkedAfterParty) return;
-    const afterPartyEvent = SEED_EVENTS.find((item) => item.slug === event.linkedAfterParty?.slug);
-    if (afterPartyEvent) {
-      saveOfflineTicket({
-        event: afterPartyEvent,
-        attendeeName: user?.displayName ?? 'Tobi Adeyemi',
-        isVerifiedStudent: user?.isVerifiedStudent ?? true,
-      });
+    try {
+      const target = await fetchEventBySlug(event.linkedAfterParty.slug);
+      if (!target) throw new Error('After-party unavailable.');
+      await reserve(target);
       setAfterPartyAdded(true);
-      pushToast('Official After-Party added to Your Night timeline!', 'success');
+      pushToast('After-party added to Your Night.', 'success');
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Please retry.');
     }
   }
 
@@ -88,19 +137,33 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
     pushToast('Calendar invite (.ics) downloaded.', 'info');
   }
 
-  function handleToggleInterested() {
-    const added = toggleInterested(event.id);
-    pushToast(
-      added
-        ? 'Saved to Interested — we will nudge you 3h before doors open.'
-        : 'Removed from Interested',
-      'info',
-    );
+  async function handleToggleInterested() {
+    try {
+      const added = await toggleInterested(event.id);
+      pushToast(added ? 'Saved to Interested.' : 'Removed from Interested.', 'info');
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Unable to save interest.');
+    }
   }
 
-  function handleReportSubmit(e: React.FormEvent) {
+  async function handleReportSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!reportReason.trim()) return;
+    if (!user) {
+      setActionError('Sign in to submit a report.');
+      return;
+    }
+    try {
+      if (!DEMO_MODE)
+        await apiFetch('/reports', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + accessToken },
+          body: JSON.stringify({ eventId: event.id, reason: reportReason }),
+        });
+    } catch {
+      setActionError('Report could not be submitted. Please retry.');
+      return;
+    }
     setShowReportModal(false);
     setReportReason('');
     pushToast('Report submitted to CampusPulse Moderation.', 'warning');
@@ -309,7 +372,7 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
             <h3 className={styles.afterPartyTitle}>{event.linkedAfterParty.title}</h3>
             <p className={styles.afterPartyVenue}>
               📍 {event.linkedAfterParty.venueName} ·{' '}
-              {event.linkedAfterParty.accessRule === 'CHECKED_IN_PRIORITY'
+              {event.linkedAfterParty.accessRule === 'PRIORITY_CHECKED_IN'
                 ? 'Checked-in guests get priority entry'
                 : 'Checked-in guests only'}
             </p>
@@ -351,6 +414,15 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
           </div>
 
           <div className={styles.commitmentButtons}>
+            {actionError ? <p role="alert">{actionError}</p> : null}
+            {!user ? (
+              <Link href={'/sign-in?next=' + encodeURIComponent(returnTo ?? '/e/' + event.slug)}>
+                Sign in to RSVP →
+              </Link>
+            ) : null}
+            {event.studentsOnly && !user?.isVerifiedStudent ? (
+              <Link href="/verify">Verify student status →</Link>
+            ) : null}
             <button
               type="button"
               aria-pressed={isInterested}
@@ -363,13 +435,23 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
 
             {savedTicket ? (
               <div className={styles.confirmedStack}>
-                <Badge variant="success">Going ✓ · Offline QR Saved</Badge>
+                <Badge variant="success">
+                  {savedTicket.status === 'CONFIRMED'
+                    ? 'Going ✓ · Saved on device'
+                    : savedTicket.status}
+                </Badge>
                 <Link href={`/tickets/${savedTicket.rsvpId}`} className={styles.viewQrLink}>
                   View Offline QR Pass →
                 </Link>
               </div>
             ) : (
-              <Button size="lg" fullWidth onClick={handleRsvpClick}>
+              <Button
+                size="lg"
+                fullWidth
+                onClick={handleRsvpClick}
+                isLoading={busy}
+                disabled={!user || (event.studentsOnly && !user.isVerifiedStudent)}
+              >
                 RSVP — Free
               </Button>
             )}
@@ -388,8 +470,10 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
       {/* Post-RSVP Confirmation Modal */}
       <Modal
         isOpen={showConfirmSheet}
-        title="You're Locked In! 🎟️"
-        subtitle="Your QR pass is cached on this device and works offline at the door."
+        title={
+          savedTicket?.status === 'WAITLISTED' ? 'You are on the waitlist' : 'Your RSVP is saved'
+        }
+        subtitle="Open your pass online once to prepare it for offline access."
         onClose={() => setShowConfirmSheet(false)}
       >
         <div className={styles.confirmSheetBody}>
@@ -398,7 +482,7 @@ export function EventDetailView({ event, isSignedOutPreview = false }: EventDeta
             <span>
               {wat.compactLabel} · {event.venueName}
             </span>
-            <Badge variant="success">Available Offline ✓</Badge>
+            <Badge variant="success">Saved on this device</Badge>
           </div>
 
           <div className={styles.confirmSheetActions}>

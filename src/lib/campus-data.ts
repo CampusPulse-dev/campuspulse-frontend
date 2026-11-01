@@ -1,59 +1,18 @@
 import type { EventCategory, EventPublic, OrganizerPublic, Story, UserPublic } from './api';
 import type { MutualFriend } from '@/components/ui/Avatar';
-
-export type EventTemplateType = 'GENERIC' | 'CONCERT_PARTY' | 'PLAY_CULTURAL' | 'MATCH_TOURNAMENT';
-
-export type TonightMood = 'CHILL' | 'TURN_UP' | 'LEARN' | 'WATCH_GAME';
-
-export interface EventLineupSlot {
-  id: string;
-  performerName: string;
-  role: string;
-  setTime: string;
-}
-
-export interface EventShowtimeOption {
-  id: string;
-  label: string;
-  startsAt: string;
-  spotsLeft: number;
-}
-
-export interface EventMatchFixture {
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: number;
-  awayScore: number;
-  isLive: boolean;
-  periodLabel: string;
-}
-
-export interface LinkedAfterPartyPreview {
-  id: string;
-  slug: string;
-  title: string;
-  startsAt: string;
-  venueName: string;
-  accessRule: 'OPEN' | 'CHECKED_IN_PRIORITY' | 'CHECKED_IN_ONLY';
-}
-
-export interface EnrichedEvent extends EventPublic {
-  template: EventTemplateType;
-  studentsOnly: boolean;
-  waitlistEnabled: boolean;
-  dressCode?: string | null;
-  doorPolicy?: string | null;
-  tonightMood?: TonightMood;
-  friendsGoing: MutualFriend[];
-  friendsGoingCount: number;
-  lineup?: EventLineupSlot[];
-  castAndCrew?: string[];
-  showtimes?: EventShowtimeOption[];
-  fixture?: EventMatchFixture;
-  linkedAfterParty?: LinkedAfterPartyPreview | null;
-  parentEventSlug?: string | null;
-  parentEventTitle?: string | null;
-}
+export type EventTemplateType = NonNullable<EventPublic['template']>;
+export type TonightMood = NonNullable<EventPublic['tonightMood']>;
+export type EventLineupSlot = NonNullable<EventPublic['lineup']>[number];
+export type EventShowtimeOption = NonNullable<EventPublic['showtimes']>[number];
+export type EventMatchFixture = NonNullable<EventPublic['fixture']>;
+export type LinkedAfterPartyPreview = NonNullable<EventPublic['linkedAfterParty']>;
+export type EnrichedEvent = EventPublic &
+  Required<
+    Pick<
+      EventPublic,
+      'template' | 'studentsOnly' | 'waitlistEnabled' | 'friendsGoing' | 'friendsGoingCount'
+    >
+  >;
 
 export const UI_HALLS = [
   'Mellanby Hall',
@@ -191,7 +150,7 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       title: 'Havana Official After-Party: Zik Hall Lounge',
       startsAt: '2026-11-01T22:30:00.000Z',
       venueName: 'Zik Hall Senior Common Room',
-      accessRule: 'CHECKED_IN_PRIORITY',
+      accessRule: 'PRIORITY_CHECKED_IN',
     },
   },
   {

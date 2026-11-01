@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { springGentle, springSnappy, fadeInUp } from './motion';
@@ -6,7 +6,7 @@ import { springGentle, springSnappy, fadeInUp } from './motion';
 const tokens = readFileSync(join(process.cwd(), 'src/styles/tokens.css'), 'utf8');
 const manifest = JSON.parse(
   readFileSync(join(process.cwd(), 'public/manifest.webmanifest'), 'utf8'),
-) as { icons: { src: string }[] };
+) as { icons: { src: string; sizes: string }[] };
 
 describe('design tokens', () => {
   // Measured from the Figma brand identity board (node 200:3523).
@@ -49,7 +49,11 @@ describe('design tokens', () => {
 
   it('wires brand icons in manifest.webmanifest', () => {
     expect(manifest.icons.length).toBeGreaterThan(0);
-    expect(manifest.icons[0]?.src).toBe('/brand/logo.svg');
+    expect(manifest.icons.map((icon) => icon.sizes)).toEqual(
+      expect.arrayContaining(['192x192', '512x512']),
+    );
+    for (const icon of manifest.icons)
+      expect(existsSync(join(process.cwd(), 'public', icon.src.slice(1)))).toBe(true);
   });
 
   it('exports Framer Motion spring and fade presets using GPU-safe transforms', () => {

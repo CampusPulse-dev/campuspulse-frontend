@@ -5,18 +5,19 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { safeNext } from '@/lib/mode';
 import { useAuth } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
 
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get('next') ?? '/';
+  const nextUrl = safeNext(searchParams.get('next'));
   const autoRsvp = searchParams.get('autoRsvp') === '1';
 
-  const { signIn } = useAuth();
-  const [email, setEmail] = useState('tobi.adeyemi@stu.ui.edu.ng');
-  const [password, setPassword] = useState('CampusPulse2026!');
+  const { signIn, ready } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,14 +86,14 @@ function SignInForm() {
           />
         </label>
 
-        <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-          {autoRsvp ? 'Sign In & Confirm RSVP →' : 'Sign In →'}
+        <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={!ready}>
+          {autoRsvp ? 'Sign In & Continue →' : 'Sign In →'}
         </Button>
       </form>
 
       <p className={styles.switchRow}>
         New to CampusPulse?{' '}
-        <Link href={`/sign-up?next=${encodeURIComponent(nextUrl)}`}>Create an account</Link>
+        <Link href={`/sign-up?${searchParams.toString()}`}>Create an account</Link>
       </p>
     </div>
   );

@@ -14,7 +14,7 @@ function SignUpForm() {
   const refCode = searchParams.get('ref');
   const inviteCode = searchParams.get('invite');
 
-  const { signUp } = useAuth();
+  const { signUp, ready } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,14 +24,14 @@ function SignUpForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!displayName.trim() || !email.trim() || password.length < 8) {
-      setError('Please enter your name, email, and a password of at least 8 characters.');
+    if (!displayName.trim() || !email.trim() || password.length < 10) {
+      setError('Please enter your name, email, and a password of at least 10 characters.');
       return;
     }
     setIsLoading(true);
     try {
       await signUp({ displayName, email, password });
-      router.push('/onboarding');
+      router.push('/onboarding?' + searchParams.toString());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to create account');
     } finally {
@@ -54,7 +54,7 @@ function SignUpForm() {
       <p className={styles.authSubtitle}>
         {refCode || inviteCode
           ? 'Your friend invited you to CampusPulse. Create your free account in 20 seconds.'
-          : 'Use your @stu.ui.edu.ng email for instant student verification, or sign up with any email.'}
+          : 'Sign up with any email. Verify your student status separately to access student-only events.'}
       </p>
 
       {error ? <div className={styles.errorBanner}>{error}</div> : null}
@@ -85,18 +85,18 @@ function SignUpForm() {
         </label>
 
         <label className={styles.fieldLabel}>
-          <span>Password (min. 8 characters)</span>
+          <span>Password (min. 10 characters)</span>
           <input
             type="password"
             required
-            minLength={8}
+            minLength={10}
             className={styles.textInput}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
 
-        <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
+        <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={!ready}>
           Continue to 30s Persona Setup →
         </Button>
       </form>

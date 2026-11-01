@@ -18,15 +18,19 @@ export function OrganizerFollowButton({
   const isFollowing = followedOrganizerIds.includes(organizerId);
   const [delta, setDelta] = useState(0);
 
-  function handleClick() {
-    const nowFollowing = toggleFollowOrganizer(organizerId);
-    setDelta((prev) => (nowFollowing ? prev + 1 : prev - 1));
-    pushToast(
-      nowFollowing
-        ? 'Following club — new stories & events will appear first in your feed.'
-        : 'Unfollowed club.',
-      'info',
-    );
+  async function handleClick() {
+    try {
+      const nowFollowing = await toggleFollowOrganizer(organizerId);
+      setDelta((prev) => (nowFollowing ? prev + 1 : prev - 1));
+      pushToast(
+        nowFollowing
+          ? 'Following club — new stories & events will appear first in your feed.'
+          : 'Unfollowed club.',
+        'info',
+      );
+    } catch (e) {
+      pushToast(e instanceof Error ? e.message : 'Unable to follow', 'warning');
+    }
   }
 
   return (

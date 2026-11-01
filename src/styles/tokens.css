@@ -12,6 +12,8 @@
  */
 
 :root {
+  color-scheme: light;
+  --brand-logo-filter: brightness(0);
   /* ---- Brand palette (measured from the identity board) ---- */
   --cp-lavender: #e0aaff;
   --cp-purple: #5a189a;
@@ -135,6 +137,8 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --brand-logo-filter: brightness(0) invert(1);
     --color-bg: var(--cp-ink);
     --color-surface: #1a0840;
     --color-surface-raised: #24104f;
@@ -176,6 +180,8 @@
 
 /* Explicit opt-in, so a theme toggle wins over the system preference. */
 :root[data-theme='dark'] {
+  color-scheme: dark;
+  --brand-logo-filter: brightness(0) invert(1);
   --color-bg: var(--cp-ink);
   --color-surface: #1a0840;
   --color-surface-raised: #24104f;

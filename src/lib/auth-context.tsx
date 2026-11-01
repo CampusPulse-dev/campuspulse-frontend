@@ -1,7 +1,9 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
+  ApiRequestError,
   apiFetch,
   type SessionResponse,
   type SignInBody,
@@ -9,254 +11,232 @@ import {
   type UserPublic,
 } from './api';
 import { DEFAULT_DEMO_USER } from './campus-data';
-
-export type OutingRhythm = 'WEEKNIGHTS' | 'WEEKENDS' | 'BOTH';
-
-export interface PersonaProfile {
-  skipped: boolean;
-  vibes: string[];
-  hall: string;
-  faculty: string;
-  level: string;
-  rhythm: OutingRhythm;
-  freeEventsOnly: boolean;
-  personaBadge: string;
-  followedClubIds: string[];
-}
-
-export interface PrivacyPreferences {
-  stealthRsvp: boolean;
-  hideFromFriends: boolean;
-  mutedCategories: string[];
-  theme: 'system' | 'dark' | 'light';
-}
-
+import { DATA_MODE, DEMO_MODE } from './mode';
+import {
+  attendeeRequest,
+  DEFAULT_PRIVACY,
+  readLocal,
+  writeLocal,
+  type PersonaProfile,
+  type PrivacyPreferences,
+} from './attendee-data';
+import { clearTicketAccount, setTicketAccount } from './offline-tickets';
+export type { PersonaProfile, PrivacyPreferences } from './attendee-data';
+export type OutingRhythm = PersonaProfile['rhythm'];
 interface AuthContextValue {
   user: UserPublic | null;
   accessToken: string | null;
+  ready: boolean;
   persona: PersonaProfile | null;
   privacy: PrivacyPreferences;
   interestedEventIds: string[];
   followedOrganizerIds: string[];
   signIn: (body: SignInBody) => Promise<UserPublic>;
   signUp: (body: SignUpBody) => Promise<UserPublic>;
-  signOut: () => void;
-  markStudentVerified: () => void;
-  savePersona: (next: PersonaProfile) => void;
-  updatePrivacy: (patch: Partial<PrivacyPreferences>) => void;
-  toggleInterested: (eventId: string) => boolean;
-  toggleFollowOrganizer: (organizerId: string) => boolean;
+  signOut: () => Promise<void>;
+  markStudentVerified: (verified?: boolean) => void;
+  savePersona: (next: PersonaProfile) => Promise<void>;
+  updatePrivacy: (patch: Partial<PrivacyPreferences>) => Promise<void>;
+  updateProfile: (displayName: string) => Promise<void>;
+  toggleInterested: (id: string) => Promise<boolean>;
+  toggleFollowOrganizer: (id: string) => Promise<boolean>;
 }
-
-const STORAGE_KEYS = {
-  user: 'cp_auth_user_v1',
-  persona: 'cp_persona_v1',
-  privacy: 'cp_privacy_v1',
-  interested: 'cp_interested_events_v1',
-  follows: 'cp_followed_organizers_v1',
-};
-
-const DEFAULT_PRIVACY: PrivacyPreferences = {
-  stealthRsvp: false,
-  hideFromFriends: false,
-  mutedCategories: [],
-  theme: 'system',
-};
-
-function readStoredJson<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
 const AuthContext = createContext<AuthContextValue | null>(null);
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserPublic | null>(() =>
-    readStoredJson<UserPublic | null>(STORAGE_KEYS.user, DEFAULT_DEMO_USER),
-  );
+  const queryClient = useQueryClient();
+  const [user, setUser] = useState<UserPublic | null>(null);
+  const [ready, setReady] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [persona, setPersona] = useState<PersonaProfile | null>(() =>
-    readStoredJson<PersonaProfile | null>(STORAGE_KEYS.persona, null),
+  const [persona, setPersona] = useState<PersonaProfile | null>(null);
+  const [privacy, setPrivacy] = useState(DEFAULT_PRIVACY);
+  const [interestedEventIds, setInterested] = useState<string[]>([]);
+  const [followedOrganizerIds, setFollows] = useState<string[]>([]);
+  const installUser = useCallback(
+    async (next: UserPublic | null, token: string | null) => {
+      const previous = readLocal<UserPublic | null>('user', null);
+      if (previous?.id !== next?.id) {
+        await clearTicketAccount();
+        queryClient.clear();
+      }
+      setTicketAccount(next?.id ?? null);
+      writeLocal('user', next);
+      setUser(next);
+      setAccessToken(token);
+      const key = next?.id ?? 'guest';
+      setPersona(readLocal(`persona:${key}`, null));
+      setPrivacy(readLocal(`privacy:${key}`, DEFAULT_PRIVACY));
+      setInterested(readLocal(`interested:${key}`, []));
+      setFollows(readLocal(`follows:${key}`, []));
+    },
+    [queryClient],
   );
-  const [privacy, setPrivacy] = useState<PrivacyPreferences>(() =>
-    readStoredJson<PrivacyPreferences>(STORAGE_KEYS.privacy, DEFAULT_PRIVACY),
-  );
-  const [interestedEventIds, setInterestedEventIds] = useState<string[]>(() =>
-    readStoredJson<string[]>(STORAGE_KEYS.interested, ['22222222-2222-4222-8222-222222222202']),
-  );
-  const [followedOrganizerIds, setFollowedOrganizerIds] = useState<string[]>(() =>
-    readStoredJson<string[]>(STORAGE_KEYS.follows, [
-      '11111111-1111-4111-8111-111111111101',
-      '11111111-1111-4111-8111-111111111103',
-    ]),
-  );
-
   useEffect(() => {
-    applyThemeAttribute(privacy.theme);
-  }, [privacy.theme]);
-
-  const signIn = useCallback(async (body: SignInBody): Promise<UserPublic> => {
-    try {
-      const session = await apiFetch<SessionResponse>('/auth/sign-in', {
-        method: 'POST',
-        body: JSON.stringify(body),
-      });
-      setUser(session.user);
-      setAccessToken(session.accessToken);
-      window.localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(session.user));
-      return session.user;
-    } catch {
-      const emailPrefix = body.email.split('@')[0] ?? 'UI Student';
-      const isUiEmail = body.email.toLowerCase().endsWith('@stu.ui.edu.ng');
-      const fallbackUser: UserPublic = {
-        id: DEFAULT_DEMO_USER.id,
-        displayName: emailPrefix.replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-        avatarUrl: null,
-        role: 'ATTENDEE',
-        isVerifiedStudent: isUiEmail,
-      };
-      setUser(fallbackUser);
-      setAccessToken('local-demo-token');
-      window.localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(fallbackUser));
-      return fallbackUser;
-    }
-  }, []);
-
-  const signUp = useCallback(async (body: SignUpBody): Promise<UserPublic> => {
-    try {
-      const session = await apiFetch<SessionResponse>('/auth/sign-up', {
-        method: 'POST',
-        body: JSON.stringify(body),
-      });
-      setUser(session.user);
-      setAccessToken(session.accessToken);
-      window.localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(session.user));
-      return session.user;
-    } catch {
-      const isUiEmail = body.email.toLowerCase().endsWith('@stu.ui.edu.ng');
-      const newUser: UserPublic = {
-        id: `usr-${Date.now()}`,
-        displayName: body.displayName.trim() || 'UI Student',
-        avatarUrl: null,
-        role: 'ATTENDEE',
-        isVerifiedStudent: isUiEmail,
-      };
-      setUser(newUser);
-      setAccessToken('local-demo-token');
-      window.localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(newUser));
-      return newUser;
-    }
-  }, []);
-
-  const signOut = useCallback(() => {
-    setUser(null);
-    setAccessToken(null);
-    try {
-      window.localStorage.removeItem(STORAGE_KEYS.user);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const markStudentVerified = useCallback(() => {
-    setUser((prev) => {
-      const base = prev ?? DEFAULT_DEMO_USER;
-      const next = { ...base, isVerifiedStudent: true };
-      try {
-        window.localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  }, []);
-
-  const savePersona = useCallback((next: PersonaProfile) => {
-    setPersona(next);
-    if (next.followedClubIds.length > 0) {
-      setFollowedOrganizerIds((prev) => {
-        const merged = Array.from(new Set([...prev, ...next.followedClubIds]));
+    let alive = true;
+    async function restore() {
+      if (DEMO_MODE || !navigator.onLine) {
+        if (alive) await installUser(readLocal('user', null), null);
+      } else {
         try {
-          window.localStorage.setItem(STORAGE_KEYS.follows, JSON.stringify(merged));
-        } catch {
-          // ignore
+          const s = await apiFetch<SessionResponse>('/auth/refresh', { method: 'POST' });
+          if (alive) await installUser(s.user, s.accessToken);
+        } catch (error) {
+          if (alive)
+            await installUser(
+              error instanceof ApiRequestError && error.error.statusCode === 401
+                ? null
+                : readLocal('user', null),
+              null,
+            );
         }
-        return merged;
-      });
+      }
+      if (alive) setReady(true);
     }
+    void restore();
+    return () => {
+      alive = false;
+    };
+  }, [installUser]);
+  useEffect(() => {
+    const changed = (event: StorageEvent) => {
+      if (event.key === DATA_MODE + ':user') {
+        void clearTicketAccount().then(() => {
+          queryClient.clear();
+          return installUser(readLocal('user', null), null);
+        });
+      }
+    };
+    window.addEventListener('storage', changed);
+    return () => window.removeEventListener('storage', changed);
+  }, [installUser, queryClient]);
+  useEffect(() => {
+    if (privacy.theme === 'system') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', privacy.theme);
+  }, [privacy.theme]);
+  async function authenticate(body: SignInBody | SignUpBody, path: string) {
+    const digest = DEMO_MODE
+      ? Array.from(
+          new Uint8Array(
+            await crypto.subtle.digest(
+              'SHA-256',
+              new TextEncoder().encode(body.email.trim().toLowerCase()),
+            ),
+          ),
+        )
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('')
+      : '';
+    const demoId = digest
+      ? digest.slice(0, 8) +
+        '-' +
+        digest.slice(8, 12) +
+        '-4' +
+        digest.slice(13, 16) +
+        '-8' +
+        digest.slice(17, 20) +
+        '-' +
+        digest.slice(20, 32)
+      : '';
+    const session = DEMO_MODE
+      ? {
+          user: {
+            ...DEFAULT_DEMO_USER,
+            id: demoId,
+            isVerifiedStudent: false,
+            displayName: 'displayName' in body ? body.displayName : 'Tobi Adeyemi',
+          },
+          accessToken: 'demo',
+        }
+      : await apiFetch<SessionResponse>(path, { method: 'POST', body: JSON.stringify(body) });
+    await installUser(session.user, session.accessToken);
+    return session.user;
+  }
+  async function signOut() {
     try {
-      window.localStorage.setItem(STORAGE_KEYS.persona, JSON.stringify(next));
-    } catch {
-      // ignore
+      if (!DEMO_MODE) await apiFetch('/auth/sign-out', { method: 'POST' });
+    } finally {
+      await installUser(null, null);
     }
-  }, []);
-
-  const updatePrivacy = useCallback((patch: Partial<PrivacyPreferences>) => {
-    setPrivacy((prev) => {
-      const next = { ...prev, ...patch };
-      applyThemeAttribute(next.theme);
-      try {
-        window.localStorage.setItem(STORAGE_KEYS.privacy, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  }, []);
-
-  const toggleInterested = useCallback((eventId: string): boolean => {
-    let added = false;
-    setInterestedEventIds((prev) => {
-      const exists = prev.includes(eventId);
-      added = !exists;
-      const next = exists ? prev.filter((id) => id !== eventId) : [...prev, eventId];
-      try {
-        window.localStorage.setItem(STORAGE_KEYS.interested, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+    window.dispatchEvent(new Event('cp-account-change'));
+  }
+  function requireUser() {
+    if (!user) throw new Error('Sign in to continue.');
+    if (!DEMO_MODE && !accessToken) throw new Error('Reconnect and sign in to save changes.');
+    return user;
+  }
+  async function savePersona(next: PersonaProfile) {
+    const u = requireUser();
+    if (!DEMO_MODE)
+      await attendeeRequest('AttendeePersona', '/users/me/persona', accessToken, 'PUT', next);
+    writeLocal(`persona:${u.id}`, next);
+    setPersona(next);
+  }
+  async function updatePrivacy(patch: Partial<PrivacyPreferences>) {
+    const u = requireUser();
+    const next = { ...privacy, ...patch };
+    if (!DEMO_MODE)
+      await attendeeRequest('AttendeePrivacy', '/users/me/preferences', accessToken, 'PUT', next);
+    writeLocal(`privacy:${u.id}`, next);
+    setPrivacy(next);
+  }
+  async function updateProfile(displayName: string) {
+    const u = requireUser();
+    const next = DEMO_MODE
+      ? { ...u, displayName }
+      : await attendeeRequest('UserPublic', '/users/me', accessToken, 'PATCH', { displayName });
+    writeLocal('user', next);
+    setUser(next);
+  }
+  async function toggleInterested(id: string) {
+    const u = requireUser();
+    const added = !interestedEventIds.includes(id);
+    if (!DEMO_MODE)
+      await apiFetch(`/attendance/interested/${id}`, {
+        method: added ? 'POST' : 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+    const next = added ? [...interestedEventIds, id] : interestedEventIds.filter((v) => v !== id);
+    writeLocal(`interested:${u.id}`, next);
+    setInterested(next);
     return added;
-  }, []);
-
-  const toggleFollowOrganizer = useCallback((organizerId: string): boolean => {
-    let following = false;
-    setFollowedOrganizerIds((prev) => {
-      const exists = prev.includes(organizerId);
-      following = !exists;
-      const next = exists ? prev.filter((id) => id !== organizerId) : [...prev, organizerId];
-      try {
-        window.localStorage.setItem(STORAGE_KEYS.follows, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-    return following;
-  }, []);
-
+  }
+  async function toggleFollowOrganizer(id: string) {
+    const u = requireUser();
+    const added = !followedOrganizerIds.includes(id);
+    if (!DEMO_MODE)
+      await apiFetch(`/organizers/${id}/follow`, {
+        method: added ? 'POST' : 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+    const next = added
+      ? [...followedOrganizerIds, id]
+      : followedOrganizerIds.filter((v) => v !== id);
+    writeLocal(`follows:${u.id}`, next);
+    setFollows(next);
+    return added;
+  }
+  function markStudentVerified(verified = true) {
+    if (!DEMO_MODE || !user) return;
+    const next = { ...user, isVerifiedStudent: verified };
+    setUser(next);
+    writeLocal('user', next);
+  }
   return (
     <AuthContext.Provider
       value={{
         user,
         accessToken,
+        ready,
         persona,
         privacy,
         interestedEventIds,
         followedOrganizerIds,
-        signIn,
-        signUp,
+        signIn: (b) => authenticate(b, '/auth/sign-in'),
+        signUp: (b) => authenticate(b, '/auth/sign-up'),
         signOut,
         markStudentVerified,
         savePersona,
         updatePrivacy,
+        updateProfile,
         toggleInterested,
         toggleFollowOrganizer,
       }}
@@ -265,36 +245,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-function applyThemeAttribute(theme: PrivacyPreferences['theme']) {
-  if (typeof document === 'undefined') return;
-  const root = document.documentElement;
-  if (theme === 'system') {
-    root.removeAttribute('data-theme');
-  } else {
-    root.setAttribute('data-theme', theme);
-  }
-}
-
+const signedOut: AuthContextValue = {
+  user: null,
+  ready: true,
+  accessToken: null,
+  persona: null,
+  privacy: DEFAULT_PRIVACY,
+  interestedEventIds: [],
+  followedOrganizerIds: [],
+  signIn: async () => {
+    throw new Error('Sign in unavailable');
+  },
+  signUp: async () => {
+    throw new Error('Sign up unavailable');
+  },
+  signOut: async () => {},
+  markStudentVerified: () => {},
+  savePersona: async () => {},
+  updatePrivacy: async () => {},
+  updateProfile: async () => {},
+  toggleInterested: async () => false,
+  toggleFollowOrganizer: async () => false,
+};
 export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    return {
-      user: DEFAULT_DEMO_USER,
-      accessToken: null,
-      persona: null,
-      privacy: DEFAULT_PRIVACY,
-      interestedEventIds: [],
-      followedOrganizerIds: [],
-      signIn: async () => DEFAULT_DEMO_USER,
-      signUp: async () => DEFAULT_DEMO_USER,
-      signOut: () => undefined,
-      markStudentVerified: () => undefined,
-      savePersona: () => undefined,
-      updatePrivacy: () => undefined,
-      toggleInterested: () => true,
-      toggleFollowOrganizer: () => true,
-    };
-  }
-  return ctx;
+  return useContext(AuthContext) ?? signedOut;
 }

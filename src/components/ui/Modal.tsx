@@ -1,10 +1,9 @@
 'use client';
-
-import React, { useEffect } from 'react';
+import { useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { bottomSheetVariants, modalBackdropVariants } from '@/lib/motion';
+import { useDialog } from '@/lib/use-dialog';
 import styles from './Modal.module.css';
-
 export interface ModalProps {
   isOpen: boolean;
   title: string;
@@ -12,19 +11,9 @@ export interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
 }
-
 export function Modal({ isOpen, title, subtitle, onClose, children }: ModalProps) {
-  useEffect(() => {
-    if (!isOpen) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
+  const ref = useRef<HTMLDivElement>(null);
+  useDialog(isOpen, ref, onClose);
   return (
     <AnimatePresence>
       {isOpen ? (
@@ -39,6 +28,8 @@ export function Modal({ isOpen, title, subtitle, onClose, children }: ModalProps
             aria-hidden="true"
           />
           <motion.div
+            ref={ref}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={title}

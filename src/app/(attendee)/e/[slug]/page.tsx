@@ -6,6 +6,7 @@ import { EventDetailView } from '@/components/events/EventDetailClient';
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
   };
 }
 
-export default async function PublicEventPage({ params }: EventPageProps) {
+export default async function PublicEventPage({ params, searchParams }: EventPageProps) {
   const { slug } = await params;
   const event = await fetchEventBySlug(slug);
 
@@ -45,5 +46,12 @@ export default async function PublicEventPage({ params }: EventPageProps) {
     notFound();
   }
 
-  return <EventDetailView event={event} />;
+  const query = await searchParams;
+  const attribution = new URLSearchParams();
+  for (const key of ['ref', 'invite']) {
+    const value = query[key];
+    if (typeof value === 'string') attribution.set(key, value);
+  }
+  const returnTo = '/e/' + slug + (attribution.size ? '?' + attribution : '');
+  return <EventDetailView event={event} returnTo={returnTo} />;
 }

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { SEED_EVENTS } from '@/lib/campus-data';
 import { EventDetailView } from '@/components/events/EventDetailClient';
@@ -28,13 +28,13 @@ describe('SSR Public Event Page & Commitment Controls (S4-02)', () => {
     expect(getByText(/LIVE · 68'/i)).toBeDefined();
   });
 
-  it('optimistically locks in Free RSVP and reveals offline QR pass CTA', () => {
-    const event = SEED_EVENTS[0]!;
-    const { getByRole, getByText } = render(<EventDetailView event={event} />);
-
-    const rsvpBtn = getByRole('button', { name: /RSVP — Free/i });
-    fireEvent.click(rsvpBtn);
-
-    expect(getByText(/Going ✓ · Offline QR Saved/i)).toBeDefined();
+  it('requires sign-in instead of issuing a local pass to a signed-out visitor', () => {
+    const { getByRole } = render(<EventDetailView event={SEED_EVENTS[0]!} />);
+    expect((getByRole('button', { name: /RSVP — Free/i }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    expect(getByRole('link', { name: /Sign in to RSVP/i }).getAttribute('href')).toContain(
+      '/sign-in?next=',
+    );
   });
 });

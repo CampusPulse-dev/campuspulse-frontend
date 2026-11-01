@@ -39,12 +39,14 @@ const jetbrainsMono = JetBrains_Mono({
  */
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://campuspulse.ng'),
   title: {
     default: 'CampusPulse',
     template: '%s · CampusPulse',
   },
   description: 'Every event on campus, in one feed. And a real headcount at the door.',
   manifest: '/manifest.webmanifest',
+  icons: { apple: '/icons/icon-180.png', icon: '/icons/icon-192.png' },
 };
 
 export const viewport: Viewport = {

@@ -1,5 +1,6 @@
-import { SEED_EVENTS, type EnrichedEvent } from './campus-data';
-
+import type { EnrichedEvent } from './campus-data';
+import type { CreateRsvpResponse } from './api';
+import { DATA_MODE, DEMO_MODE } from './mode';
 export interface OfflineTicketPass {
   rsvpId: string;
   eventId: string;
@@ -21,152 +22,144 @@ export interface OfflineTicketPass {
   parentEventTitle?: string | null;
   linkedAfterPartySlug?: string | null;
   savedAt: string;
+  demo: boolean;
 }
-
 const DB_NAME = 'cp_my_tickets';
-const STORE_NAME = 'tickets';
-const LOCAL_MIRROR_KEY = 'cp_my_tickets_mirror_v1';
-
-const DEFAULT_SEED_TICKETS: OfflineTicketPass[] = [
-  {
-    rsvpId: 'rsvp-havana-001',
-    eventId: SEED_EVENTS[0]!.id,
-    eventSlug: SEED_EVENTS[0]!.slug,
-    eventTitle: SEED_EVENTS[0]!.title,
-    category: SEED_EVENTS[0]!.category,
-    startsAt: SEED_EVENTS[0]!.startsAt,
-    endsAt: SEED_EVENTS[0]!.endsAt,
-    venueName: SEED_EVENTS[0]!.venueName,
-    venueDetail: SEED_EVENTS[0]!.venueDetail,
-    organizerName: SEED_EVENTS[0]!.organizer.name,
-    organizerSlug: SEED_EVENTS[0]!.organizer.slug,
-    attendeeName: 'Tobi Adeyemi',
-    isVerifiedStudent: true,
-    status: 'CONFIRMED',
-    qrToken: 'CPQR.v1.22222222-2222-4222-8222-222222222201.rsvp-havana-001.ed25519sig9f8a7b6c',
-    linkedAfterPartySlug: 'havana-official-afterparty-zik',
-    savedAt: '2026-11-01T14:00:00.000Z',
-  },
-  {
-    rsvpId: 'rsvp-afterparty-002',
-    eventId: SEED_EVENTS[4]!.id,
-    eventSlug: SEED_EVENTS[4]!.slug,
-    eventTitle: SEED_EVENTS[4]!.title,
-    category: SEED_EVENTS[4]!.category,
-    startsAt: SEED_EVENTS[4]!.startsAt,
-    endsAt: SEED_EVENTS[4]!.endsAt,
-    venueName: SEED_EVENTS[4]!.venueName,
-    venueDetail: SEED_EVENTS[4]!.venueDetail,
-    organizerName: SEED_EVENTS[4]!.organizer.name,
-    organizerSlug: SEED_EVENTS[4]!.organizer.slug,
-    attendeeName: 'Tobi Adeyemi',
-    isVerifiedStudent: true,
-    status: 'CONFIRMED',
-    qrToken: 'CPQR.v1.22222222-2222-4222-8222-222222222205.rsvp-afterparty-002.ed25519sig4d3e2f1a',
-    parentEventSlug: 'havana-night-sub-field',
-    parentEventTitle: 'Sigma Havana Night: Neon Pulse Edition',
-    savedAt: '2026-11-01T14:02:00.000Z',
-  },
-];
-
-function readMirror(): OfflineTicketPass[] {
-  if (typeof window === 'undefined') return DEFAULT_SEED_TICKETS;
-  try {
-    const raw = window.localStorage.getItem(LOCAL_MIRROR_KEY);
-    if (!raw) {
-      window.localStorage.setItem(LOCAL_MIRROR_KEY, JSON.stringify(DEFAULT_SEED_TICKETS));
-      return DEFAULT_SEED_TICKETS;
+let account: string | null = null;
+let memory: OfflineTicketPass[] = [];
+let generation = 0;
+export function ticketEpoch() {
+  return generation;
+}
+export function setTicketAccount(id: string | null) {
+  if (account !== id) {
+    generation++;
+    memory = [];
+  }
+  account = id;
+}
+function openDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      reject(new Error('Offline storage is unavailable in this browser.'));
+      return;
     }
-    return JSON.parse(raw) as OfflineTicketPass[];
-  } catch {
-    return DEFAULT_SEED_TICKETS;
-  }
-}
-
-function writeMirror(tickets: OfflineTicketPass[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(LOCAL_MIRROR_KEY, JSON.stringify(tickets));
-  } catch {
-    // ignore storage quota errors
-  }
-}
-
-function writeIndexedDb(ticket: OfflineTicketPass): void {
-  if (typeof window === 'undefined' || typeof window.indexedDB === 'undefined') return;
-  try {
-    const req = window.indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'rsvpId' });
-      }
+    const request = indexedDB.open(DB_NAME, 2);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (db.objectStoreNames.contains('tickets')) db.deleteObjectStore('tickets');
+      if (!db.objectStoreNames.contains('passes'))
+        db.createObjectStore('passes', { keyPath: 'key' });
     };
-    req.onsuccess = () => {
-      const db = req.result;
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(ticket);
-    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+export async function clearTicketAccount() {
+  generation++;
+  account = null;
+  memory = [];
+  try {
+    const db = await openDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('passes', 'readwrite');
+      tx.objectStore('passes').clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
   } catch {
-    // Fallback mirror already persisted
+    /* No stored tickets when IndexedDB is unavailable. */
+  }
+  if (typeof caches !== 'undefined') {
+    for (const key of await caches.keys())
+      if (key.startsWith('cp-wallet')) await caches.delete(key);
+  }
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('cp_my_tickets_mirror_v1');
+    localStorage.removeItem('cp_auth_user_v1');
   }
 }
-
-export function getOfflineTickets(): OfflineTicketPass[] {
-  return readMirror();
+export async function loadOfflineTickets(): Promise<OfflineTicketPass[]> {
+  if (!account) return [];
+  const owner = `${DATA_MODE}:${account}`;
+  const current = generation;
+  const db = await openDb();
+  const rows = await new Promise<{ owner: string; pass: OfflineTicketPass }[]>(
+    (resolve, reject) => {
+      const r = db.transaction('passes').objectStore('passes').getAll();
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+    },
+  );
+  db.close();
+  if (current !== generation) return [];
+  memory = rows.filter((r) => r.owner === owner).map((r) => r.pass);
+  return memory;
 }
-
-export function getOfflineTicketById(rsvpId: string): OfflineTicketPass | null {
-  const all = readMirror();
-  return all.find((t) => t.rsvpId === rsvpId) ?? null;
+export function getOfflineTickets() {
+  return memory;
 }
-
-export function getOfflineTicketForEvent(eventId: string): OfflineTicketPass | null {
-  const all = readMirror();
-  return all.find((t) => t.eventId === eventId && t.status !== 'CANCELLED') ?? null;
+export function getOfflineTicketForEvent(id: string) {
+  return memory.find((t) => t.eventId === id && t.status !== 'CANCELLED') ?? null;
 }
-
-export function saveOfflineTicket(params: {
+export async function saveOfflineTicket(params: {
+  accountId: string;
   event: EnrichedEvent;
   attendeeName: string;
   isVerifiedStudent: boolean;
   showtimeLabel?: string | null;
-}): OfflineTicketPass {
-  const existing = getOfflineTicketForEvent(params.event.id);
-  const rsvpId =
-    existing?.rsvpId ?? `rsvp-${params.event.slug.slice(0, 12)}-${Date.now().toString(36)}`;
-  const isFull = params.event.capacity !== null && params.event.rsvpCount >= params.event.capacity;
-
-  const ticket: OfflineTicketPass = {
-    rsvpId,
-    eventId: params.event.id,
-    eventSlug: params.event.slug,
-    eventTitle: params.event.title,
-    category: params.event.category,
-    startsAt: params.event.startsAt,
-    endsAt: params.event.endsAt,
-    venueName: params.event.venueName,
-    venueDetail: params.event.venueDetail,
-    organizerName: params.event.organizer.name,
-    organizerSlug: params.event.organizer.slug,
+  rsvp?: CreateRsvpResponse;
+}): Promise<OfflineTicketPass> {
+  if (!account || params.accountId !== account)
+    throw new Error('Account changed. Please sign in and retry.');
+  if (params.rsvp && (params.rsvp.userId !== account || params.rsvp.eventId !== params.event.id))
+    throw new Error('This pass does not belong to the current account and event.');
+  if (!DEMO_MODE && !params.rsvp) throw new Error('A server-issued RSVP is required.');
+  const owner = `${DATA_MODE}:${account}`;
+  const current = generation;
+  const e = params.event;
+  const full = e.capacity !== null && e.rsvpCount >= e.capacity;
+  if (DEMO_MODE && full && !e.waitlistEnabled) throw new Error('This event is full.');
+  const pass: OfflineTicketPass = {
+    rsvpId: params.rsvp?.id ?? `demo-${e.id}`,
+    eventId: e.id,
+    eventSlug: e.slug,
+    eventTitle: e.title,
+    category: e.category,
+    startsAt: e.startsAt,
+    endsAt: e.endsAt,
+    venueName: e.venueName,
+    venueDetail: e.venueDetail,
+    organizerName: e.organizer.name,
+    organizerSlug: e.organizer.slug,
     attendeeName: params.attendeeName,
     isVerifiedStudent: params.isVerifiedStudent,
-    status: isFull && params.event.waitlistEnabled ? 'WAITLISTED' : 'CONFIRMED',
-    qrToken: `CPQR.v1.${params.event.id}.${rsvpId}.ed25519offline`,
-    showtimeLabel: params.showtimeLabel ?? null,
-    parentEventSlug: params.event.parentEventSlug ?? null,
-    parentEventTitle: params.event.parentEventTitle ?? null,
-    linkedAfterPartySlug: params.event.linkedAfterParty?.slug ?? null,
+    status: params.rsvp?.status ?? (full ? 'WAITLISTED' : 'CONFIRMED'),
+    qrToken: params.rsvp?.qrToken ?? `CAMPUSPULSE-DEMO-NOT-VALID:${e.id}`,
+    showtimeLabel: params.showtimeLabel,
+    parentEventSlug: e.parentEventSlug,
+    parentEventTitle: e.parentEventTitle,
+    linkedAfterPartySlug: e.linkedAfterParty?.slug,
     savedAt: new Date().toISOString(),
+    demo: DEMO_MODE,
   };
-
-  const current = readMirror().filter((t) => t.rsvpId !== ticket.rsvpId);
-  const next = [ticket, ...current];
-  writeMirror(next);
-  writeIndexedDb(ticket);
-  return ticket;
+  const db = await openDb();
+  if (current !== generation) {
+    db.close();
+    throw new Error('Account changed. Please retry.');
+  }
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('passes', 'readwrite');
+    tx.objectStore('passes').put({ key: `${owner}:${pass.rsvpId}`, owner, pass });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+  if (current !== generation) throw new Error('Account changed. Please retry.');
+  memory = [...memory.filter((t) => t.rsvpId !== pass.rsvpId), pass];
+  return pass;
 }
-
 export function buildIcsCalendarContent(event: {
   title: string;
   description: string;
@@ -174,22 +167,25 @@ export function buildIcsCalendarContent(event: {
   startsAt: string;
   endsAt: string;
 }): string {
-  const formatIcsDate = (iso: string) =>
-    new Date(iso)
+  const date = (s: string) =>
+    new Date(s)
       .toISOString()
       .replace(/[-:]/g, '')
       .replace(/\.\d{3}/, '');
-
+  const escape = (s: string) =>
+    s.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//CampusPulse//University of Ibadan//EN',
+    'PRODID:-//CampusPulse//UI//EN',
     'BEGIN:VEVENT',
-    `SUMMARY:${event.title}`,
-    `DTSTART:${formatIcsDate(event.startsAt)}`,
-    `DTEND:${formatIcsDate(event.endsAt)}`,
-    `LOCATION:${event.venueName}`,
-    `DESCRIPTION:${event.description.replace(/\r?\n/g, ' ')}`,
+    `UID:${date(event.startsAt)}-${encodeURIComponent(event.title)}@campuspulse.ng`,
+    `DTSTAMP:${date(new Date().toISOString())}`,
+    `SUMMARY:${escape(event.title)}`,
+    `DTSTART:${date(event.startsAt)}`,
+    `DTEND:${date(event.endsAt)}`,
+    `LOCATION:${escape(event.venueName)}`,
+    `DESCRIPTION:${escape(event.description)}`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');

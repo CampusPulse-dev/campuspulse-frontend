@@ -360,3 +360,8 @@
   border-radius: var(--radius-full);
   background: var(--status-danger);
 }
+
+.brandLogo,
+.brandLogoSm {
+  filter: var(--brand-logo-filter);
+}

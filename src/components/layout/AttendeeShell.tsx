@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { DEMO_MODE } from '@/lib/mode';
 import { motion } from 'framer-motion';
 import { springSnappy } from '@/lib/motion';
 import styles from './AttendeeShell.module.css';
@@ -33,7 +34,7 @@ export interface AttendeeShellProps {
 export function AttendeeShell({
   children,
   onOpenSearch,
-  unreadNotificationsCount = 2,
+  unreadNotificationsCount = 0,
   userDisplayName,
   isVerifiedStudent,
 }: AttendeeShellProps) {
@@ -123,6 +124,18 @@ export function AttendeeShell({
 
       {/* Main Content Column */}
       <div className={styles.mainColumn}>
+        {DEMO_MODE ? (
+          <div
+            role="status"
+            style={{
+              padding: 'var(--space-3)',
+              background: 'var(--status-warning-bg)',
+              textAlign: 'center',
+            }}
+          >
+            Demo mode · Sample campus data · Passes are not valid for entry
+          </div>
+        ) : null}
         <header className={styles.mobileHeader}>
           <Link href="/" className={styles.mobileBrand}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -140,7 +153,15 @@ export function AttendeeShell({
               >
                 🔍
               </button>
-            ) : null}
+            ) : (
+              <Link
+                href="/search"
+                className={styles.iconAction}
+                aria-label="Search events and clubs"
+              >
+                ⌕
+              </Link>
+            )}
             <Link href="/notifications" className={styles.iconAction} aria-label="Notifications">
               🔔
               {unreadNotificationsCount > 0 ? <span className={styles.unreadDot} /> : null}
