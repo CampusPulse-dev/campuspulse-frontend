@@ -141,6 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: {
             ...DEFAULT_DEMO_USER,
             id: demoId,
+            role: body.email.trim().toLowerCase().startsWith('organizer')
+              ? ('ORGANIZER' as const)
+              : DEFAULT_DEMO_USER.role,
             isVerifiedStudent: false,
             displayName: 'displayName' in body ? body.displayName : 'Tobi Adeyemi',
           },
