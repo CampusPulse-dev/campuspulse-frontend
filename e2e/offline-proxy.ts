@@ -10,9 +10,15 @@ export async function offlineProxy(upstream: string) {
       req.socket.destroy();
       return;
     }
+    // Pin host and port to the upstream so an absolute request URL can't redirect the proxy.
     const forwarded = request(
-      new URL(req.url ?? '/', target),
-      { method: req.method, headers: { ...req.headers, host: target.host } },
+      {
+        hostname: target.hostname,
+        port: target.port,
+        path: req.url ?? '/',
+        method: req.method,
+        headers: { ...req.headers, host: target.host },
+      },
       (response) => {
         res.writeHead(response.statusCode ?? 502, response.headers);
         response.pipe(res);
