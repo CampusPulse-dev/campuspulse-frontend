@@ -8,6 +8,9 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Only Goodly Regular ships, so never let the browser fake a bold Goodly.
+     Inter and JetBrains Mono are variable fonts and carry real weights. */
+  font-synthesis-weight: none;
 }
 
 body {
@@ -29,13 +32,13 @@ h3 {
 }
 
 h1 {
-  font-size: var(--text-3xl);
+  font: var(--type-display);
 }
 h2 {
-  font-size: var(--text-2xl);
+  font: var(--type-title);
 }
 h3 {
-  font-size: var(--text-xl);
+  font: var(--type-headline);
 }
 
 p {
@@ -51,7 +54,6 @@ a {
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
 }
 
 main {
@@ -69,4 +71,34 @@ main {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  ::view-transition-group(.poster-morph),
+  ::view-transition-old(.poster-morph),
+  ::view-transition-new(.poster-morph) {
+    animation-duration: 0s !important;
+  }
+}
+
+/* Feed card → event hero poster morph, within the 150–220ms motion budget. */
+::view-transition-group(.poster-morph) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+a {
+  text-underline-offset: 0.2em;
+}
+img,
+svg {
+  max-width: 100%;
 }

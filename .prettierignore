@@ -5,3 +5,7 @@ src/lib/api-schema.d.ts
 .next/
 coverage/
 node_modules/
+
+# Generated browser artifacts
+test-results/
+playwright-report/

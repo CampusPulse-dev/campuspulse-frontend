@@ -1,0 +1,244 @@
+.traySection {
+  margin-bottom: var(--space-4);
+}
+
+.trayRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scroll-snap-type: x mandatory;
+}
+
+.storyTrigger {
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  width: 76px;
+  flex-shrink: 0;
+  cursor: pointer;
+  scroll-snap-align: start;
+  color: var(--color-text);
+}
+
+.storyClubName {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--cp-black);
+  color: var(--cp-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewerFrame {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  height: 100dvh;
+  max-height: 52rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: linear-gradient(160deg, var(--cp-ink) 0%, var(--cp-purple) 100%);
+}
+
+.progressRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+
+.progressSegment {
+  flex: 1;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 0.28);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  width: 0%;
+  background: var(--cp-lavender);
+}
+
+.progressDone {
+  width: 100%;
+}
+
+.progressActive {
+  width: 100%;
+  animation: storyProgress 5s linear forwards;
+}
+
+@keyframes storyProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.viewerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  position: relative;
+  z-index: 3;
+}
+
+.viewerAuthor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.viewerClubName {
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.viewerMeta {
+  font-size: var(--text-sm);
+  opacity: 0.78;
+}
+
+.viewerCloseBtn {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(16 0 43 / 0.6);
+  color: var(--cp-white);
+  cursor: pointer;
+  font-size: var(--text-base);
+}
+
+.viewerStage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-3);
+}
+
+.tapZoneLeft,
+.tapZoneRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 35%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.tapZoneLeft {
+  left: 0;
+}
+
+.tapZoneRight {
+  right: 0;
+}
+
+.storyContentBox {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.storyHeadline {
+  font-size: var(--text-2xl);
+  color: var(--cp-white);
+  margin: 0;
+}
+
+.storyCaption {
+  font-size: var(--text-base);
+  color: var(--cp-lavender);
+  margin: 0;
+}
+
+.viewerFooter {
+  position: relative;
+  z-index: 3;
+  padding-top: var(--space-3);
+}
+
+.storyEventCta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--cp-lavender);
+  color: var(--cp-ink);
+  font-weight: 700;
+  font-size: var(--text-base);
+  text-decoration: none;
+  box-shadow: var(--shadow-lg);
+}
+
+.storyEventSub {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.storyMedia {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.viewerControls {
+  display: flex;
+  gap: var(--space-2);
+}
+.viewerCloseBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.progressActive {
+  width: 100%;
+  transform-origin: left;
+}
+
+.viewerStage video[controls] {
+  pointer-events: auto;
+  z-index: 3;
+}

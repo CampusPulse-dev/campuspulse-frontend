@@ -1,0 +1,8 @@
+.lockup {
+  width: 180px;
+  height: auto;
+  filter: var(--brand-logo-filter);
+}
+.inverse {
+  filter: brightness(0) invert(1);
+}

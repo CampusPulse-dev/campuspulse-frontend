@@ -1,0 +1,95 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.default {
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.success {
+  background: var(--status-success-bg);
+  color: var(--color-text);
+}
+
+.warning {
+  background: var(--status-warning-bg);
+  color: var(--color-text);
+}
+
+.danger {
+  background: var(--status-danger-bg);
+  color: var(--color-text);
+}
+
+.categoryPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font: var(--type-label);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+button.categoryPill {
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--category-color);
+}
+
+.catSocial {
+  --category-color: var(--cat-social);
+}
+
+.catPerformance {
+  --category-color: var(--cat-performance);
+}
+
+.catAcademic {
+  --category-color: var(--cat-academic);
+}
+
+.catSports {
+  --category-color: var(--cat-sports);
+}
+
+.catClub {
+  --category-color: var(--cat-club);
+}
+
+.activePill {
+  color: var(--color-text);
+  background: transparent;
+}
+
+.verifiedMark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--status-success);
+  vertical-align: middle;
+}
+
+.liveIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font: var(--type-label);
+  white-space: nowrap;
+}
