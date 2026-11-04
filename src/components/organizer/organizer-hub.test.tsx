@@ -281,6 +281,8 @@ describe('StoryComposerView (S5-01)', () => {
     expect(screen.getByText('Links to Havana Night')).toBeDefined();
     expect(screen.getByText('Expires in 12h')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Delete story 1' }));
+    expect(onDelete).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete story' }));
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('s1'));
   });
 

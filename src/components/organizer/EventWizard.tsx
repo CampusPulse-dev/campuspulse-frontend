@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { Badge, CATEGORY_LABELS, CategoryPill } from '@/components/ui/Badge';
+import { CATEGORY_LABELS, CategoryPill } from '@/components/ui/Badge';
 import { SelectField, TextArea, TextField, ToggleRow } from '@/components/ui/Field';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { fadeInUp } from '@/lib/motion';
@@ -135,14 +135,13 @@ export function EventWizard({
 
   return (
     <div className={styles.wizard}>
-      <div className={styles.stepDots} role="img" aria-label={`Step ${step} of 3`}>
-        {[1, 2, 3].map((idx) => (
-          <span
-            key={idx}
-            className={`${styles.stepDot} ${idx <= step ? styles.stepDotActive : ''}`}
-          />
+      <ol className={styles.wizardSteps} aria-label="Event setup">
+        {['Template', 'Details', 'Lineup'].map((label, index) => (
+          <li key={label} aria-current={step === index + 1 ? 'step' : undefined}>
+            {index + 1} {label}
+          </li>
         ))}
-      </div>
+      </ol>
 
       {errors.length > 0 ? (
         <ul className={styles.errorList} role="alert">
@@ -161,8 +160,7 @@ export function EventWizard({
       >
         {step === 1 ? (
           <>
-            <Badge variant="verified">Step 1 of 3</Badge>
-            <h1 className={styles.stepTitle}>Template &amp; category</h1>
+            <h2 className={styles.stepTitle}>Template &amp; category</h2>
             <p className={styles.stepSubtitle}>
               The template decides which details you fill in on the last step.
             </p>
@@ -197,8 +195,7 @@ export function EventWizard({
 
         {step === 2 ? (
           <>
-            <Badge variant="verified">Step 2 of 3</Badge>
-            <h1 className={styles.stepTitle}>Event details</h1>
+            <h2 className={styles.stepTitle}>Event details</h2>
             <TextField
               label="Title"
               value={draft.title}
@@ -305,8 +302,7 @@ export function EventWizard({
 
         {step === 3 ? (
           <>
-            <Badge variant="verified">Step 3 of 3</Badge>
-            <h1 className={styles.stepTitle}>{TEMPLATE_LABELS[draft.template].label} details</h1>
+            <h2 className={styles.stepTitle}>{TEMPLATE_LABELS[draft.template].label} details</h2>
 
             {blocks.includes('lineup') ? (
               <section className={styles.stepSection} aria-label="Lineup">
@@ -532,15 +528,15 @@ export function EventWizard({
       <div className={styles.actions}>
         {step > 1 ? (
           <Button variant="secondary" onClick={goBack}>
-            ← Back
+            Back
           </Button>
         ) : null}
         <div className={styles.actionsEnd}>
-          <Button variant="secondary" isLoading={busy === 'draft'} onClick={() => run('draft')}>
+          <Button variant="ghost" isLoading={busy === 'draft'} onClick={() => run('draft')}>
             Save Draft
           </Button>
           {step < 3 ? (
-            <Button onClick={goNext}>Continue →</Button>
+            <Button onClick={goNext}>Continue</Button>
           ) : (
             <Button
               isLoading={busy === 'publish'}

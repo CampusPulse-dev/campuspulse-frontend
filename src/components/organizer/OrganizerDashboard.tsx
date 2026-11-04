@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, CategoryPill } from '@/components/ui/Badge';
+import { VerifiedMark } from '@/components/ui/VerifiedMark';
+import { Badge } from '@/components/ui/Badge';
 import { ResourceState } from '@/components/attendee/Shared';
 import { formatWatDateTime } from '@/lib/campus-data';
 import {
@@ -44,9 +45,8 @@ function EventRow({
           )}
         </h3>
         <div className={styles.eventMeta}>
-          <CategoryPill category={event.category} />
           {when ? <span>{when.compactLabel} WAT</span> : <span>Not scheduled yet</span>}
-          {event.venueName ? <span>📍 {event.venueName}</span> : null}
+          {event.venueName ? <span>{event.venueName}</span> : null}
           {group !== 'drafts' ? (
             <span className={styles.mono}>
               {event.rsvpCount}
@@ -65,7 +65,7 @@ function EventRow({
       ) : group === 'past' ? (
         <Badge variant="default">{event.status === 'CANCELLED' ? 'Cancelled' : 'Finished'}</Badge>
       ) : (
-        <Badge variant="success">Published</Badge>
+        <Badge variant="default">Published</Badge>
       )}
     </li>
   );
@@ -81,7 +81,9 @@ const GROUP_TITLES = {
 export function OrganizerDashboardView({
   data,
   now = new Date(),
+  eventsOnly = false,
 }: {
+  eventsOnly?: boolean;
   data: OrganizerDashboardData;
   now?: Date;
 }) {
@@ -93,11 +95,9 @@ export function OrganizerDashboardView({
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerText}>
-          <div className={styles.eyebrow}>Organizer dashboard</div>
           <div className={styles.titleRow}>
-            <h1>{organizer.name}</h1>
-            {verified ? <Badge variant="verified">Verified club</Badge> : null}
-            <Badge variant="default">{data.role === 'OWNER' ? 'Owner' : 'Manager'}</Badge>
+            <h1>{eventsOnly ? 'Events' : organizer.name}</h1>
+            {verified ? <VerifiedMark /> : null}
           </div>
         </div>
         <Link href={`/organizer/${organizer.slug}/events/new`} className={styles.linkButton}>
@@ -113,24 +113,26 @@ export function OrganizerDashboardView({
         </section>
       ) : null}
 
-      <dl className={styles.kpis} aria-label="Club performance">
-        <div className={styles.kpi}>
-          <dt>Followers</dt>
-          <dd>{kpis.followers.toLocaleString('en-NG')}</dd>
-        </div>
-        <div className={styles.kpi}>
-          <dt>Upcoming RSVPs</dt>
-          <dd>{kpis.upcomingRsvps.toLocaleString('en-NG')}</dd>
-        </div>
-        <div className={styles.kpi}>
-          <dt>Avg show-up rate</dt>
-          <dd>{percent(kpis.showUpRate)}</dd>
-        </div>
-        <div className={styles.kpi}>
-          <dt>Active stories</dt>
-          <dd>{kpis.activeStories}</dd>
-        </div>
-      </dl>
+      {!eventsOnly ? (
+        <dl className={styles.kpis} aria-label="Club performance">
+          <div className={styles.kpi}>
+            <dt>Followers</dt>
+            <dd>{kpis.followers.toLocaleString('en-NG')}</dd>
+          </div>
+          <div className={styles.kpi}>
+            <dt>Upcoming RSVPs</dt>
+            <dd>{kpis.upcomingRsvps.toLocaleString('en-NG')}</dd>
+          </div>
+          <div className={styles.kpi}>
+            <dt>Avg show-up rate</dt>
+            <dd>{percent(kpis.showUpRate)}</dd>
+          </div>
+          <div className={styles.kpi}>
+            <dt>Active stories</dt>
+            <dd>{kpis.activeStories}</dd>
+          </div>
+        </dl>
+      ) : null}
 
       {data.events.length === 0 ? (
         <div className={styles.emptyState}>
@@ -163,7 +165,7 @@ export function OrganizerDashboardView({
   );
 }
 
-function DashboardData({ slug }: { slug: string }) {
+function DashboardData({ slug, eventsOnly }: { slug: string; eventsOnly?: boolean }) {
   const query = useQuery({
     queryKey: ['organizer-dashboard', slug],
     queryFn: () => fetchOrganizerDashboard(slug),
@@ -171,9 +173,11 @@ function DashboardData({ slug }: { slug: string }) {
   if (!query.data) {
     return <ResourceState pending={query.isPending} error={query.error} retry={query.refetch} />;
   }
-  return <OrganizerDashboardView data={query.data} />;
+  return <OrganizerDashboardView data={query.data} eventsOnly={eventsOnly} />;
 }
 
-export function OrganizerDashboard({ slug }: { slug: string }) {
-  return <ClubGate slug={slug}>{() => <DashboardData slug={slug} />}</ClubGate>;
+export function OrganizerDashboard({ slug, eventsOnly }: { slug: string; eventsOnly?: boolean }) {
+  return (
+    <ClubGate slug={slug}>{() => <DashboardData slug={slug} eventsOnly={eventsOnly} />}</ClubGate>
+  );
 }

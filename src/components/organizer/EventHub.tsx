@@ -9,7 +9,7 @@ import { TextField, ToggleRow } from '@/components/ui/Field';
 import { ResourceState } from '@/components/attendee/Shared';
 import { downloadCsv } from '@/lib/csv';
 import { formatWatDateTime, type EventMatchFixture } from '@/lib/campus-data';
-import { groupEvents, TEMPLATE_LABELS } from '@/lib/organizer-data';
+import { groupEvents } from '@/lib/organizer-data';
 import {
   conversionRate,
   fetchEventAttendeesCsv,
@@ -167,9 +167,8 @@ export function EventHubView({
         <h1>{event.title}</h1>
         <div className={styles.eventMeta}>
           <CategoryPill category={event.category} />
-          <Badge variant="default">{TEMPLATE_LABELS[event.template].label}</Badge>
           {group === 'live' ? <Badge variant="live">Live today</Badge> : null}
-          {group === 'upcoming' ? <Badge variant="success">Published</Badge> : null}
+          {group === 'upcoming' ? <Badge variant="default">Published</Badge> : null}
           {isDraft ? <Badge variant="default">Draft</Badge> : null}
           {finished ? (
             <Badge variant="default">
@@ -177,8 +176,21 @@ export function EventHubView({
             </Badge>
           ) : null}
           {when ? <span>{when.compactLabel} WAT</span> : null}
-          {event.venueName ? <span>📍 {event.venueName}</span> : null}
+          {event.venueName ? <span>{event.venueName}</span> : null}
         </div>
+        {!isDraft ? (
+          <div className={styles.actions}>
+            {' '}
+            <Button
+              variant="secondary"
+              isLoading={exporting}
+              disabled={event.rsvpCount === 0}
+              onClick={exportCsv}
+            >
+              Export attendee CSV
+            </Button>
+          </div>
+        ) : null}
       </header>
 
       {isDraft ? (
@@ -229,16 +241,7 @@ export function EventHubView({
                 {exportError}
               </p>
             ) : null}
-            <div className={styles.actions}>
-              <Button
-                variant="secondary"
-                isLoading={exporting}
-                disabled={event.rsvpCount === 0}
-                onClick={exportCsv}
-              >
-                Export attendee CSV
-              </Button>
-            </div>
+            <div className={styles.actions}></div>
           </section>
 
           {event.ambassadors.length > 0 ? (

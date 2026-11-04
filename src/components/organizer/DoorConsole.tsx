@@ -268,62 +268,67 @@ function DoorDemo({
         ]}
         activeId={tab}
         onChange={setTab}
-      />
-      {result ? (
-        <div role="status" className={`${styles.result} ${styles[result.kind]}`}>
-          <strong>
-            {result.kind === 'valid'
-              ? 'DEMO VALID'
-              : result.kind === 'duplicate'
-                ? 'DUPLICATE'
-                : 'INVALID'}
-          </strong>
-          <p>{result.message}</p>
-        </div>
-      ) : null}
-      {error ? <p role="alert">{error}</p> : null}
-      {!pack ? (
-        <p>Sync the demo roster while online to use either check-in tab.</p>
-      ) : tab === 'qr' ? (
-        <section className={styles.panel} aria-label="QR scanner">
-          <Camera onCode={(code) => void scan(code)} />
-          <details>
-            <summary>Try a demo pass</summary>
-            <p>Sample pass for Demo Attendee 01. This is not a real ticket.</p>
-            {sampleQr ? (
-              // The locally generated data URL is not an optimizable remote image.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={sampleQr} alt="Sample demo QR code" />
-            ) : null}
-            <Button onClick={() => void scan(pack.sampleToken)}>Scan sample pass</Button>
-          </details>
-        </section>
-      ) : (
-        <section className={styles.panel} aria-label="Manual check-in">
-          <label htmlFor="door-search">Find an attendee</label>
-          <input
-            id="door-search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name"
-          />
-          <ul className={styles.list}>
-            {pack.roster
-              .filter((person) => person.name.toLowerCase().includes(query.trim().toLowerCase()))
-              .map((person) => (
-                <li key={person.id}>
-                  <span>
-                    {person.name}
-                    {person.checkedInAt ? ' · Checked in' : ''}
-                  </span>
-                  <Button onClick={() => void accept(person.id, 'MANUAL')}>
-                    Check in {person.name}
-                  </Button>
-                </li>
-              ))}
-          </ul>
-        </section>
-      )}
+      >
+        {result ? (
+          <div role="status" className={`${styles.result} ${styles[result.kind]}`}>
+            <strong>
+              {result.kind === 'valid'
+                ? 'DEMO VALID'
+                : result.kind === 'duplicate'
+                  ? 'DUPLICATE'
+                  : 'INVALID'}
+            </strong>
+            <p>{result.message}</p>
+          </div>
+        ) : null}
+        {error ? <p role="alert">{error}</p> : null}
+        {!pack ? (
+          <p>Sync the demo roster while online to use either check-in tab.</p>
+        ) : tab === 'qr' ? (
+          <section className={styles.panel} aria-label="QR scanner">
+            <Camera onCode={(code) => void scan(code)} />
+            <details>
+              <summary>Try a demo pass</summary>
+              <p>Sample pass for Demo Attendee 01. This is not a real ticket.</p>
+              {sampleQr ? (
+                // The locally generated data URL is not an optimizable remote image.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={sampleQr} alt="Sample demo QR code" />
+              ) : null}
+              <Button onClick={() => void scan(pack.sampleToken)}>Scan sample pass</Button>
+            </details>
+          </section>
+        ) : (
+          <section className={styles.panel} aria-label="Manual check-in">
+            <label htmlFor="door-search">Find an attendee</label>
+            <input
+              id="door-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by name"
+            />
+            <ul className={styles.list}>
+              {pack.roster
+                .filter((person) => person.name.toLowerCase().includes(query.trim().toLowerCase()))
+                .map((person) => (
+                  <li key={person.id}>
+                    <span>
+                      {person.name}
+                      {person.checkedInAt ? ' · Checked in' : ''}
+                    </span>
+                    <Button
+                      size="sm"
+                      aria-label={`Check in ${person.name}`}
+                      onClick={() => void accept(person.id, 'MANUAL')}
+                    >
+                      Check in
+                    </Button>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        )}
+      </Tabs>
     </div>
   );
 }

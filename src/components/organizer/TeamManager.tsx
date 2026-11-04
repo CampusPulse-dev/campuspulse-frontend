@@ -1,5 +1,7 @@
 'use client';
 
+import { UserMinus } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/Badge';
@@ -136,9 +138,7 @@ export function TeamManagerView({
                   {member.role === 'OWNER' ? ' (you)' : ''}
                 </h3>
                 <div className={styles.eventMeta}>
-                  <Badge variant={member.role === 'OWNER' ? 'verified' : 'default'}>
-                    {member.role === 'OWNER' ? 'Owner' : 'Manager'}
-                  </Badge>
+                  <Badge variant="default">{member.role === 'OWNER' ? 'Owner' : 'Manager'}</Badge>
                   {member.status === 'INVITED' ? <Badge variant="warning">Invited</Badge> : null}
                   {member.emailHint ? (
                     <span className={styles.mono}>{member.emailHint}</span>
@@ -147,7 +147,7 @@ export function TeamManagerView({
               </div>
               {member.role === 'MANAGER' ? (
                 <Button
-                  variant="ghost"
+                  variant="ghostDanger"
                   size="sm"
                   aria-label={`Remove ${member.displayName}`}
                   onClick={() => {
@@ -155,7 +155,7 @@ export function TeamManagerView({
                     setRemoving(member);
                   }}
                 >
-                  Remove
+                  <Icon icon={UserMinus} />
                 </Button>
               ) : null}
             </li>

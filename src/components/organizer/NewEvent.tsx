@@ -60,7 +60,7 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
             {!draftId ? (
               <button
                 type="button"
-                className={styles.linkButton}
+                className={`${styles.linkButton} ${styles.secondaryLink}`}
                 onClick={() => {
                   setSaved(null);
                   setRound((n) => n + 1);

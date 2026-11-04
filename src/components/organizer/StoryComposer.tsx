@@ -1,5 +1,8 @@
 'use client';
 
+import { Trash2 } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
+import { Modal } from '@/components/ui/Modal';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/Badge';
@@ -39,6 +42,8 @@ export function StoryComposerView({
   onPost: (draft: StoryDraft) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [caption, setCaption] = useState('');
   const [eventId, setEventId] = useState('');
   const [mediaType, setMediaType] = useState<StoryMediaType | null>(null);
@@ -96,9 +101,13 @@ export function StoryComposerView({
 
   async function remove(id: string) {
     try {
+      setDeleteBusy(true);
       await onDelete(id);
+      setDeleting(null);
     } catch (error) {
       setErrors([error instanceof Error ? error.message : 'Could not delete the story.']);
+    } finally {
+      setDeleteBusy(false);
     }
   }
 
@@ -204,18 +213,32 @@ export function StoryComposerView({
                   </div>
                 </div>
                 <Button
-                  variant="danger"
+                  variant="ghostDanger"
                   size="sm"
                   aria-label={`Delete story ${index + 1}`}
-                  onClick={() => remove(story.id)}
+                  onClick={() => setDeleting(story.id)}
                 >
-                  Delete
+                  <Icon icon={Trash2} />
                 </Button>
               </li>
             ))}
           </ul>
         )}
       </section>
+      <Modal
+        isOpen={!!deleting}
+        title="Delete story?"
+        subtitle="This removes it from your active stories."
+        onClose={() => setDeleting(null)}
+      >
+        <Button
+          variant="danger"
+          isLoading={deleteBusy}
+          onClick={() => deleting && void remove(deleting)}
+        >
+          Delete story
+        </Button>
+      </Modal>
     </div>
   );
 }

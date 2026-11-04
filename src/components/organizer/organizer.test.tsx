@@ -133,7 +133,7 @@ function pickTemplate(label: string) {
 
 function fillStepOne(category = 'SOCIAL_PARTY') {
   fireEvent.change(screen.getByLabelText('Category'), { target: { value: category } });
-  fireEvent.click(screen.getByRole('button', { name: 'Continue →' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 }
 
 function fillStepTwo() {
@@ -144,13 +144,13 @@ function fillStepTwo() {
   });
   fireEvent.change(screen.getByLabelText('Ends (WAT)'), { target: { value: '2026-11-20T23:00' } });
   fireEvent.change(screen.getByLabelText('Venue name'), { target: { value: 'SUB Field' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Continue →' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 }
 
 describe('EventWizard (S5-01)', () => {
   it('blocks step 1 until a category is chosen', async () => {
     renderWizard();
-    fireEvent.click(screen.getByRole('button', { name: 'Continue →' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await screen.findByText('Choose a category.')).toBeDefined();
     expect(screen.getByRole('heading', { name: /Template/ })).toBeDefined();
   });
