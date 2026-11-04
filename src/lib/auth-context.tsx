@@ -41,6 +41,8 @@ interface AuthContextValue {
   toggleInterested: (id: string) => Promise<boolean>;
   toggleFollowOrganizer: (id: string) => Promise<boolean>;
 }
+/** Fired when the cp_signed_in cookie flips; ServerViewSync refreshes the route. */
+export const SIGNED_IN_CHANGE_EVENT = 'cp-signed-in-change';
 const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
@@ -60,10 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setTicketAccount(next?.id ?? null);
       // Presentation hint only; API authorization still uses the real session.
+      // The server picks landing vs. feed (and the shell) from this cookie, so
+      // when it flips after render, ask the router to re-render server output.
+      const wasSignedIn = /(?:^|;\s*)cp_signed_in=1(?:;|$)/.test(document.cookie);
       document.cookie = next
         ? 'cp_signed_in=1; Path=/; SameSite=Lax; Max-Age=2592000' +
           (location.protocol === 'https:' ? '; Secure' : '')
         : 'cp_signed_in=; Path=/; SameSite=Lax; Max-Age=0';
+      if (wasSignedIn !== Boolean(next)) window.dispatchEvent(new Event(SIGNED_IN_CHANGE_EVENT));
       writeLocal('user', next);
       setUser(next);
       setAccessToken(token);

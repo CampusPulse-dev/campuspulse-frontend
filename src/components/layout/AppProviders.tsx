@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/lib/auth-context';
 import { ToastProvider } from '@/components/ui/Toast';
+import { ServerViewSync } from './ServerViewSync';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -31,6 +32,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <MotionConfig reducedMotion="user">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+          <ServerViewSync />
           <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
       </QueryClientProvider>
