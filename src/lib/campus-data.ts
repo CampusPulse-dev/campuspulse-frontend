@@ -381,6 +381,49 @@ export function filterSeedEvents(options?: {
   });
 }
 
+// WAT is a fixed UTC+1 with no daylight saving.
+const WAT_OFFSET_MS = 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+/** Events without an end time are treated as running for four hours. */
+const DEFAULT_DURATION_MS = 4 * HOUR_MS;
+
+interface TimedEvent {
+  startsAt: string;
+  endsAt?: string | null;
+}
+
+function hasEnded(event: TimedEvent, now: number): boolean {
+  const start = Date.parse(event.startsAt);
+  const end = event.endsAt ? Date.parse(event.endsAt) : start + DEFAULT_DURATION_MS;
+  return end <= now;
+}
+
+/**
+ * The end of "tonight": 06:00 WAT on the morning after the current WAT
+ * evening. Before 06:00 WAT we are still in last night, so it is 06:00 today.
+ */
+export function tonightEndsAt(now: number): number {
+  const watNow = new Date(now + WAT_OFFSET_MS);
+  const watMidnight = Date.UTC(watNow.getUTCFullYear(), watNow.getUTCMonth(), watNow.getUTCDate());
+  const sixAm = watMidnight + 6 * HOUR_MS;
+  const cutoffWat = watNow.getTime() < sixAm ? sixAm : sixAm + 24 * HOUR_MS;
+  return cutoffWat - WAT_OFFSET_MS;
+}
+
+export function weekEndsAt(now: number): number {
+  return now + 7 * 24 * HOUR_MS;
+}
+
+/** Still running or starting before 06:00 WAT tomorrow morning. */
+export function isTonight(event: TimedEvent, now: number): boolean {
+  return !hasEnded(event, now) && Date.parse(event.startsAt) < tonightEndsAt(now);
+}
+
+/** Still running or starting within the next seven days. */
+export function isThisWeek(event: TimedEvent, now: number): boolean {
+  return !hasEnded(event, now) && Date.parse(event.startsAt) < weekEndsAt(now);
+}
+
 export function formatWatDateTime(iso: string): {
   dateLabel: string;
   timeLabel: string;

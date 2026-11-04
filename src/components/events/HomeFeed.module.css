@@ -64,6 +64,18 @@
   background: var(--color-surface);
   color: var(--color-text);
 }
+.moodRow {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: thin;
+}
+.moodRow .catFilterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 .sectionHeaderInline {
   display: flex;
   align-items: center;
@@ -133,7 +145,7 @@
   color: var(--color-hero-text);
 }
 .posterFallback strong {
-  font: 600 clamp(22px, 2.5vw, 34px)/1.04 var(--font-display);
+  font: 400 clamp(22px, 2.5vw, 34px)/1.04 var(--font-display);
   max-width: 16ch;
 }
 .posterFallback > span {
@@ -193,7 +205,7 @@
   color: var(--color-text);
 }
 .cardTitle {
-  font: 600 20px/1.25 var(--font-display);
+  font: 400 20px/1.25 var(--font-display);
   margin: 0 0 var(--space-2);
   overflow-wrap: anywhere;
 }

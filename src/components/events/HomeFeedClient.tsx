@@ -7,9 +7,28 @@ import { StoriesTray } from '@/components/stories/StoriesTray';
 import { EventCard } from './EventCard';
 import { fetchEventFeed, type EventCategory } from '@/lib/api';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { type EnrichedEvent, type EnrichedStory } from '@/lib/campus-data';
+import { Coffee, PartyPopper, Lightbulb, Trophy, type LucideIcon } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
+import {
+  isThisWeek,
+  isTonight,
+  tonightEndsAt,
+  weekEndsAt,
+  type EnrichedEvent,
+  type EnrichedStory,
+  type TonightMood,
+} from '@/lib/campus-data';
 import { useAuth } from '@/lib/auth-context';
 import styles from './HomeFeed.module.css';
+
+const MOOD_CHIPS: { id: TonightMood; label: string; icon: LucideIcon }[] = [
+  { id: 'CHILL', label: 'Chill', icon: Coffee },
+  { id: 'TURN_UP', label: 'Turn up', icon: PartyPopper },
+  { id: 'LEARN', label: 'Learn', icon: Lightbulb },
+  { id: 'WATCH_GAME', label: 'Watch the game', icon: Trophy },
+];
+/** Extra pages to pull in looking for matches before showing the empty state. */
+const MAX_FILTER_PAGES = 5;
 
 const CATEGORIES: (EventCategory | 'ALL')[] = [
   'ALL',
@@ -42,7 +61,12 @@ export function HomeFeedClient({
     return () => clearInterval(timer);
   }, []);
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | 'ALL'>('ALL');
-  const [period, setPeriod] = useState('All');
+  const [period, setPeriodState] = useState('All');
+  const [selectedMood, setSelectedMood] = useState<TonightMood | null>(null);
+  function setPeriod(value: string) {
+    setPeriodState(value);
+    if (value !== 'Tonight') setSelectedMood(null);
+  }
 
   const pages = useInfiniteQuery({
     queryKey: ['feed', selectedCategory],
@@ -80,13 +104,33 @@ export function HomeFeedClient({
       if (selectedCategory !== 'ALL' && event.category !== selectedCategory) {
         return false;
       }
-      const start = Date.parse(event.startsAt);
-      if (period === 'Tonight' && (start < now || start > now + 6 * 60 * 60 * 1000)) return false;
-      if (period === 'This week' && (start < now || start > now + 7 * 24 * 60 * 60 * 1000))
-        return false;
+      if (period === 'Tonight' && !isTonight(event, now)) return false;
+      if (period === 'This week' && !isThisWeek(event, now)) return false;
+      if (selectedMood && event.tonightMood !== selectedMood) return false;
       return true;
     });
-  }, [events, selectedCategory, period, now]);
+  }, [events, selectedCategory, period, selectedMood, now]);
+
+  // Date and mood filters run client-side over a chronological, paginated feed,
+  // so keep pulling pages until the window is covered before declaring "empty".
+  const windowEnd =
+    period === 'Tonight' ? tonightEndsAt(now) : period === 'This week' ? weekEndsAt(now) : null;
+  const lastLoadedStart = events.length ? Date.parse(events[events.length - 1]!.startsAt) : null;
+  const pagesLoaded = pages.data?.pages.length ?? 0;
+  // The extra-page budget restarts whenever the filter changes (adjusting state
+  // during render, per React's "you might not need an effect").
+  const filterKey = [period, selectedMood, selectedCategory].join('|');
+  const [budget, setBudget] = useState({ key: filterKey, base: pagesLoaded });
+  if (budget.key !== filterKey) setBudget({ key: filterKey, base: pagesLoaded });
+  const filterBasePages = budget.key === filterKey ? budget.base : pagesLoaded;
+  const filtering = windowEnd !== null || selectedMood !== null;
+  const windowCovered =
+    !filtering || (windowEnd !== null && lastLoadedStart !== null && lastLoadedStart >= windowEnd);
+  const seekingMatches =
+    filtering && !windowCovered && hasNextPage && pagesLoaded - filterBasePages < MAX_FILTER_PAGES;
+  useEffect(() => {
+    if (seekingMatches && !isFetchingNextPage) void fetchNextPage();
+  }, [seekingMatches, isFetchingNextPage, fetchNextPage]);
 
   const forYouEvents = useMemo(() => {
     return [...events]
@@ -103,9 +147,9 @@ export function HomeFeedClient({
     setPeriod('All');
   }
 
-  const showRecommendations = Boolean(
-    user && selectedCategory === 'ALL' && period === 'All' && forYouEvents.length,
-  );
+  const filtersActive = selectedCategory !== 'ALL' || period !== 'All' || selectedMood !== null;
+
+  const showRecommendations = Boolean(user && !filtersActive && forYouEvents.length);
   const listEvents = showRecommendations
     ? filteredEvents.filter(
         (event) => !forYouEvents.some((recommended) => recommended.id === event.id),
@@ -155,6 +199,25 @@ export function HomeFeedClient({
             </button>
           ))}
         </nav>
+        {period === 'Tonight' ? (
+          <div className={styles.moodRow} role="group" aria-label="Tonight's mood">
+            {MOOD_CHIPS.map((mood) => (
+              <button
+                key={mood.id}
+                type="button"
+                aria-pressed={selectedMood === mood.id}
+                className={[
+                  styles.catFilterBtn,
+                  selectedMood === mood.id ? styles.catFilterActive : '',
+                ].join(' ')}
+                onClick={() => setSelectedMood(selectedMood === mood.id ? null : mood.id)}
+              >
+                <Icon icon={mood.icon} size={16} />
+                {mood.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       {/* 5. "For You" Horizontal Row (when unfiltered) */}
       {showRecommendations ? (
@@ -176,7 +239,7 @@ export function HomeFeedClient({
       <section className={styles.primaryFeedSection} aria-label="Upcoming Campus Events">
         <div className={styles.sectionHeaderInline}>
           <h2 className={styles.sectionTitle}>Upcoming events</h2>
-          {selectedCategory !== 'ALL' || period !== 'All' ? (
+          {filtersActive ? (
             <button type="button" className={styles.inlineResetLink} onClick={handleResetFilters}>
               Clear filters
             </button>
@@ -190,6 +253,8 @@ export function HomeFeedClient({
             <p>Could not load events. Please retry.</p>
             <Button onClick={() => void pages.refetch()}>Retry</Button>
           </div>
+        ) : listEvents.length === 0 && (seekingMatches || isFetchingNextPage) ? (
+          <p role="status">Loading more events…</p>
         ) : listEvents.length === 0 && !showRecommendations ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>
