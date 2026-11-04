@@ -4,7 +4,7 @@ import React, { useId } from 'react';
 import styles from './Field.module.css';
 
 interface FieldShellProps {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
   error?: string | null;
 }
@@ -42,7 +42,7 @@ function Shell({
 }
 
 export type TextFieldProps = FieldShellProps &
-  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'id'>;
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'id'> & { ref?: React.Ref<HTMLInputElement> };
 
 export function TextField({ label, hint, error, className = '', ...props }: TextFieldProps) {
   const id = useId();
@@ -106,31 +106,36 @@ export function SelectField({
 }
 
 export interface ToggleRowProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'id'> {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
 }
 
 export function ToggleRow({ label, hint, className = '', ...props }: ToggleRowProps) {
   const id = useId();
   return (
-    <div className={styles.toggleRow}>
-      <input
-        id={id}
-        type="checkbox"
-        className={`${styles.checkbox} ${className}`}
-        aria-describedby={hint ? `${id}-hint` : undefined}
-        {...props}
-      />
-      <div>
-        <label htmlFor={id} className={styles.toggleLabel}>
+    <label className={styles.toggleRow} htmlFor={id}>
+      <span className={styles.toggleCopy}>
+        <span id={id + '-label'} className={styles.toggleLabel}>
           {label}
-        </label>
+        </span>
         {hint ? (
-          <p id={`${id}-hint`} className={styles.hint}>
+          <span id={id + '-hint'} className={styles.hint}>
             {hint}
-          </p>
+          </span>
         ) : null}
-      </div>
-    </div>
+      </span>
+      <span className={styles.switchControl}>
+        <input
+          id={id}
+          type="checkbox"
+          role="switch"
+          aria-labelledby={id + '-label'}
+          className={styles.switchInput + ' ' + className}
+          aria-describedby={hint ? id + '-hint' : undefined}
+          {...props}
+        />
+        <span className={styles.switchTrack} aria-hidden="true" />
+      </span>
+    </label>
   );
 }

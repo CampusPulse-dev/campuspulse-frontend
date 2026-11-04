@@ -1,4 +1,6 @@
 'use client';
+import { X } from 'lucide-react';
+import { Icon } from './Icon';
 import { useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { bottomSheetVariants, modalBackdropVariants } from '@/lib/motion';
@@ -51,7 +53,7 @@ export function Modal({ isOpen, title, subtitle, onClose, children }: ModalProps
                 onClick={onClose}
                 aria-label="Close modal"
               >
-                ✕
+                <Icon icon={X} />
               </button>
             </div>
             <div className={styles.body}>{children}</div>

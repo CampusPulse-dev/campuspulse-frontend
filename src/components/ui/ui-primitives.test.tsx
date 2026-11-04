@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Button } from './Button';
 import { Badge, CategoryPill } from './Badge';
@@ -92,4 +92,31 @@ describe('UI Primitives (S4-01)', () => {
     pastTab.click();
     expect(onChange).toHaveBeenCalledWith('past');
   });
+});
+
+it('connects arrow-key tabs to their real panel', () => {
+  const change = vi.fn();
+  const view = render(
+    <Tabs
+      tabs={[
+        { id: 'qr', label: 'QR Scanner' },
+        { id: 'manual', label: 'Manual Check-In' },
+      ]}
+      activeId="qr"
+      onChange={change}
+    >
+      <p>Scanner content</p>
+    </Tabs>,
+  );
+  const qr = view.getByRole('tab', { name: 'QR Scanner' });
+  const manual = view.getByRole('tab', { name: 'Manual Check-In' });
+  expect(qr.getAttribute('aria-controls')).toBe(view.getByRole('tabpanel').id);
+  qr.focus();
+  fireEvent.keyDown(qr, { key: 'ArrowRight' });
+  expect(change).toHaveBeenCalledWith('manual');
+  expect(document.activeElement).toBe(manual);
+  fireEvent.keyDown(manual, { key: 'Home' });
+  expect(document.activeElement).toBe(qr);
+  fireEvent.keyDown(qr, { key: 'End' });
+  expect(document.activeElement).toBe(manual);
 });

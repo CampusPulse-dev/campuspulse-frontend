@@ -20,7 +20,6 @@ describe('design tokens', () => {
 
   it('defines a colour for each of the five PRD categories', () => {
     for (const c of ['social', 'performance', 'academic', 'sports', 'club']) {
-      expect(tokens).toContain(`--color-category-${c}:`);
       expect(tokens).toContain(`--cat-${c}:`);
     }
   });

@@ -5,7 +5,8 @@ import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion';
 import { springSnappy } from '@/lib/motion';
 import styles from './Button.module.css';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'ghost' | 'danger';
+export type ButtonVariant =
+  'primary' | 'secondary' | 'accent' | 'ghost' | 'danger' | 'text' | 'ghostDanger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
@@ -46,7 +47,6 @@ export function Button({
       className={classes}
       disabled={isDisabled}
       aria-busy={isLoading ? 'true' : undefined}
-      whileHover={!isDisabled && !shouldReduceMotion ? { scale: 1.015 } : undefined}
       whileTap={!isDisabled && !shouldReduceMotion ? { scale: 0.97 } : undefined}
       transition={springSnappy}
       {...props}

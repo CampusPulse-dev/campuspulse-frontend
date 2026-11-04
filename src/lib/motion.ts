@@ -30,12 +30,12 @@ export const fadeInUp: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: springGentle,
+    transition: { duration: 0.2, ease: [0.2, 0, 0, 1] },
   },
   exit: {
     opacity: 0,
     y: -8,
-    transition: { duration: 0.16, ease: 'easeOut' },
+    transition: { duration: 0.16, ease: [0.2, 0, 0, 1] },
   },
 };
 
@@ -62,12 +62,12 @@ export const bottomSheetVariants: Variants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: springSnappy,
+    transition: { duration: 0.22, ease: [0.2, 0, 0, 1] },
   },
   exit: {
     opacity: 0,
     y: 28,
     scale: 0.98,
-    transition: { duration: 0.16, ease: 'easeIn' },
+    transition: { duration: 0.16, ease: [0.2, 0, 0, 1] },
   },
 };

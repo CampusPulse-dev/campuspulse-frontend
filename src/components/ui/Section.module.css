@@ -1,0 +1,11 @@
+.section {
+  padding-block: var(--space-4);
+}
+.section h2 {
+  font: var(--type-title);
+  margin-bottom: var(--space-3);
+}
+.description {
+  color: var(--color-text-muted);
+  font: var(--type-meta);
+}

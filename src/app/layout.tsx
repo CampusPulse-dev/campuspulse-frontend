@@ -1,3 +1,4 @@
+import localFont from 'next/font/local';
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { AppProviders } from '@/components/layout/AppProviders';
@@ -19,24 +20,11 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
 });
 
-/*
- * Goodly is the brand display face. It is commercial, so the file is not
- * in the repo. To enable it:
- *
- *   1. drop Goodly.woff2 into src/app/fonts/
- *   2. uncomment the block below and add `goodly.variable` to the
- *      className on <html>
- *
- * Until then --font-goodly stays undefined and --font-display falls back
- * to Inter, which is why tokens.css uses a nested var() fallback.
- *
- * import localFont from 'next/font/local';
- * const goodly = localFont({
- *   src: './fonts/Goodly.woff2',
- *   display: 'swap',
- *   variable: '--font-goodly',
- * });
- */
+const goodly = localFont({
+  src: './fonts/GoodlyRegular.woff2',
+  display: 'swap',
+  variable: '--font-goodly',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://campuspulse.ng'),
@@ -61,7 +49,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${goodly.variable}`}>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>

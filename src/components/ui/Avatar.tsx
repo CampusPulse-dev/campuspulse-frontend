@@ -1,4 +1,6 @@
 import React from 'react';
+import { Check } from 'lucide-react';
+import { Icon } from './Icon';
 import styles from './Avatar.module.css';
 
 export interface AvatarProps {
@@ -47,7 +49,7 @@ export function Avatar({
       </span>
       {isVerified ? (
         <span className={styles.verifiedBadge} aria-label="Verified" title="Verified">
-          ✓
+          <Icon icon={Check} size={14} />
         </span>
       ) : null}
     </span>
