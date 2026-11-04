@@ -17,7 +17,8 @@ import { BrandLockup } from '@/components/ui/BrandLockup';
 import { PulseLine } from '@/components/ui/PulseLine';
 import { ListRow } from '@/components/ui/ListRow';
 import { EventCard } from '@/components/events/EventCard';
-import type { EnrichedEvent } from '@/lib/campus-data';
+import { isTonight, type EnrichedEvent } from '@/lib/campus-data';
+import { isOptimizableImage } from '@/lib/media';
 import { SiteFooter } from './SiteFooter';
 import styles from './Landing.module.css';
 
@@ -30,12 +31,8 @@ export function Landing({
   error?: boolean;
   now?: Date;
 }) {
-  const posters = events.filter((event) => event.coverImageUrl);
-  const tonight = events.filter(
-    (event) =>
-      Date.parse(event.startsAt) >= now.getTime() &&
-      Date.parse(event.startsAt) <= now.getTime() + 6 * 60 * 60 * 1000,
-  );
+  const posters = events.filter((event) => event.coverImageUrl).slice(0, 6);
+  const tonight = events.filter((event) => isTonight(event, now.getTime()));
   const featured = (tonight.length ? tonight : events).slice(0, 4);
   return (
     <div className={styles.landing}>
@@ -68,7 +65,9 @@ export function Landing({
                   alt=""
                   width={360}
                   height={480}
-                  unoptimized
+                  sizes="180px"
+                  loading="lazy"
+                  unoptimized={!isOptimizableImage(event.coverImageUrl!)}
                 />
               ))}
             </div>

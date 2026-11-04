@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { mediaHosts } from './src/lib/media';
 
 const config: NextConfig = {
   reactStrictMode: true,
@@ -9,6 +10,8 @@ const config: NextConfig = {
 
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Only allowlisted media hosts are optimized; see src/lib/media.ts.
+    remotePatterns: mediaHosts().map((hostname) => ({ protocol: 'https' as const, hostname })),
   },
 
   async headers() {

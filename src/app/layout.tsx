@@ -22,6 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 const goodly = localFont({
   src: './fonts/GoodlyRegular.woff2',
+  weight: '400',
   display: 'swap',
   variable: '--font-goodly',
 });

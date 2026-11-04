@@ -23,7 +23,7 @@
   align-items: center;
   gap: var(--space-4);
   color: inherit;
-  font: 600 22px var(--font-display);
+  font: 400 22px var(--font-display);
   text-decoration: none;
 }
 .navAnchors,
@@ -85,7 +85,7 @@
 }
 .hero h1 {
   max-width: 20ch;
-  font: 700 clamp(42px, 5.8vw, 80px)/1.04 var(--font-display);
+  font: 400 clamp(42px, 5.8vw, 80px)/1.04 var(--font-display);
   letter-spacing: -0.035em;
   margin-bottom: var(--space-5);
   text-wrap: balance;
@@ -155,7 +155,7 @@
   scroll-margin-top: var(--space-5);
 }
 .section h2 {
-  font: 600 clamp(30px, 3.4vw, 46px)/1.1 var(--font-display);
+  font: 400 clamp(30px, 3.4vw, 46px)/1.1 var(--font-display);
   letter-spacing: -0.025em;
   text-wrap: balance;
 }
@@ -344,7 +344,7 @@
   color: var(--color-hero-text);
 }
 .footerWordmark {
-  font: 600 clamp(42px, 10.7vw, 150px)/1.1 var(--font-display);
+  font: 400 clamp(42px, 10.7vw, 150px)/1.1 var(--font-display);
   letter-spacing: -0.04em;
   padding-bottom: var(--space-7);
   border-bottom: 1px solid color-mix(in srgb, var(--color-hero-text) 16%, transparent);
