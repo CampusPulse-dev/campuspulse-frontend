@@ -73,7 +73,7 @@ export async function clearTicketAccount() {
   }
   if (typeof caches !== 'undefined') {
     for (const key of await caches.keys())
-      if (key.startsWith('cp-wallet')) await caches.delete(key);
+      if (key.startsWith('cp-wallet') || key.startsWith('cp-door')) await caches.delete(key);
   }
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('cp_my_tickets_mirror_v1');

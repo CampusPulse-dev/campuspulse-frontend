@@ -51,6 +51,8 @@ function SettingsForm() {
               {user?.isVerifiedStudent ? 'Student verified ✓' : 'Verify student status →'}
             </Link>
             <Link href="/onboarding?next=/settings">Edit your persona →</Link>
+            <Link href="/settings/creator">Creator dashboard →</Link>
+            <Link href="/organizer/apply">Apply for a club →</Link>
           </div>
         </form>
       </section>

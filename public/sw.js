@@ -9,8 +9,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   const wallet =
     event.request.mode === 'navigate' && /^\/tickets(?:\/[^/]+)?\/?$/.test(url.pathname);
+  const door =
+    event.request.mode === 'navigate' && /^\/organizer\/door\/[^/]+\/?$/.test(url.pathname);
   const asset = url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/brand/');
-  if (!wallet && !asset) return;
+  if (!wallet && !door && !asset) return;
   event.respondWith(
     (async () => {
       try {
@@ -21,7 +23,7 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       } catch {
-        const cached = await caches.match(wallet ? url.pathname : event.request);
+        const cached = await caches.match(wallet || door ? url.pathname : event.request);
         return (
           cached ||
           new Response('Open your ticket online once to save it for offline access.', {
