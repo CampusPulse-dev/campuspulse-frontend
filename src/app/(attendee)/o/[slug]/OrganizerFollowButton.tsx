@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/components/ui/Toast';
 import styles from './OrganizerProfile.module.css';
+import { Check } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 
 export function OrganizerFollowButton({
   organizerId,
@@ -39,7 +41,14 @@ export function OrganizerFollowButton({
         {(initialFollowerCount + delta).toLocaleString()} followers
       </span>
       <Button variant={isFollowing ? 'secondary' : 'primary'} size="sm" onClick={handleClick}>
-        {isFollowing ? '✓ Following' : '+ Follow Club'}
+        {isFollowing ? (
+          <>
+            <Icon icon={Check} size={16} />
+            Following
+          </>
+        ) : (
+          'Follow club'
+        )}
       </Button>
     </div>
   );

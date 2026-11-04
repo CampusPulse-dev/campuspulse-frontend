@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, MapPin, Ticket, Shirt, Bookmark, Share2 } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
+import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import { VerifiedMark } from '@/components/ui/VerifiedMark';
 import { ListRow } from '@/components/ui/ListRow';
 import { Section } from '@/components/ui/Section';
@@ -143,9 +144,9 @@ export function EventDetailView({
   async function handleToggleInterested() {
     try {
       const added = await toggleInterested(event.id);
-      pushToast(added ? 'Saved to Interested.' : 'Removed from Interested.', 'info');
+      pushToast(added ? 'Saved. Find it under Tickets → Saved.' : 'Removed from Saved.', 'info');
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Unable to save interest.');
+      setActionError(e instanceof Error ? e.message : 'Unable to save event.');
     }
   }
 
@@ -237,7 +238,7 @@ export function EventDetailView({
         {event.template === 'MATCH_TOURNAMENT' && event.fixture ? (
           <section className={styles.scoreboardCard} aria-label="Live Match Scoreboard">
             <div className={styles.scoreboardTop}>
-              <Badge variant="live">{event.fixture.periodLabel}</Badge>
+              <LiveIndicator label={event.fixture.periodLabel} />
               <span className={styles.scoreboardVenue}>{event.venueName}</span>
             </div>
             <div className={styles.scoreboardTeams}>

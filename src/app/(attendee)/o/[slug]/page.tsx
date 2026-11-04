@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchOrganizerBySlug } from '@/lib/api';
 import { Avatar } from '@/components/ui/Avatar';
-import { Badge, CategoryPill } from '@/components/ui/Badge';
+import { VerifiedMark } from '@/components/ui/VerifiedMark';
+import { CategoryPill } from '@/components/ui/Badge';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { OrganizerFollowButton } from './OrganizerFollowButton';
 import styles from './OrganizerProfile.module.css';
@@ -36,12 +37,7 @@ export default async function PublicOrganizerPage({ params }: OrganizerPageProps
     <div className={styles.page}>
       <section className={styles.heroCard}>
         <div className={styles.topRow}>
-          <Avatar
-            name={organizer.name}
-            src={organizer.logoUrl}
-            size="lg"
-            isVerified={organizer.isVerified}
-          />
+          <Avatar name={organizer.name} src={organizer.logoUrl} size="lg" />
           <OrganizerFollowButton
             organizerId={organizer.id}
             initialFollowerCount={organizer.followerCount}
@@ -51,7 +47,7 @@ export default async function PublicOrganizerPage({ params }: OrganizerPageProps
         <div className={styles.titleBlock}>
           <div className={styles.nameRow}>
             <h1 className={styles.clubName}>{organizer.name}</h1>
-            {organizer.isVerified ? <Badge variant="verified">Verified UI Club</Badge> : null}
+            {organizer.isVerified ? <VerifiedMark size={22} /> : null}
           </div>
           {organizer.bio ? <p className={styles.bio}>{organizer.bio}</p> : null}
         </div>

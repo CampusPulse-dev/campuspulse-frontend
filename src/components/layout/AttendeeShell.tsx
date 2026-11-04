@@ -66,10 +66,10 @@ export function AttendeeShell({
               <Icon icon={item.icon} />
               <span className={styles.navText}>{item.label}</span>
               {item.href === '/notifications' && unreadNotificationsCount > 0 ? (
-                <span
-                  className={styles.unreadDot}
-                  aria-label={unreadNotificationsCount + ' unread alerts'}
-                />
+                <>
+                  <span className={styles.unreadDot} aria-hidden="true" />
+                  <span className={styles.visuallyHidden}>, {unreadNotificationsCount} unread</span>
+                </>
               ) : null}
             </Link>
           ))}
@@ -151,10 +151,13 @@ export function AttendeeShell({
               <span className={styles.bottomNavIcon}>
                 <Icon icon={item.icon} strokeWidth={active(item.href) ? 2.25 : 1.75} />
                 {item.href === '/notifications' && unreadNotificationsCount > 0 ? (
-                  <span className={styles.bottomUnreadDot} />
+                  <span className={styles.bottomUnreadDot} aria-hidden="true" />
                 ) : null}
               </span>
               <span className={styles.bottomNavLabel}>{item.label}</span>
+              {item.href === '/notifications' && unreadNotificationsCount > 0 ? (
+                <span className={styles.visuallyHidden}>, {unreadNotificationsCount} unread</span>
+              ) : null}
             </Link>
           ))}
         </nav>

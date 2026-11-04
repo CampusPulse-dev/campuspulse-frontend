@@ -41,7 +41,7 @@ test('demo RSVP produces a labelled QR pass that survives a full offline reload'
     await expect(page.getByRole('img', { name: 'Event entry QR code' })).toBeVisible();
     await expect(page.getByText('DEMO PASS · Not valid for entry')).toBeVisible();
     await page.screenshot({ path: test.info().outputPath('wallet.png'), fullPage: true });
-    await expect(page.getByText('Ready for offline access on this device ✓')).toBeVisible({
+    await expect(page.getByText('Available offline on this device')).toBeVisible({
       timeout: 30000,
     });
     if (proxy) proxy.block();

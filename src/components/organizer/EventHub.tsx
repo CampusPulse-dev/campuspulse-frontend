@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import { Badge, CategoryPill } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { TextField, ToggleRow } from '@/components/ui/Field';
@@ -167,7 +168,7 @@ export function EventHubView({
         <h1>{event.title}</h1>
         <div className={styles.eventMeta}>
           <CategoryPill category={event.category} />
-          {group === 'live' ? <Badge variant="live">Live today</Badge> : null}
+          {group === 'live' ? <LiveIndicator label="Live today" /> : null}
           {group === 'upcoming' ? <Badge variant="default">Published</Badge> : null}
           {isDraft ? <Badge variant="default">Draft</Badge> : null}
           {finished ? (

@@ -33,7 +33,7 @@ function Clubs() {
                 <h2 className={styles.eventTitle}>{organizer.name}</h2>
                 <div className={styles.eventMeta}>
                   <span>{role === 'OWNER' ? 'Owner' : 'Manager'}</span>
-                  <Badge variant={verification.status === 'VERIFIED' ? 'verified' : 'warning'}>
+                  <Badge variant={verification.status === 'VERIFIED' ? 'success' : 'warning'}>
                     {verification.status === 'VERIFIED' ? 'Verified' : 'Awaiting verification'}
                   </Badge>
                 </div>

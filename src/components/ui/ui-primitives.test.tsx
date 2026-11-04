@@ -43,8 +43,8 @@ describe('UI Primitives (S4-01)', () => {
   });
 
   it('renders Badge semantic variants', () => {
-    const { getByText } = render(<Badge variant="verified">Verified Club</Badge>);
-    expect(getByText('Verified Club')).toBeDefined();
+    const { getByText } = render(<Badge variant="success">Published</Badge>);
+    expect(getByText('Published')).toBeDefined();
   });
 
   it('renders Avatar fallback initials and FriendAvatarStack mutual summary', () => {

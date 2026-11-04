@@ -9,6 +9,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { EventCard } from '@/components/events/EventCard';
 import { PageFrame, styles } from './Shared';
+import { Check } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 export function Creator({ creator }: { creator: Schemas['CreatorPublic'] }) {
   const { user, accessToken } = useAuth();
   const client = useQueryClient();
@@ -56,7 +58,14 @@ export function Creator({ creator }: { creator: Schemas['CreatorPublic'] }) {
         <div className={styles.spread}>
           <span>{creator.followerCount + (following ? 1 : 0)} followers</span>
           <Button onClick={follow} variant={following ? 'secondary' : 'primary'}>
-            {following ? 'Following ✓' : 'Follow creator'}
+            {following ? (
+              <>
+                <Icon icon={Check} size={16} />
+                Following
+              </>
+            ) : (
+              'Follow creator'
+            )}
           </Button>
         </div>
         {message ? <p role="status">{message}</p> : null}

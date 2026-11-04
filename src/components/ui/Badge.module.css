@@ -31,21 +31,6 @@
   color: var(--color-text);
 }
 
-.verified {
-  background: var(--status-success-bg);
-  color: var(--color-text);
-  border-radius: var(--radius-full);
-  padding: 2px var(--space-2);
-}
-
-.live {
-  background: var(--status-success);
-  color: var(--cp-ink);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
 .categoryPill {
   display: inline-flex;
   align-items: center;
@@ -99,29 +84,12 @@ button.categoryPill {
   color: var(--status-success);
   vertical-align: middle;
 }
-.live {
-  background: transparent;
+
+.liveIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-text);
   font: var(--type-label);
-}
-.live::before {
-  content: '';
-  display: block;
-  width: 22px;
-  height: 12px;
-  background: var(--status-success);
-  clip-path: polygon(
-    0 45%,
-    25% 45%,
-    40% 0,
-    60% 100%,
-    75% 55%,
-    100% 55%,
-    100% 70%,
-    70% 70%,
-    60% 80%,
-    40% 25%,
-    30% 60%,
-    0 60%
-  );
+  white-space: nowrap;
 }

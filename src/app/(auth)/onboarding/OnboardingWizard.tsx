@@ -8,6 +8,8 @@ import { fadeInUp, springBouncy } from '@/lib/motion';
 import { SEED_ORGANIZERS, UI_FACULTIES, UI_HALLS, VIBE_OPTIONS } from '@/lib/campus-data';
 import type { OutingRhythm, PersonaProfile } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
+import { Check } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 
 export interface PersonaBadgeInfo {
   title: 'Night Owl' | 'Culture Vulture' | 'First-Row Fan' | 'Campus Connector';
@@ -246,7 +248,10 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                       onClick={() => toggleClub(org.id)}
                     >
                       <span>{org.name}</span>
-                      <span>{following ? '✓ Following' : '+ Follow'}</span>
+                      <span className={styles.followState}>
+                        {following ? <Icon icon={Check} size={16} /> : null}
+                        {following ? 'Following' : 'Follow'}
+                      </span>
                     </button>
                   );
                 })}

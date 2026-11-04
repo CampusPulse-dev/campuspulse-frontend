@@ -313,3 +313,9 @@
   align-items: center;
   min-height: 44px;
 }
+
+.followState {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}

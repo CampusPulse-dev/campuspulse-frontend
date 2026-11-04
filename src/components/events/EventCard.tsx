@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Bookmark, Check } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
+import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import { EventPoster } from './EventPoster';
 import { Button } from '@/components/ui/Button';
 import { Badge, CategoryPill } from '@/components/ui/Badge';
@@ -75,7 +76,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     try {
       await toggleInterested(event.id);
     } catch (e) {
-      pushToast(e instanceof Error ? e.message : 'Unable to save interest.', 'warning');
+      pushToast(e instanceof Error ? e.message : 'Unable to save event.', 'warning');
     }
   }
 
@@ -113,7 +114,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
           type="button"
           className={styles.starBtn}
           aria-pressed={isInterested}
-          aria-label="Interested"
+          aria-label="Save event"
           onClick={interest}
         >
           <Icon icon={Bookmark} fill={isInterested ? 'currentColor' : 'none'} />
@@ -125,7 +126,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
             <h3 className={styles.cardTitle}>{event.title}</h3>
           </Link>
           {status === 'live' ? (
-            <Badge variant="live">Live</Badge>
+            <LiveIndicator />
           ) : status === 'capacity' ? (
             <Badge variant="warning">Filling fast</Badge>
           ) : status === 'students' ? (

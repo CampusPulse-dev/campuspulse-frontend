@@ -10,7 +10,8 @@ import { DEMO_MODE } from '@/lib/mode';
 import { enrichEventPublic, fetchEventFeed } from '@/lib/api';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { prepareWalletRoute } from '@/lib/wallet-cache';
-import { Ticket, CalendarDays, MapPin, UserRound } from 'lucide-react';
+import { Ticket, CalendarDays, MapPin, UserRound, Check } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 import { PulseLine } from '@/components/ui/PulseLine';
 import { ListRow } from '@/components/ui/ListRow';
 import { Badge } from '@/components/ui/Badge';
@@ -60,7 +61,7 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
   });
   const interests = useQuery({
     queryKey: ['interested-events', user?.id, interestedEventIds],
-    enabled: !!user && tab === 'Interested',
+    enabled: !!user && tab === 'Saved',
     queryFn: async () => {
       const feed = await fetchEventFeed();
       const all = [...feed.items];
@@ -145,9 +146,13 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
           </div>
         ) : (
           <p role="status" className={styles.muted}>
-            {offlineReady
-              ? 'Ready for offline access on this device ✓'
-              : 'Your saved tickets are stored on this device.'}
+            {offlineReady ? (
+              <>
+                <Icon icon={Check} size={16} /> Available offline on this device
+              </>
+            ) : (
+              'Your saved tickets are stored on this device.'
+            )}
           </p>
         )}
         {rsvpId ? (
@@ -209,11 +214,11 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
         ) : (
           <>
             <Tabs
-              tabs={['Upcoming', 'Interested', 'Past'].map((id) => ({ id, label: id }))}
+              tabs={['Upcoming', 'Saved', 'Past'].map((id) => ({ id, label: id }))}
               activeId={tab}
               onChange={setTab}
             >
-              {tab === 'Interested' ? (
+              {tab === 'Saved' ? (
                 <>
                   <ResourceState
                     pending={interests.isPending}
@@ -224,7 +229,7 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
                     <EventCard key={e.id} event={e} />
                   ))}
                   {interests.data?.length === 0 ? (
-                    <p>No saved interests yet. Tap Interested on an event.</p>
+                    <p>Nothing saved yet. Tap the bookmark on any event to keep it here.</p>
                   ) : null}
                 </>
               ) : (
