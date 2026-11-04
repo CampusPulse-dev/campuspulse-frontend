@@ -120,7 +120,7 @@ export async function fetchCreator(handle: string): Promise<Schemas['CreatorPubl
     handle,
     displayName: 'Bisola',
     bio: 'Your next great night at UI. Music, culture, and campus connections.',
-    avatarUrl: null,
+    avatarUrl: '/demo/avatars/bisola.webp',
     isVerified: true,
     followerCount: 1420,
     events: SEED_EVENTS.slice(0, 2),

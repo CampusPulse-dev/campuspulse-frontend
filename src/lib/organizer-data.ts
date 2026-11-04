@@ -284,7 +284,7 @@ const FILM_SOCIETY: OrganizerPublic = {
   slug: 'ui-film-society',
   name: 'UI Film Society',
   bio: 'Screenings, shorts nights and filmmaker Q&As on campus.',
-  logoUrl: null,
+  logoUrl: '/demo/orgs/ui-film-society.webp',
   isVerified: false,
   followerCount: 312,
 };

@@ -1,4 +1,5 @@
-import React from 'react';
+'use client';
+import React, { useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 import { Icon } from './Icon';
 import styles from './Avatar.module.css';
@@ -27,6 +28,15 @@ export function Avatar({
   hasStoryRing = false,
   isStoryViewed = false,
 }: AvatarProps) {
+  // Falls back to initials when the photo is missing or fails to load.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const showImage = Boolean(src) && failedSrc !== src;
+  const imgRef = useRef<HTMLImageElement>(null);
+  // A server-rendered <img> can fail before hydration, when onError is not attached yet.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setFailedSrc(src ?? null);
+  }, [src]);
   const wrapperClass = [
     styles.wrapper,
     styles[size],
@@ -38,9 +48,15 @@ export function Avatar({
   return (
     <span className={wrapperClass} title={name}>
       <span className={styles.inner}>
-        {src ? (
+        {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={name} className={styles.image} />
+          <img
+            ref={imgRef}
+            src={src!}
+            alt={name}
+            className={styles.image}
+            onError={() => setFailedSrc(src ?? null)}
+          />
         ) : (
           <span className={styles.initials} aria-label={name}>
             {getInitials(name)}
