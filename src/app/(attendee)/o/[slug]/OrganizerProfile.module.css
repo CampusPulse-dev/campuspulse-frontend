@@ -1,0 +1,116 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.heroCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.followWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.followerCount {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.clubName {
+  font-size: var(--text-2xl);
+  margin: 0;
+}
+
+.bio {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.eventsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.eventRowCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-decoration: none;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color 160ms ease;
+}
+
+.eventRowCard:hover {
+  border-color: var(--color-primary);
+}
+
+.eventMetaTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.eventDateMono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.eventTitle {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.eventVenue {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}

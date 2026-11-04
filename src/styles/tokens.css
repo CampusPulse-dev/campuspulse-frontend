@@ -12,6 +12,8 @@
  */
 
 :root {
+  color-scheme: light;
+  --brand-logo-filter: brightness(0);
   /* ---- Brand palette (measured from the identity board) ---- */
   --cp-lavender: #e0aaff;
   --cp-purple: #5a189a;
@@ -57,12 +59,26 @@
 
   --color-focus: var(--cp-purple-500);
 
+  /* ---- Semantic status tokens (S4-01: scanner & RSVP states) ---- */
+  --status-success: #0d8a5e;
+  --status-success-bg: rgb(13 138 94 / 0.12);
+  --status-warning: #9a6400;
+  --status-warning-bg: rgb(154 100 0 / 0.12);
+  --status-danger: #c81e32;
+  --status-danger-bg: rgb(200 30 50 / 0.12);
+
   /* ---- Category colours (PRD §1 — the five fixed categories) ---- */
   --color-category-social: var(--cp-purple-500);
   --color-category-performance: var(--cp-lavender);
   --color-category-academic: var(--cp-purple);
   --color-category-sports: var(--cp-purple-300);
   --color-category-club: var(--cp-purple-700);
+
+  --cat-social: #7b2cbf;
+  --cat-performance: #b8255f;
+  --cat-academic: #1d5bbf;
+  --cat-sports: #0d8a5e;
+  --cat-club: #8f5b00;
 
   /* ---- Typography ---- */
   /*
@@ -74,6 +90,7 @@
    */
   --font-display: var(--font-goodly, var(--font-inter)), system-ui, sans-serif;
   --font-body: var(--font-inter, system-ui), -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono, ui-monospace), SFMono-Regular, Menlo, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -120,6 +137,8 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --brand-logo-filter: brightness(0) invert(1);
     --color-bg: var(--cp-ink);
     --color-surface: #1a0840;
     --color-surface-raised: #24104f;
@@ -140,6 +159,19 @@
 
     --color-focus: var(--cp-purple-300);
 
+    --status-success: #3ee2a8;
+    --status-success-bg: rgb(62 226 168 / 0.16);
+    --status-warning: #fac775;
+    --status-warning-bg: rgb(250 199 117 / 0.16);
+    --status-danger: #ff5d6c;
+    --status-danger-bg: rgb(255 93 108 / 0.16);
+
+    --cat-social: #c25cf0;
+    --cat-performance: #ff9eb0;
+    --cat-academic: #7fb2f0;
+    --cat-sports: #3ee2a8;
+    --cat-club: #fac775;
+
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-md: 0 4px 12px rgb(0 0 0 / 0.5);
     --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.6);
@@ -148,6 +180,8 @@
 
 /* Explicit opt-in, so a theme toggle wins over the system preference. */
 :root[data-theme='dark'] {
+  color-scheme: dark;
+  --brand-logo-filter: brightness(0) invert(1);
   --color-bg: var(--cp-ink);
   --color-surface: #1a0840;
   --color-surface-raised: #24104f;
@@ -167,6 +201,19 @@
   --color-on-accent: var(--cp-white);
 
   --color-focus: var(--cp-purple-300);
+
+  --status-success: #3ee2a8;
+  --status-success-bg: rgb(62 226 168 / 0.16);
+  --status-warning: #fac775;
+  --status-warning-bg: rgb(250 199 117 / 0.16);
+  --status-danger: #ff5d6c;
+  --status-danger-bg: rgb(255 93 108 / 0.16);
+
+  --cat-social: #c25cf0;
+  --cat-performance: #ff9eb0;
+  --cat-academic: #7fb2f0;
+  --cat-sports: #3ee2a8;
+  --cat-club: #fac775;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 4px 12px rgb(0 0 0 / 0.5);

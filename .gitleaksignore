@@ -1,0 +1,2 @@
+# Demo-only sample QR token in seed ticket data, not a credential (removed in later commits).
+41c6c4b9f36ff413de8c72bd8cb52a2e62896dde:src/lib/offline-tickets.ts:generic-api-key:46
