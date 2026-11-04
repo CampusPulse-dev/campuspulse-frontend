@@ -7,7 +7,7 @@ async function signIn(page: Page, origin: string, email: string) {
   await page.goto(`${origin}/sign-in`);
   await page.getByLabel('Student or Personal Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill('CampusPulse2026!');
-  await page.getByRole('button', { name: 'Sign In →' }).click();
+  await page.getByRole('button', { name: 'Sign in' }).click();
   await expect(page).toHaveURL(/\/$/);
 }
 

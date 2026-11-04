@@ -1,4 +1,5 @@
 'use client';
+import { SelectField, TextField } from '@/components/ui/Field';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -40,31 +41,25 @@ function CreatorForm({ userId }: { userId: string }) {
         Demo only: links and counts are saved in this browser. Links do not track real RSVPs or
         check-ins.
       </p>
-      <label className={styles.field}>
-        Event
-        <select
-          className={styles.input}
-          value={eventId}
-          onChange={(e) => {
-            setEventId(e.target.value);
-            setMessage('');
-          }}
-        >
-          {SEED_EVENTS.map((event) => (
-            <option key={event.id} value={event.id}>
-              {event.title}
-            </option>
-          ))}
-        </select>
-      </label>
+      <SelectField
+        label={<>Event</>}
+        value={eventId}
+        onChange={(e) => {
+          setEventId(e.target.value);
+          setMessage('');
+        }}
+      >
+        {SEED_EVENTS.map((event) => (
+          <option key={event.id} value={event.id}>
+            {event.title}
+          </option>
+        ))}
+      </SelectField>
       {!link ? (
         <Button onClick={generate}>Generate demo link</Button>
       ) : (
         <>
-          <label className={styles.field}>
-            Your demo link
-            <input className={styles.input} readOnly value={url} />
-          </label>
+          <TextField label={<>Your demo link</>} readOnly value={url} />
           <Button
             onClick={async () => {
               try {

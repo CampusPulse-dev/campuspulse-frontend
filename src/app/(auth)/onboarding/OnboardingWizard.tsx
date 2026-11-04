@@ -1,9 +1,9 @@
 'use client';
+import { SelectField, ToggleRow } from '@/components/ui/Field';
 
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { fadeInUp, springBouncy } from '@/lib/motion';
 import { SEED_ORGANIZERS, UI_FACULTIES, UI_HALLS, VIBE_OPTIONS } from '@/lib/campus-data';
 import type { OutingRhythm, PersonaProfile } from '@/lib/auth-context';
@@ -138,7 +138,6 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             exit="exit"
             className={styles.stepSection}
           >
-            <Badge variant="verified">Step 1 of 4 · &lt;30s Setup</Badge>
             <h1 className={styles.stepTitle}>What are you into?</h1>
             <p className={styles.stepSubtitle}>
               Pick up to 5 vibes so your &ldquo;For You&rdquo; row and Tonight chips match your
@@ -179,57 +178,59 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             exit="exit"
             className={styles.stepSection}
           >
-            <Badge variant="verified">Step 2 of 4 · University of Ibadan</Badge>
             <h1 className={styles.stepTitle}>Your Campus Cohort</h1>
             <p className={styles.stepSubtitle}>
               Used for Hall inter-match alerts and mutual friend suggestions—never shared publicly.
             </p>
 
             <div className={styles.fieldGrid}>
-              <label className={styles.fieldLabel}>
-                <span>Hall of Residence</span>
-                <select
-                  className={styles.selectInput}
-                  value={hall}
-                  onChange={(e) => setHall(e.target.value)}
-                >
-                  {UI_HALLS.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <SelectField
+                label={
+                  <>
+                    <span>Hall of Residence</span>
+                  </>
+                }
+                value={hall}
+                onChange={(e) => setHall(e.target.value)}
+              >
+                {UI_HALLS.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </SelectField>
 
-              <label className={styles.fieldLabel}>
-                <span>Faculty</span>
-                <select
-                  className={styles.selectInput}
-                  value={faculty}
-                  onChange={(e) => setFaculty(e.target.value)}
-                >
-                  {UI_FACULTIES.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <SelectField
+                label={
+                  <>
+                    <span>Faculty</span>
+                  </>
+                }
+                value={faculty}
+                onChange={(e) => setFaculty(e.target.value)}
+              >
+                {UI_FACULTIES.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </SelectField>
 
-              <label className={styles.fieldLabel}>
-                <span>Level</span>
-                <select
-                  className={styles.selectInput}
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                >
-                  {['100L', '200L', '300L', '400L', '500L', '600L', 'PG'].map((lvl) => (
-                    <option key={lvl} value={lvl}>
-                      {lvl}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <SelectField
+                label={
+                  <>
+                    <span>Level</span>
+                  </>
+                }
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+              >
+                {['100L', '200L', '300L', '400L', '500L', '600L', 'PG'].map((lvl) => (
+                  <option key={lvl} value={lvl}>
+                    {lvl}
+                  </option>
+                ))}
+              </SelectField>
             </div>
 
             <div className={styles.clubSuggestBlock}>
@@ -272,7 +273,6 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             exit="exit"
             className={styles.stepSection}
           >
-            <Badge variant="verified">Step 3 of 4 · Your Rhythm</Badge>
             <h1 className={styles.stepTitle}>When do you usually go out?</h1>
             <p className={styles.stepSubtitle}>
               We&apos;ll time your event reminders and Tonight suggestions around your schedule.
@@ -307,21 +307,22 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               ))}
             </div>
 
-            <label className={styles.toggleRow}>
-              <input
-                type="checkbox"
-                checked={freeEventsOnly}
-                onChange={(e) => setFreeEventsOnly(e.target.checked)}
-              />
-              <span>Prioritize free RSVP events in my feed</span>
-            </label>
+            <ToggleRow
+              label={
+                <>
+                  <span>Prioritize free RSVP events in my feed</span>
+                </>
+              }
+              checked={freeEventsOnly}
+              onChange={(e) => setFreeEventsOnly(e.target.checked)}
+            />
 
             <div className={styles.stepActions}>
               <Button variant="secondary" onClick={() => setStep(2)}>
                 ← Back
               </Button>
               <Button fullWidth size="lg" onClick={() => setStep(4)}>
-                Reveal My Persona ✨
+                Reveal my persona
               </Button>
             </div>
           </motion.section>
@@ -345,13 +346,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               <span className={styles.personaEmoji} aria-hidden="true">
                 {badge.emoji}
               </span>
-              <Badge variant="verified">Your CampusPulse Persona</Badge>
+
               <h1 className={styles.personaTitle}>{badge.title}</h1>
               <p className={styles.personaTagline}>{badge.tagline}</p>
               <div className={styles.personaMetaRow}>
-                <span>🏛️ {hall}</span>
-                <span>🎓 {faculty}</span>
-                <span>📚 {level}</span>
+                <span>{hall}</span>
+                <span>{faculty}</span>
+                <span>{level}</span>
               </div>
             </motion.div>
 

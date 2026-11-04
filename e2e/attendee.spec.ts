@@ -8,7 +8,7 @@ async function signIn(page: Page, origin = '') {
   await page.goto(origin + '/sign-in');
   await page.getByLabel('Student or Personal Email').fill('tobi@stu.ui.edu.ng');
   await page.getByLabel('Password', { exact: true }).fill('CampusPulse2026!');
-  await page.getByRole('button', { name: 'Sign In →', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 20000 });
 }
 test('signed-out public event is rendered in HTML and requires sign-in for RSVP', async ({
@@ -23,7 +23,7 @@ test('signed-out public event is rendered in HTML and requires sign-in for RSVP'
   await expect(
     page.getByRole('heading', { name: 'Sigma Havana Night: Neon Pulse Edition', exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'RSVP — Free', exact: true })).toBeDisabled();
+  await expect(page.getByRole('link', { name: 'Sign in to RSVP', exact: true })).toBeVisible();
 });
 test('demo RSVP produces a labelled QR pass that survives a full offline reload', async ({
   page,
@@ -81,7 +81,7 @@ test('attendee destinations, search, verification and account preferences work i
   }
   await page.goto('/search');
   await page.getByLabel('Search campus', { exact: true }).fill('Sigma');
-  await expect(page.getByRole('link', { name: /Sigma Club UI ✓/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Sigma Club UI Verified/ })).toBeVisible();
   await page.goto('/verify');
   await page.getByLabel('Student email', { exact: true }).fill('tobi@stu.ui.edu.ng');
   await page.getByRole('button', { name: 'Send code', exact: true }).click();

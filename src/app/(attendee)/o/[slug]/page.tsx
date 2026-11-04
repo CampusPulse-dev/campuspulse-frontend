@@ -70,7 +70,7 @@ export default async function PublicOrganizerPage({ params }: OrganizerPageProps
                 </div>
                 <h3 className={styles.eventTitle}>{ev.title}</h3>
                 <p className={styles.eventVenue}>
-                  📍 {ev.venueName} · <strong>{ev.rsvpCount} going</strong>
+                  {ev.venueName} · <strong>{ev.rsvpCount} going</strong>
                 </p>
               </Link>
             );

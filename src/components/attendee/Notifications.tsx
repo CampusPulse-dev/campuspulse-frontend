@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/auth-context';
 import { useNotifications } from '@/lib/notifications';
 import { DEMO_MODE, safeNext } from '@/lib/mode';
 import { attendeeRequest, writeLocal } from '@/lib/attendee-data';
+import { ListRow } from '@/components/ui/ListRow';
+import { Section } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
 import { AccountGate, PageFrame, ResourceState, styles } from './Shared';
 export function Notifications() {
@@ -105,29 +107,33 @@ export function Notifications() {
           {message ? <p role="status">{message}</p> : null}
         </section>
         <ResourceState pending={query.isPending} error={query.error} retry={query.refetch} />
-        <div className={styles.list}>
+        <Section title="Your updates">
           {query.data?.map((n) => (
-            <article key={n.id} className={`${styles.panel} ${n.readAt ? '' : styles.unread}`}>
-              <div className={styles.spread}>
-                <h2>{n.title}</h2>
-                <time className={styles.mono}>
-                  {new Date(n.createdAt).toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })} WAT
-                </time>
-              </div>
-              <p>{n.body}</p>
-              <div className={styles.actions}>
-                <Link href={safeNext(n.href)}>View update →</Link>
-                {!n.readAt ? (
-                  <Button variant="ghost" onClick={() => read(n.id)}>
-                    Mark as read
-                  </Button>
-                ) : (
-                  <span className={styles.muted}>Read</span>
-                )}
-              </div>
+            <article key={n.id} className={n.readAt ? '' : styles.unread}>
+              <ListRow
+                title={n.title}
+                meta={
+                  <time>
+                    {new Date(n.createdAt).toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })}{' '}
+                    WAT
+                  </time>
+                }
+                trailing={
+                  !n.readAt ? (
+                    <Button variant="ghost" onClick={() => read(n.id)}>
+                      Mark as read
+                    </Button>
+                  ) : null
+                }
+              >
+                <p>{n.body}</p>
+                <Link className={styles.textLink} href={safeNext(n.href)}>
+                  View update
+                </Link>
+              </ListRow>
             </article>
           ))}
-        </div>
+        </Section>
         {query.data?.length === 0 ? <p>You are all caught up.</p> : null}
       </AccountGate>
     </PageFrame>

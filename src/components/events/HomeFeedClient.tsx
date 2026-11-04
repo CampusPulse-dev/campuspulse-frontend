@@ -1,25 +1,15 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { Badge, CATEGORY_LABELS } from '@/components/ui/Badge';
+import { CATEGORY_LABELS } from '@/components/ui/Badge';
 import { StoriesTray } from '@/components/stories/StoriesTray';
 import { EventCard } from './EventCard';
 import { fetchEventFeed, type EventCategory } from '@/lib/api';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { type EnrichedEvent, type EnrichedStory, type TonightMood } from '@/lib/campus-data';
+import { type EnrichedEvent, type EnrichedStory } from '@/lib/campus-data';
 import { useAuth } from '@/lib/auth-context';
-import { springSnappy } from '@/lib/motion';
 import styles from './HomeFeed.module.css';
-
-const MOOD_CHIPS: { id: TonightMood; label: string; emoji: string }[] = [
-  { id: 'CHILL', label: 'Chill', emoji: '🌙' },
-  { id: 'TURN_UP', label: 'Turn up', emoji: '🔥' },
-  { id: 'LEARN', label: 'Learn', emoji: '💡' },
-  { id: 'WATCH_GAME', label: 'Watch the game', emoji: '⚽' },
-];
 
 const CATEGORIES: (EventCategory | 'ALL')[] = [
   'ALL',
@@ -45,15 +35,14 @@ export function HomeFeedClient({
   initialError,
   storiesError,
 }: HomeFeedClientProps) {
-  const { user, persona, followedOrganizerIds } = useAuth();
+  const { user, followedOrganizerIds } = useAuth();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(timer);
   }, []);
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | 'ALL'>('ALL');
-  const [selectedMood, setSelectedMood] = useState<TonightMood | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [period, setPeriod] = useState('All');
 
   const pages = useInfiniteQuery({
     queryKey: ['feed', selectedCategory],
@@ -91,25 +80,13 @@ export function HomeFeedClient({
       if (selectedCategory !== 'ALL' && event.category !== selectedCategory) {
         return false;
       }
-      if (
-        selectedMood &&
-        (event.tonightMood !== selectedMood ||
-          Date.parse(event.startsAt) < now ||
-          Date.parse(event.startsAt) > now + 6 * 60 * 60 * 1000)
-      ) {
+      const start = Date.parse(event.startsAt);
+      if (period === 'Tonight' && (start < now || start > now + 6 * 60 * 60 * 1000)) return false;
+      if (period === 'This week' && (start < now || start > now + 7 * 24 * 60 * 60 * 1000))
         return false;
-      }
-      if (searchQuery.trim().length > 0) {
-        const q = searchQuery.trim().toLowerCase();
-        const matches =
-          event.title.toLowerCase().includes(q) ||
-          event.venueName.toLowerCase().includes(q) ||
-          event.organizer.name.toLowerCase().includes(q);
-        if (!matches) return false;
-      }
       return true;
     });
-  }, [events, selectedCategory, selectedMood, searchQuery, now]);
+  }, [events, selectedCategory, period, now]);
 
   const forYouEvents = useMemo(() => {
     return [...events]
@@ -123,39 +100,23 @@ export function HomeFeedClient({
 
   function handleResetFilters() {
     setSelectedCategory('ALL');
-    setSelectedMood(null);
-    setSearchQuery('');
+    setPeriod('All');
   }
 
+  const showRecommendations = Boolean(
+    user && selectedCategory === 'ALL' && period === 'All' && forYouEvents.length,
+  );
+  const listEvents = showRecommendations
+    ? filteredEvents.filter(
+        (event) => !forYouEvents.some((recommended) => recommended.id === event.id),
+      )
+    : filteredEvents;
   return (
     <div className={styles.feedContainer}>
-      {/* 1. Search & Campus Pulse Hero Strip */}
-      <div className={styles.searchRow}>
-        <Link href="/search">Search events &amp; verified clubs →</Link>
-        <label className={styles.searchBox}>
-          <span aria-hidden="true">🔍</span>
-          <input
-            type="search"
-            className={styles.searchInput}
-            placeholder="Search events, SUB Field, Trenchard Hall, clubs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search campus events and clubs"
-          />
-          {searchQuery ? (
-            <button
-              type="button"
-              className={styles.clearSearchBtn}
-              onClick={() => setSearchQuery('')}
-              aria-label="Clear search"
-            >
-              ✕
-            </button>
-          ) : null}
-        </label>
-      </div>
-
-      {/* 2. 24-Hour Stories Row (Hidden cleanly if empty) */}
+      <header className={styles.feedHeader}>
+        <h1>Find your next plan.</h1>
+        <p>What’s happening at the University of Ibadan.</p>
+      </header>
       {storiesError ? (
         <p role="alert">
           Stories unavailable. <Button onClick={() => window.location.reload()}>Retry</Button>
@@ -164,63 +125,42 @@ export function HomeFeedClient({
         <StoriesTray stories={stories} />
       )}
 
-      {/* 3. "Tonight" Mood Row */}
-      <section className={styles.moodSection} aria-label="Tonight Mood Quick Filters">
-        <div className={styles.sectionHeaderInline}>
-          <span className={styles.tonightTitle}>⚡ Tonight on Campus</span>
-          {persona ? <Badge variant="verified">{persona.personaBadge}</Badge> : null}
+      <div className={styles.filterBar}>
+        <div className={styles.periodRow} role="group" aria-label="Event dates">
+          {['Tonight', 'This week', 'All'].map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={period === value}
+              className={period === value ? styles.periodActive : ''}
+              onClick={() => setPeriod(value)}
+            >
+              {value}
+            </button>
+          ))}
         </div>
-        <div className={styles.moodRow}>
-          {MOOD_CHIPS.map((mood) => {
-            const active = selectedMood === mood.id;
-            return (
-              <button
-                key={mood.id}
-                type="button"
-                aria-pressed={active}
-                className={`${styles.moodChip} ${active ? styles.moodChipActive : ''}`}
-                onClick={() => setSelectedMood(active ? null : mood.id)}
-              >
-                <span aria-hidden="true">{mood.emoji}</span>
-                <span>{mood.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 4. Sticky 5-Category Filter Bar */}
-      <nav className={styles.categoryBar} aria-label="Event Categories">
-        {CATEGORIES.map((cat) => {
-          const active = selectedCategory === cat;
-          const label = cat === 'ALL' ? 'All Events' : CATEGORY_LABELS[cat];
-          return (
+        <nav className={styles.categoryBar} aria-label="Event Categories">
+          {CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
-              aria-pressed={active}
-              className={`${styles.catFilterBtn} ${active ? styles.catFilterActive : ''}`}
+              aria-pressed={selectedCategory === cat}
+              className={[
+                styles.catFilterBtn,
+                selectedCategory === cat ? styles.catFilterActive : '',
+              ].join(' ')}
               onClick={() => setSelectedCategory(cat)}
             >
-              {active ? (
-                <motion.span
-                  layoutId="cp-feed-cat-indicator"
-                  className={styles.catActiveBg}
-                  transition={springSnappy}
-                />
-              ) : null}
-              <span className={styles.catFilterText}>{label}</span>
+              {cat === 'ALL' ? 'All Events' : CATEGORY_LABELS[cat]}
             </button>
-          );
-        })}
-      </nav>
-
+          ))}
+        </nav>
+      </div>
       {/* 5. "For You" Horizontal Row (when unfiltered) */}
-      {user && selectedCategory === 'ALL' && !selectedMood && !searchQuery ? (
+      {showRecommendations ? (
         <section className={styles.forYouSection} aria-label="Recommended For You">
           <div className={styles.sectionHeaderInline}>
-            <h2 className={styles.sectionTitle}>For You at UI</h2>
-            <span className={styles.sectionHint}>Ranked by your clubs &amp; friends going</span>
+            <h2 className={styles.sectionTitle}>For you</h2>
           </div>
           <div className={styles.forYouScroller}>
             {forYouEvents.map((ev) => (
@@ -235,8 +175,8 @@ export function HomeFeedClient({
       {/* 6. Primary Chronological Event Feed */}
       <section className={styles.primaryFeedSection} aria-label="Upcoming Campus Events">
         <div className={styles.sectionHeaderInline}>
-          <h2 className={styles.sectionTitle}>Upcoming Feed ({filteredEvents.length})</h2>
-          {selectedCategory !== 'ALL' || selectedMood || searchQuery ? (
+          <h2 className={styles.sectionTitle}>Upcoming events</h2>
+          {selectedCategory !== 'ALL' || period !== 'All' ? (
             <button type="button" className={styles.inlineResetLink} onClick={handleResetFilters}>
               Clear filters
             </button>
@@ -250,10 +190,10 @@ export function HomeFeedClient({
             <p>Could not load events. Please retry.</p>
             <Button onClick={() => void pages.refetch()}>Retry</Button>
           </div>
-        ) : filteredEvents.length === 0 ? (
+        ) : listEvents.length === 0 && !showRecommendations ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>
-              Nothing live in this filter tonight — check out what&apos;s coming up this week.
+              No events in this view. Try another date or category.
             </p>
             <Button variant="secondary" onClick={handleResetFilters}>
               Reset Filters
@@ -261,7 +201,7 @@ export function HomeFeedClient({
           </div>
         ) : (
           <div className={styles.feedStack}>
-            {filteredEvents.map((event) => (
+            {listEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>

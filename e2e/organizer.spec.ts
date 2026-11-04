@@ -15,20 +15,20 @@ async function signIn(page: Page, email: string) {
   await page.goto('/sign-in');
   await page.getByLabel('Student or Personal Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill('CampusPulse2026!');
-  await page.getByRole('button', { name: 'Sign In →', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 20000 });
 }
 
 async function fillEventBasics(page: Page, title: string) {
   await page.getByRole('button', { name: /Concert \/ Party/ }).click();
   await page.getByLabel('Category').selectOption('SOCIAL_PARTY');
-  await page.getByRole('button', { name: 'Continue →' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Title', { exact: true }).fill(title);
   await page.getByLabel('Description').fill('A big night out on campus.');
   await page.getByLabel('Starts (WAT)').fill('2030-11-20T19:00');
   await page.getByLabel('Ends (WAT)').fill('2030-11-20T23:00');
   await page.getByLabel('Venue name').fill('SUB Main Field');
-  await page.getByRole('button', { name: 'Continue →' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: 'Lineup' })).toBeVisible();
 }
 
@@ -70,9 +70,9 @@ test('saved drafts reopen and publish without a duplicate', async ({ page }) => 
   await page.getByRole('link', { name: 'Back to dashboard' }).click();
   await page.getByRole('link', { name: 'Editable Night' }).click();
   await expect(page.getByRole('heading', { name: 'Edit draft' })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue →' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByLabel('Title', { exact: true })).toHaveValue('Editable Night');
-  await page.getByRole('button', { name: 'Continue →' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByLabel('Performer 1')).toHaveValue('DJ Test');
   await page.getByRole('button', { name: 'Publish Now' }).click();
   await expect(page.getByRole('heading', { name: 'Event published' })).toBeVisible();
@@ -187,6 +187,7 @@ test('a verified club posts and deletes a 24h story', async ({ page }) => {
 
   await page.goto('/organizer/sigma-club-ui/stories/new');
   await page.getByRole('button', { name: 'Delete story 1' }).click();
+  await page.getByRole('button', { name: 'Delete story', exact: true }).click();
   await expect(page.getByText('No active stories right now.')).toBeVisible();
 });
 

@@ -59,6 +59,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         queryClient.clear();
       }
       setTicketAccount(next?.id ?? null);
+      // Presentation hint only; API authorization still uses the real session.
+      document.cookie = next
+        ? 'cp_signed_in=1; Path=/; SameSite=Lax; Max-Age=2592000' +
+          (location.protocol === 'https:' ? '; Secure' : '')
+        : 'cp_signed_in=; Path=/; SameSite=Lax; Max-Age=0';
       writeLocal('user', next);
       setUser(next);
       setAccessToken(token);

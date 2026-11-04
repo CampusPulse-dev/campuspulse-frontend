@@ -1,10 +1,10 @@
 'use client';
+import { TextField } from '@/components/ui/Field';
 
 import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { safeNext } from '@/lib/mode';
 import { useAuth } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
@@ -35,6 +35,7 @@ function SignInForm() {
         ? `${nextUrl}${nextUrl.includes('?') ? '&' : '?'}autoRsvp=1`
         : nextUrl;
       router.push(target);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to sign in');
     } finally {
@@ -50,7 +51,6 @@ function SignInForm() {
           <img src="/brand/logo.svg" alt="" className={styles.brandIcon} />
           <span>CampusPulse</span>
         </Link>
-        <Badge variant="verified">UI · Ibadan</Badge>
       </div>
 
       <h1 className={styles.authTitle}>Welcome back</h1>
@@ -63,31 +63,33 @@ function SignInForm() {
       {error ? <div className={styles.errorBanner}>{error}</div> : null}
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.fieldLabel}>
-          <span>Student or Personal Email</span>
-          <input
-            type="email"
-            required
-            className={styles.textInput}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@stu.ui.edu.ng"
-          />
-        </label>
+        <TextField
+          label={
+            <>
+              <span>Student or Personal Email</span>
+            </>
+          }
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@stu.ui.edu.ng"
+        />
 
-        <label className={styles.fieldLabel}>
-          <span>Password</span>
-          <input
-            type="password"
-            required
-            className={styles.textInput}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
+        <TextField
+          label={
+            <>
+              <span>Password</span>
+            </>
+          }
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={!ready}>
-          {autoRsvp ? 'Sign In & Continue →' : 'Sign In →'}
+          Sign in
         </Button>
       </form>
 

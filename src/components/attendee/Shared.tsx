@@ -7,19 +7,22 @@ export { styles };
 export function PageFrame({
   title,
   subtitle,
+  hideHeader = false,
   children,
 }: {
   title: string;
   subtitle: string;
+  hideHeader?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.eyebrow}>University of Ibadan / CampusPulse</div>
-        <h1>{title}</h1>
-        <p className={styles.subtitle}>{subtitle}</p>
-      </header>
+      {!hideHeader ? (
+        <header className={styles.header}>
+          <h1>{title}</h1>
+          <p className={styles.subtitle}>{subtitle}</p>
+        </header>
+      ) : null}
       {children}
     </div>
   );

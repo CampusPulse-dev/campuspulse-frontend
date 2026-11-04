@@ -2,10 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { CalendarDays, MapPin, Ticket, Shirt, Bookmark, Share2 } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
+import { VerifiedMark } from '@/components/ui/VerifiedMark';
+import { ListRow } from '@/components/ui/ListRow';
+import { Section } from '@/components/ui/Section';
+import { TextArea } from '@/components/ui/Field';
+import { EventPoster } from './EventPoster';
+import { SiteFooter } from '@/components/landing/SiteFooter';
 import { Button } from '@/components/ui/Button';
 import { Badge, CategoryPill } from '@/components/ui/Badge';
-import { Avatar, FriendAvatarStack } from '@/components/ui/Avatar';
+import { FriendAvatarStack } from '@/components/ui/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/lib/auth-context';
@@ -19,7 +26,6 @@ import {
 import { apiFetch, fetchEventBySlug, type CreateRsvpResponse } from '@/lib/api';
 import { DEMO_MODE } from '@/lib/mode';
 import { loadOfflineTickets } from '@/lib/offline-tickets';
-import { fadeInUp } from '@/lib/motion';
 import styles from './EventDetail.module.css';
 
 export interface EventDetailViewProps {
@@ -59,9 +65,6 @@ export function EventDetailView({
   const isInterested = interestedEventIds.includes(event.id);
   const wat = formatWatDateTime(event.startsAt);
   const spotsLeft = event.capacity !== null ? Math.max(0, event.capacity - event.rsvpCount) : null;
-  const isLowCapacity =
-    event.capacity !== null && spotsLeft !== null && spotsLeft / event.capacity <= 0.15;
-
   const activeTicket =
     savedTicket ?? (!isSignedOutPreview ? getOfflineTicketForEvent(event.id) : null);
 
@@ -176,94 +179,49 @@ export function EventDetailView({
   return (
     <article className={styles.pageGrid}>
       <div className={styles.mainCol}>
-        {/* 1. Hero Poster & Category/Organizer Strip */}
-        <motion.div
-          className={`${styles.heroPoster} ${
-            event.template === 'CONCERT_PARTY' ? styles.posterVertical : ''
-          }`}
-          variants={fadeInUp}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className={styles.heroPoster}>
+          <EventPoster event={event} detail />
           <div className={styles.heroOverlayTop}>
             <CategoryPill category={event.category} />
-            {event.studentsOnly ? (
-              <Badge variant="warning">🎓 UI Students Only (@stu.ui.edu.ng)</Badge>
-            ) : (
-              <Badge variant="success">Open Campus Event</Badge>
-            )}
+            {event.studentsOnly ? <Badge>Students only</Badge> : null}
           </div>
-
-          <div className={styles.heroGraphic} aria-hidden="true">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.svg" alt="" className={styles.heroWatermark} />
-          </div>
-
           <div className={styles.heroScrim}>
-            <Link href={`/o/${event.organizer.slug}`} className={styles.organizerChip}>
-              <Avatar
-                name={event.organizer.name}
-                src={event.organizer.logoUrl}
-                size="sm"
-                isVerified={event.organizer.isVerified}
-              />
-              <span className={styles.organizerName}>{event.organizer.name}</span>
-              {event.organizer.isVerified ? <Badge variant="verified">Verified Club</Badge> : null}
+            <Link href={'/o/' + event.organizer.slug} className={styles.organizerChip}>
+              <span>{event.organizer.name}</span>
+              {event.organizer.isVerified ? <VerifiedMark /> : null}
             </Link>
             <h1 className={styles.eventTitle}>{event.title}</h1>
           </div>
-        </motion.div>
-
-        {/* 2. Core Vitals Strip */}
-        <section className={styles.vitalsCard} aria-label="Event Vitals">
-          <div className={styles.vitalItem}>
-            <span className={styles.vitalIcon} aria-hidden="true">
-              🗓️
-            </span>
-            <div>
-              <div className={styles.vitalPrimary}>{wat.dateLabel}</div>
-              <div className={styles.vitalMono}>{wat.timeLabel} · Africa/Lagos</div>
-            </div>
-          </div>
-
-          <div className={styles.vitalItem}>
-            <span className={styles.vitalIcon} aria-hidden="true">
-              📍
-            </span>
-            <div className={styles.vitalFlex}>
-              <div className={styles.vitalPrimary}>{event.venueName}</div>
-              {event.venueDetail ? (
+        </div>
+        <Section title="Details">
+          <ListRow icon={CalendarDays} title={wat.dateLabel} meta={wat.timeLabel} />
+          <ListRow icon={MapPin} title={event.venueName}>
+            {event.venueDetail ? (
+              <>
                 <button
                   type="button"
                   className={styles.directionsToggle}
-                  onClick={() => setShowDirections((prev) => !prev)}
+                  aria-expanded={showDirections}
+                  onClick={() => setShowDirections((value) => !value)}
                 >
-                  {showDirections ? 'Hide venue directions ▲' : 'Show gate & directions ▼'}
+                  Gate &amp; directions
                 </button>
-              ) : null}
-              {showDirections && event.venueDetail ? (
-                <p className={styles.venueDirections}>{event.venueDetail}</p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className={styles.vitalItem}>
-            <span className={styles.vitalIcon} aria-hidden="true">
-              🎟️
-            </span>
-            <div className={styles.vitalBadges}>
-              <span className={styles.vitalMono}>
-                {event.rsvpCount + (savedTicket ? 1 : 0)} going
-                {spotsLeft !== null ? ` · ${spotsLeft} spots left` : ''}
-              </span>
-              {isLowCapacity ? <Badge variant="warning">Filling Fast</Badge> : null}
-              {event.dressCode ? <Badge variant="default">👕 {event.dressCode}</Badge> : null}
-            </div>
-          </div>
-        </section>
-
-        {/* 3. Mutual Social Proof Strip */}
-        <section className={styles.socialStrip} aria-label="Friends Going">
+                {showDirections ? (
+                  <p className={styles.venueDirections}>{event.venueDetail}</p>
+                ) : null}
+              </>
+            ) : null}
+          </ListRow>
+          <ListRow
+            icon={Ticket}
+            title="Free entry"
+            meta={event.studentsOnly ? 'Verified UI students only' : 'Open campus event'}
+          />
+          {event.dressCode ? (
+            <ListRow icon={Shirt} title="Dress code" meta={event.dressCode} />
+          ) : null}
+        </Section>
+        <div className={styles.socialStrip}>
           <FriendAvatarStack friends={event.friendsGoing} totalCount={event.friendsGoingCount} />
           <a
             href={whatsappShareHref}
@@ -271,10 +229,10 @@ export function EventDetailView({
             rel="noopener noreferrer"
             className={styles.whatsappShareBtn}
           >
-            📲 Invite via WhatsApp
+            <Icon icon={Share2} size={18} />
+            Invite via WhatsApp
           </a>
-        </section>
-
+        </div>
         {/* 4. Template-Specific Blocks */}
         {event.template === 'MATCH_TOURNAMENT' && event.fixture ? (
           <section className={styles.scoreboardCard} aria-label="Live Match Scoreboard">
@@ -300,7 +258,7 @@ export function EventDetailView({
 
         {event.template === 'CONCERT_PARTY' && event.lineup && event.lineup.length > 0 ? (
           <section className={styles.templateSection}>
-            <h2 className={styles.sectionHeading}>Stage Lineup & Set Times</h2>
+            <h2 className={styles.sectionHeading}>Lineup & set times</h2>
             <div className={styles.lineupGrid}>
               {event.lineup.map((slot) => (
                 <div key={slot.id} className={styles.lineupCard}>
@@ -350,47 +308,44 @@ export function EventDetailView({
 
         {event.doorPolicy ? (
           <section className={styles.doorPolicyBox}>
-            <strong>🚪 Door & Entry Policy:</strong> {event.doorPolicy}
+            <strong>Door &amp; entry policy: </strong>
+            {event.doorPolicy}
           </section>
         ) : null}
 
         {/* 5. About / Description */}
         <section className={styles.templateSection}>
-          <h2 className={styles.sectionHeading}>About This Event</h2>
+          <h2 className={styles.sectionHeading}>About this event</h2>
           <p className={styles.descriptionText}>{event.description}</p>
         </section>
 
-        {/* 6. Linked After-Party Card */}
         {event.linkedAfterParty ? (
-          <section className={styles.afterPartyCard} aria-label="Official Linked After-Party">
-            <div className={styles.afterPartyBadgeRow}>
-              <Badge variant="verified">🌙 Linked Official After-Party</Badge>
-              <span className={styles.vitalMono}>
-                {formatWatDateTime(event.linkedAfterParty.startsAt).timeLabel}
-              </span>
-            </div>
-            <h3 className={styles.afterPartyTitle}>{event.linkedAfterParty.title}</h3>
+          <Section title="Keep the night going">
+            <ListRow
+              title={event.linkedAfterParty.title}
+              href={'/e/' + event.linkedAfterParty.slug}
+              meta={
+                formatWatDateTime(event.linkedAfterParty.startsAt).timeLabel +
+                ' · ' +
+                event.linkedAfterParty.venueName
+              }
+            />
             <p className={styles.afterPartyVenue}>
-              📍 {event.linkedAfterParty.venueName} ·{' '}
-              {event.linkedAfterParty.accessRule === 'PRIORITY_CHECKED_IN'
-                ? 'Checked-in guests get priority entry'
-                : 'Checked-in guests only'}
+              {event.linkedAfterParty.accessRule === 'OPEN'
+                ? 'Open entry'
+                : event.linkedAfterParty.accessRule === 'PRIORITY_CHECKED_IN'
+                  ? 'Checked-in guests get priority entry'
+                  : 'Checked-in guests only'}
             </p>
-            <div className={styles.afterPartyActions}>
-              <Link href={`/e/${event.linkedAfterParty.slug}`} className={styles.afterPartyLink}>
-                View After-Party Details →
-              </Link>
-              {!afterPartyAdded ? (
-                <Button size="sm" variant="secondary" onClick={handleAddAfterParty}>
-                  + Add to &ldquo;Your Night&rdquo;
-                </Button>
-              ) : (
-                <Badge variant="success">✓ Added to Your Night</Badge>
-              )}
-            </div>
-          </section>
+            {!afterPartyAdded ? (
+              <Button variant="secondary" size="sm" onClick={handleAddAfterParty}>
+                Add to Your Night
+              </Button>
+            ) : (
+              <Badge variant="success">Added to Your Night</Badge>
+            )}
+          </Section>
         ) : null}
-
         {/* 8. Footer Report Link */}
         <footer className={styles.eventFooter}>
           <button
@@ -398,7 +353,7 @@ export function EventDetailView({
             className={styles.reportLink}
             onClick={() => setShowReportModal(true)}
           >
-            🚩 Report this event to CampusPulse Moderation
+            Report this event
           </button>
         </footer>
       </div>
@@ -415,57 +370,41 @@ export function EventDetailView({
 
           <div className={styles.commitmentButtons}>
             {actionError ? <p role="alert">{actionError}</p> : null}
-            {!user ? (
-              <Link href={'/sign-in?next=' + encodeURIComponent(returnTo ?? '/e/' + event.slug)}>
-                Sign in to RSVP →
-              </Link>
-            ) : null}
-            {event.studentsOnly && !user?.isVerifiedStudent ? (
-              <Link href="/verify">Verify student status →</Link>
-            ) : null}
             <button
               type="button"
+              aria-label="Save event"
               aria-pressed={isInterested}
-              className={`${styles.interestedBtn} ${isInterested ? styles.interestedActive : ''}`}
+              className={styles.interestedBtn}
               onClick={handleToggleInterested}
-              title="Mark as Interested"
             >
-              {isInterested ? '★ Interested' : '☆ Interested'}
+              <Icon icon={Bookmark} fill={isInterested ? 'currentColor' : 'none'} />
             </button>
-
-            {savedTicket ? (
-              <div className={styles.confirmedStack}>
-                <Badge variant="success">
-                  {savedTicket.status === 'CONFIRMED'
-                    ? 'Going ✓ · Saved on device'
-                    : savedTicket.status}
-                </Badge>
-                <Link href={`/tickets/${savedTicket.rsvpId}`} className={styles.viewQrLink}>
-                  View Offline QR Pass →
-                </Link>
-              </div>
-            ) : (
-              <Button
-                size="lg"
-                fullWidth
-                onClick={handleRsvpClick}
-                isLoading={busy}
-                disabled={!user || (event.studentsOnly && !user.isVerifiedStudent)}
+            {!user ? (
+              <Link
+                className={styles.primaryModalLink}
+                href={'/sign-in?next=' + encodeURIComponent(returnTo ?? '/e/' + event.slug)}
               >
+                Sign in to RSVP
+              </Link>
+            ) : event.studentsOnly && !user.isVerifiedStudent ? (
+              <Link href="/verify" className={styles.primaryModalLink}>
+                Verify to RSVP
+              </Link>
+            ) : activeTicket ? (
+              <Link href={'/tickets/' + activeTicket.rsvpId} className={styles.primaryModalLink}>
+                {activeTicket.status === 'WAITLISTED' ? 'View waitlist' : 'View QR pass'}
+              </Link>
+            ) : (
+              <Button size="lg" onClick={handleRsvpClick} isLoading={busy}>
                 RSVP — Free
               </Button>
             )}
           </div>
-
-          {activeTicket && !savedTicket ? (
-            <div className={styles.existingTicketHint}>
-              <Link href={`/tickets/${activeTicket.rsvpId}`} className={styles.viewQrLinkSubtle}>
-                🎟️ You already have a saved QR pass for this event →
-              </Link>
-            </div>
-          ) : null}
         </div>
       </aside>
+      <div className={styles.publicFooter}>
+        <SiteFooter />
+      </div>
 
       {/* Post-RSVP Confirmation Modal */}
       <Modal
@@ -492,11 +431,11 @@ export function EventDetailView({
               </Link>
             ) : null}
             <Button variant="secondary" fullWidth onClick={handleDownloadCalendar}>
-              📅 Add to Calendar (.ics)
+              Add to calendar
             </Button>
             {event.linkedAfterParty && !afterPartyAdded ? (
-              <Button variant="accent" fullWidth onClick={handleAddAfterParty}>
-                🌙 Also Lock In Official After-Party (10:30 PM)
+              <Button variant="secondary" fullWidth onClick={handleAddAfterParty}>
+                Add the after-party
               </Button>
             ) : null}
           </div>
@@ -511,17 +450,14 @@ export function EventDetailView({
         onClose={() => setShowReportModal(false)}
       >
         <form onSubmit={handleReportSubmit} className={styles.reportForm}>
-          <label className={styles.reportLabel}>
-            <span>Reason for report</span>
-            <textarea
-              required
-              rows={3}
-              className={styles.reportTextarea}
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              placeholder="Describe the issue (e.g., wrong venue, impersonating a UI club, spam)..."
-            />
-          </label>
+          <TextArea
+            label="Reason for report"
+            required
+            rows={3}
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Tell us what needs attention."
+          />
           <Button type="submit" variant="danger" fullWidth>
             Submit Report
           </Button>

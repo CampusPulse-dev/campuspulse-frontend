@@ -29,7 +29,7 @@
 
 .followerCount {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
@@ -100,7 +100,7 @@
 
 .eventDateMono {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 

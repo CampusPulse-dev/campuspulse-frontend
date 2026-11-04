@@ -1,4 +1,5 @@
 'use client';
+import { TextField, SelectField } from '@/components/ui/Field';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
@@ -10,6 +11,8 @@ import {
   writeLocal,
   type FriendEntry,
 } from '@/lib/attendee-data';
+import { ListRow } from '@/components/ui/ListRow';
+import { Section } from '@/components/ui/Section';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { AccountGate, PageFrame, ResourceState, styles } from './Shared';
@@ -83,27 +86,21 @@ export function Friends() {
     >
       <AccountGate>
         <div className={styles.row}>
-          <label className={styles.field}>
-            Search people
-            <input
-              className={styles.input}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              type="search"
-            />
-          </label>
-          <label className={styles.field}>
-            Suggestions
-            <select
-              className={styles.input}
-              value={cohort}
-              onChange={(e) => setCohort(e.target.value)}
-            >
-              <option value="ALL">All campus</option>
-              <option value="HALL">My hall</option>
-              <option value="FACULTY">My faculty</option>
-            </select>
-          </label>
+          <TextField
+            label={<>Search people</>}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            type="search"
+          />
+          <SelectField
+            label={<>Suggestions</>}
+            value={cohort}
+            onChange={(e) => setCohort(e.target.value)}
+          >
+            <option value="ALL">All campus</option>
+            <option value="HALL">My hall</option>
+            <option value="FACULTY">My faculty</option>
+          </SelectField>
         </div>
         <ResourceState pending={query.isPending} error={query.error} retry={query.refetch} />
         {error ? (
@@ -111,28 +108,26 @@ export function Friends() {
             {error}
           </p>
         ) : null}
-        <div className={styles.list}>
+        <Section title="On campus">
           {visible.map((f) => (
-            <section key={f.id} className={styles.panel}>
-              <div className={styles.spread}>
-                <div className={styles.row}>
-                  <Avatar name={f.user.displayName} size="md" />
-                  <div>
-                    <h2>{f.user.displayName}</h2>
-                    <p className={styles.muted}>
-                      {f.hall} · {f.faculty}
-                    </p>
-                    <span>
-                      {f.status === 'INCOMING'
-                        ? 'Wants to connect'
-                        : f.status === 'OUTGOING'
-                          ? 'Request sent'
-                          : f.status === 'ACCEPTED'
-                            ? 'Friends'
-                            : 'Suggested for you'}
-                    </span>
-                  </div>
-                </div>
+            <ListRow
+              key={f.id}
+              leading={<Avatar name={f.user.displayName} />}
+              title={f.user.displayName}
+              meta={
+                <>
+                  {f.hall} · {f.faculty}
+                  <br />
+                  {f.status === 'INCOMING'
+                    ? 'Wants to connect'
+                    : f.status === 'OUTGOING'
+                      ? 'Request sent'
+                      : f.status === 'ACCEPTED'
+                        ? 'Friends'
+                        : 'Suggested for you'}
+                </>
+              }
+              trailing={
                 <div className={styles.actions}>
                   {f.status === 'INCOMING' ? (
                     <>
@@ -156,10 +151,10 @@ export function Friends() {
                     Block
                   </Button>
                 </div>
-              </div>
-            </section>
+              }
+            />
           ))}
-        </div>
+        </Section>
         {!query.isPending && !query.error && visible.length === 0 ? (
           <p>No people match these filters. Try all campus.</p>
         ) : null}

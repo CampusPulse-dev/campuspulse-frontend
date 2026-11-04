@@ -1,6 +1,9 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
+import { UserRound, ShieldCheck, Sparkles, Building2, Mic2 } from 'lucide-react';
+import { TextField, SelectField, ToggleRow } from '@/components/ui/Field';
+import { ListRow } from '@/components/ui/ListRow';
+import { Section } from '@/components/ui/Section';
 import { useAuth } from '@/lib/auth-context';
 import { CATEGORY_LABELS } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -24,8 +27,7 @@ function SettingsForm() {
   }
   return (
     <>
-      <section className={styles.panel}>
-        <h2>Your profile</h2>
+      <Section title="Your profile">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -33,94 +35,83 @@ function SettingsForm() {
           }}
           className={styles.list}
         >
-          <label className={styles.field}>
-            Display name
-            <input
-              required
-              maxLength={80}
-              className={styles.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
+          <TextField
+            label="Display name"
+            required
+            maxLength={80}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
           <div className={styles.actions}>
             <Button type="submit" isLoading={busy}>
               Save profile
             </Button>
-            <Link href="/verify">
-              {user?.isVerifiedStudent ? 'Student verified ✓' : 'Verify student status →'}
-            </Link>
-            <Link href="/onboarding?next=/settings">Edit your persona →</Link>
-            <Link href="/settings/creator">Creator dashboard →</Link>
-            <Link href="/organizer/apply">Apply for a club →</Link>
           </div>
         </form>
-      </section>
-      <section className={styles.panel}>
-        <h2>Privacy and appearance</h2>
-        <label className={styles.field}>
-          Theme
-          <select
-            aria-label="Theme"
-            disabled={busy}
-            className={styles.input}
-            value={privacy.theme}
-            onChange={(e) =>
-              perform(() => updatePrivacy({ theme: e.target.value as typeof privacy.theme }))
-            }
-          >
-            <option value="system">Use device setting</option>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-          </select>
-        </label>
-        <label className={styles.check}>
-          <input
-            type="checkbox"
-            disabled={busy}
-            checked={privacy.stealthRsvp}
-            onChange={(e) => perform(() => updatePrivacy({ stealthRsvp: e.target.checked }))}
-          />
-          Keep my RSVPs private
-        </label>
-        <label className={styles.check}>
-          <input
-            type="checkbox"
-            disabled={busy}
-            checked={privacy.hideFromFriends}
-            onChange={(e) => perform(() => updatePrivacy({ hideFromFriends: e.target.checked }))}
-          />
-          Hide my activity from friends
-        </label>
-      </section>
-      <section className={styles.panel}>
-        <h2>Notification preferences</h2>
-        <p className={styles.muted}>
-          Mute category recommendations. Critical event changes still reach you.
-        </p>
+      </Section>
+      <Section title="Account">
+        <ListRow
+          icon={user?.isVerifiedStudent ? ShieldCheck : UserRound}
+          title="Student verification"
+          meta={user?.isVerifiedStudent ? 'Verified UI student' : 'Verify your student status'}
+          href="/verify"
+        />
+        <ListRow icon={Sparkles} title="Edit your persona" href="/onboarding?next=/settings" />
+        <ListRow icon={Mic2} title="Creator dashboard" href="/settings/creator" />
+        <ListRow icon={Building2} title="Apply for a club" href="/organizer/apply" />
+      </Section>
+      <Section title="Privacy and appearance">
+        <SelectField
+          label="Theme"
+          aria-label="Theme"
+          disabled={busy}
+          value={privacy.theme}
+          onChange={(e) =>
+            perform(() => updatePrivacy({ theme: e.target.value as typeof privacy.theme }))
+          }
+        >
+          <option value="system">Use device setting</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </SelectField>
+        <ToggleRow
+          label="Keep my RSVPs private"
+          disabled={busy}
+          checked={privacy.stealthRsvp}
+          onChange={(e) => perform(() => updatePrivacy({ stealthRsvp: e.target.checked }))}
+        />
+        <ToggleRow
+          label="Hide my activity from friends"
+          disabled={busy}
+          checked={privacy.hideFromFriends}
+          onChange={(e) => perform(() => updatePrivacy({ hideFromFriends: e.target.checked }))}
+        />
+      </Section>
+      <Section
+        title="Notification preferences"
+        description="Mute category recommendations. Critical event changes still reach you."
+      >
         {Object.entries(CATEGORY_LABELS).map(([id, label]) => (
-          <label key={id} className={styles.check}>
-            <input
-              type="checkbox"
-              disabled={busy}
-              checked={privacy.mutedCategories.includes(id)}
-              onChange={(e) =>
-                perform(() =>
-                  updatePrivacy({
-                    mutedCategories: e.target.checked
-                      ? [...privacy.mutedCategories, id]
-                      : privacy.mutedCategories.filter((v) => v !== id),
-                  }),
-                )
-              }
-            />
-            Mute {label}
-          </label>
+          <ToggleRow
+            key={id}
+            label={`Mute ${label}`}
+            disabled={busy}
+            checked={privacy.mutedCategories.includes(id)}
+            onChange={(e) =>
+              perform(() =>
+                updatePrivacy({
+                  mutedCategories: e.target.checked
+                    ? [...privacy.mutedCategories, id]
+                    : privacy.mutedCategories.filter((v) => v !== id),
+                }),
+              )
+            }
+          />
         ))}
-        <Link href="/notifications">Manage this device’s push notifications →</Link>
-      </section>
+        <ListRow title="This device’s push notifications" href="/notifications" />
+      </Section>
       {message ? <p role="status">{message}</p> : null}
-      <Button variant="secondary" disabled={busy} onClick={() => perform(signOut)}>
+      <Button variant="ghostDanger" disabled={busy} onClick={() => perform(signOut)}>
         Sign out and clear cached tickets
       </Button>
     </>

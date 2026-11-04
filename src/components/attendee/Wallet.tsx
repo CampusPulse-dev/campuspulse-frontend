@@ -10,6 +10,11 @@ import { DEMO_MODE } from '@/lib/mode';
 import { enrichEventPublic, fetchEventFeed } from '@/lib/api';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { prepareWalletRoute } from '@/lib/wallet-cache';
+import { Ticket, CalendarDays, MapPin, UserRound } from 'lucide-react';
+import { PulseLine } from '@/components/ui/PulseLine';
+import { ListRow } from '@/components/ui/ListRow';
+import { Badge } from '@/components/ui/Badge';
+import { TextLink } from '@/components/ui/TextLink';
 import { Tabs } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
 import { EventCard } from '@/components/events/EventCard';
@@ -120,6 +125,7 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
   }
   return (
     <PageFrame
+      hideHeader={!!rsvpId && !!pass}
       title={rsvpId ? 'Your event pass' : 'Your plans, all here'}
       subtitle={
         rsvpId
@@ -147,10 +153,25 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
         {rsvpId ? (
           pass ? (
             <section className={`${styles.panel} ${styles.pass}`}>
-              <p className={styles.eyebrow}>{pass.organizerName}</p>
-              <h2>{pass.eventTitle}</h2>
+              <div className={styles.passStub}>
+                <p className={styles.muted}>{pass.organizerName}</p>
+                <h1>{pass.eventTitle}</h1>
+              </div>
+              <div className={styles.tear}>
+                <PulseLine />
+              </div>
               {pass.demo ? <p className={styles.banner}>DEMO PASS · Not valid for entry</p> : null}
-              <strong>{pass.status}</strong>
+              <Badge
+                variant={
+                  pass.status === 'CONFIRMED'
+                    ? 'success'
+                    : pass.status === 'WAITLISTED'
+                      ? 'warning'
+                      : 'danger'
+                }
+              >
+                {pass.status}
+              </Badge>
               {pass.status === 'CONFIRMED' && svg ? (
                 <div
                   className={styles.qr}
@@ -167,16 +188,17 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
                       : 'Preparing QR…'}
                 </p>
               )}
-              <h3>{pass.attendeeName}</h3>
-              <p>
-                {formatWatDateTime(pass.startsAt).compactLabel}
-                <br />
-                {pass.venueName}
-              </p>
-              {pass.showtimeLabel ? <p>{pass.showtimeLabel}</p> : null}
-              <p className={styles.mono}>{pass.rsvpId}</p>
-              <Link href={`/e/${pass.eventSlug}`}>Event details →</Link>
-              <Link href="/tickets">All tickets</Link>
+              <div className={styles.passDetails}>
+                <ListRow icon={UserRound} title={pass.attendeeName} />
+                <ListRow
+                  icon={CalendarDays}
+                  title={formatWatDateTime(pass.startsAt).compactLabel}
+                  meta={pass.showtimeLabel}
+                />
+                <ListRow icon={MapPin} title={pass.venueName} />
+              </div>
+              <p className={styles.ticketId}>{pass.rsvpId}</p>
+              <TextLink href={'/e/' + pass.eventSlug}>Event details</TextLink>
             </section>
           ) : !query.isPending && !query.error ? (
             <p>
@@ -190,55 +212,58 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
               tabs={['Upcoming', 'Interested', 'Past'].map((id) => ({ id, label: id }))}
               activeId={tab}
               onChange={setTab}
-            />
-            {tab === 'Interested' ? (
-              <>
-                <ResourceState
-                  pending={interests.isPending}
-                  error={interests.error}
-                  retry={interests.refetch}
-                />
-                {interests.data?.map((e) => (
-                  <EventCard key={e.id} event={e} />
-                ))}
-                {interests.data?.length === 0 ? (
-                  <p>No saved interests yet. Tap Interested on an event.</p>
-                ) : null}
-              </>
-            ) : (
-              <div className={styles.list}>
-                {[...groups.entries()].map(([key, tickets]) => (
-                  <section className={styles.panel} key={key}>
-                    {tickets.length > 1 ? <h2>Your Night</h2> : null}
-                    <div className={tickets.length > 1 ? styles.timeline : styles.list}>
-                      {tickets.map((t) => (
-                        <div key={t.rsvpId}>
-                          <p className={styles.eyebrow}>
-                            {formatWatDateTime(t.startsAt).timeLabel}
-                          </p>
-                          <h2>
-                            <Link href={`/tickets/${encodeURIComponent(t.rsvpId)}`}>
-                              {t.eventTitle}
-                            </Link>
-                          </h2>
-                          <p>
-                            {t.venueName} · {t.status}
-                            {t.demo ? ' · DEMO' : ''}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-                {selected.length === 0 && !query.isPending && !query.error ? (
-                  <section className={styles.panel}>
-                    <h2>{tab === 'Past' ? 'No past plans yet' : 'Your next night starts here'}</h2>
-                    <p>Find an event and reserve your spot.</p>
-                    <Link href="/">Explore campus events →</Link>
-                  </section>
-                ) : null}
-              </div>
-            )}
+            >
+              {tab === 'Interested' ? (
+                <>
+                  <ResourceState
+                    pending={interests.isPending}
+                    error={interests.error}
+                    retry={interests.refetch}
+                  />
+                  {interests.data?.map((e) => (
+                    <EventCard key={e.id} event={e} />
+                  ))}
+                  {interests.data?.length === 0 ? (
+                    <p>No saved interests yet. Tap Interested on an event.</p>
+                  ) : null}
+                </>
+              ) : (
+                <div className={styles.list}>
+                  {[...groups.entries()].map(([key, tickets]) => (
+                    <section className={styles.panel} key={key}>
+                      {tickets.length > 1 ? <h2>Your Night</h2> : null}
+                      <div className={tickets.length > 1 ? styles.timeline : styles.list}>
+                        {tickets.map((t) => (
+                          <ListRow
+                            key={t.rsvpId}
+                            icon={Ticket}
+                            title={t.eventTitle}
+                            href={'/tickets/' + encodeURIComponent(t.rsvpId)}
+                            meta={
+                              formatWatDateTime(t.startsAt).timeLabel +
+                              ' · ' +
+                              t.venueName +
+                              ' · ' +
+                              t.status +
+                              (t.demo ? ' · DEMO' : '')
+                            }
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                  {selected.length === 0 && !query.isPending && !query.error ? (
+                    <section className={styles.panel}>
+                      <h2>
+                        {tab === 'Past' ? 'No past plans yet' : 'Your next night starts here'}
+                      </h2>
+                      <p>Find an event and reserve your spot.</p>
+                      <Link href="/explore">Explore campus events</Link>
+                    </section>
+                  ) : null}
+                </div>
+              )}
+            </Tabs>
           </>
         )}
       </AccountGate>

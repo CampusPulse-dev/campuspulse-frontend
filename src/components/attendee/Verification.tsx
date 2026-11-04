@@ -1,4 +1,5 @@
 'use client';
+import { TextField } from '@/components/ui/Field';
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
@@ -143,35 +144,29 @@ export function Verification() {
                   void run(sent ? confirmOtp : sendOtp);
                 }}
               >
-                <label className={styles.field}>
-                  Student email
-                  <input
-                    required
-                    type="email"
-                    className={styles.input}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setSent(false);
-                      setCode('');
-                    }}
-                    autoComplete="email"
-                  />
-                </label>
+                <TextField
+                  label={<>Student email</>}
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setSent(false);
+                    setCode('');
+                  }}
+                  autoComplete="email"
+                />
                 {sent ? (
-                  <label className={styles.field}>
-                    Six-digit code
-                    <input
-                      required
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      pattern="[0-9]{6}"
-                      maxLength={6}
-                      className={styles.input}
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                    />
-                  </label>
+                  <TextField
+                    label={<>Six-digit code</>}
+                    required
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                  />
                 ) : null}
                 <Button type="submit" isLoading={busy}>
                   {sent ? 'Verify code' : 'Send code'}
@@ -201,16 +196,13 @@ export function Verification() {
                   void run(submitId);
                 }}
               >
-                <label className={styles.field}>
-                  Student ID image · JPEG or PNG · max 5 MB
-                  <input
-                    ref={file}
-                    required
-                    type="file"
-                    accept="image/jpeg,image/png"
-                    className={styles.input}
-                  />
-                </label>
+                <TextField
+                  label={<>Student ID image · JPEG or PNG · max 5 MB</>}
+                  ref={file}
+                  required
+                  type="file"
+                  accept="image/jpeg,image/png"
+                />
                 <Button type="submit" isLoading={busy} disabled={query.data?.status === 'PENDING'}>
                   {query.data?.status === 'PENDING' ? 'Awaiting review' : 'Submit for review'}
                 </Button>

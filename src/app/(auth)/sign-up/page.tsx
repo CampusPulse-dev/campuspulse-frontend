@@ -1,10 +1,10 @@
 'use client';
+import { TextField } from '@/components/ui/Field';
 
 import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
 
@@ -47,7 +47,6 @@ function SignUpForm() {
           <img src="/brand/logo.svg" alt="" className={styles.brandIcon} />
           <span>CampusPulse</span>
         </Link>
-        <Badge variant="verified">UI · Ibadan</Badge>
       </div>
 
       <h1 className={styles.authTitle}>Join the Campus Feed</h1>
@@ -60,44 +59,47 @@ function SignUpForm() {
       {error ? <div className={styles.errorBanner}>{error}</div> : null}
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.fieldLabel}>
-          <span>Display Name</span>
-          <input
-            type="text"
-            required
-            className={styles.textInput}
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="e.g. Tobi Adeyemi"
-          />
-        </label>
+        <TextField
+          label={
+            <>
+              <span>Display Name</span>
+            </>
+          }
+          type="text"
+          required
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder="e.g. Tobi Adeyemi"
+        />
 
-        <label className={styles.fieldLabel}>
-          <span>Email Address</span>
-          <input
-            type="email"
-            required
-            className={styles.textInput}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@stu.ui.edu.ng"
-          />
-        </label>
+        <TextField
+          label={
+            <>
+              <span>Email Address</span>
+            </>
+          }
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@stu.ui.edu.ng"
+        />
 
-        <label className={styles.fieldLabel}>
-          <span>Password (min. 10 characters)</span>
-          <input
-            type="password"
-            required
-            minLength={10}
-            className={styles.textInput}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
+        <TextField
+          label={
+            <>
+              <span>Password (min. 10 characters)</span>
+            </>
+          }
+          type="password"
+          required
+          minLength={10}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={!ready}>
-          Continue to 30s Persona Setup →
+          Create account
         </Button>
       </form>
 

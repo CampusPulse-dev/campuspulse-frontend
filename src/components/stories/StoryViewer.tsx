@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
+import { Pause, Play, X } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 import type { EnrichedStory } from '@/lib/campus-data';
 import Image from 'next/image';
 import { useDialog } from '@/lib/use-dialog';
@@ -20,6 +21,13 @@ export interface StoryViewerProps {
 export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: StoryViewerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
+  const [paused, setPaused] = useState(false);
+  const [holding, setHolding] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const remaining = useRef(5000);
+  const pressedAt = useRef(0);
+  const video = useRef<HTMLVideoElement>(null);
+  const stopped = Boolean(reduced || paused || holding || hidden);
   useDialog(activeIndex !== null, ref, onClose);
   const activeStory = activeIndex !== null ? (stories[activeIndex] ?? null) : null;
 
@@ -40,20 +48,34 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
       }
     }
 
-    const timer = window.setTimeout(() => {
-      if (activeIndex < stories.length - 1) {
-        onSelectIndex(activeIndex + 1);
-      } else {
-        onClose();
-      }
-    }, 5000);
-
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.clearTimeout(timer);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, stories.length, onSelectIndex, onClose]);
+  useEffect(() => {
+    remaining.current = 5000;
+  }, [activeStory?.id]);
+  useEffect(() => {
+    const visibility = () => setHidden(document.hidden);
+    document.addEventListener('visibilitychange', visibility);
+    return () => document.removeEventListener('visibilitychange', visibility);
+  }, []);
+  useEffect(() => {
+    if (activeIndex === null || stopped) return;
+    const started = performance.now();
+    const timer = window.setTimeout(() => {
+      if (activeIndex < stories.length - 1) onSelectIndex(activeIndex + 1);
+      else onClose();
+    }, remaining.current);
+    return () => {
+      window.clearTimeout(timer);
+      remaining.current = Math.max(0, remaining.current - (performance.now() - started));
+    };
+  }, [activeIndex, activeStory?.id, stories.length, stopped, onSelectIndex, onClose]);
+  useEffect(() => {
+    if (!video.current) return;
+    if (stopped) video.current.pause();
+    else void video.current.play().catch(() => {});
+  }, [stopped, activeStory?.id]);
 
   return (
     <AnimatePresence>
@@ -83,6 +105,8 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
               {stories.map((story, idx) => (
                 <div key={story.id} className={styles.progressSegment}>
                   <div
+                    key={activeStory.id}
+                    style={{ animationPlayState: stopped ? 'paused' : 'running' }}
                     className={`${styles.progressFill} ${
                       idx < activeIndex
                         ? styles.progressDone
@@ -109,23 +133,45 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
                   <div className={styles.viewerMeta}>24h Live Campus Story</div>
                 </div>
               </div>
-              <button
-                type="button"
-                className={styles.viewerCloseBtn}
-                onClick={onClose}
-                aria-label="Close stories"
-              >
-                ✕
-              </button>
+              <div className={styles.viewerControls}>
+                <button
+                  type="button"
+                  className={styles.viewerCloseBtn}
+                  aria-label={paused ? 'Resume stories' : 'Pause stories'}
+                  aria-pressed={paused}
+                  onClick={() => setPaused((value) => !value)}
+                >
+                  <Icon icon={paused ? Play : Pause} />
+                </button>
+                <button
+                  type="button"
+                  className={styles.viewerCloseBtn}
+                  onClick={onClose}
+                  aria-label="Close stories"
+                >
+                  <Icon icon={X} />
+                </button>
+              </div>
             </div>
 
             {/* Tap Zones + Story Body */}
-            <div className={styles.viewerStage}>
+            <div
+              className={styles.viewerStage}
+              onPointerDown={() => {
+                pressedAt.current = performance.now();
+                setHolding(true);
+              }}
+              onPointerUp={() => setHolding(false)}
+              onPointerCancel={() => setHolding(false)}
+              onPointerLeave={() => setHolding(false)}
+            >
               {activeStory.mediaType === 'VIDEO' ? (
                 <video
+                  ref={video}
                   key={activeStory.id}
                   src={activeStory.mediaUrl}
-                  autoPlay
+                  autoPlay={!stopped}
+                  controls={Boolean(reduced)}
                   muted
                   playsInline
                   aria-label={activeStory.headline}
@@ -144,7 +190,8 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
                 type="button"
                 className={styles.tapZoneLeft}
                 aria-label="Previous story"
-                onClick={() => {
+                onClick={(event) => {
+                  if (event.detail !== 0 && performance.now() - pressedAt.current > 180) return;
                   if (activeIndex > 0) onSelectIndex(activeIndex - 1);
                 }}
               />
@@ -152,7 +199,8 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
                 type="button"
                 className={styles.tapZoneRight}
                 aria-label="Next story"
-                onClick={() => {
+                onClick={(event) => {
+                  if (event.detail !== 0 && performance.now() - pressedAt.current > 180) return;
                   if (activeIndex < stories.length - 1) {
                     onSelectIndex(activeIndex + 1);
                   } else {
@@ -162,7 +210,6 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
               />
 
               <div className={styles.storyContentBox}>
-                <Badge variant="live">LIVE ON CAMPUS</Badge>
                 <h2 className={styles.storyHeadline}>{activeStory.headline}</h2>
                 {activeStory.caption ? (
                   <p className={styles.storyCaption}>{activeStory.caption}</p>

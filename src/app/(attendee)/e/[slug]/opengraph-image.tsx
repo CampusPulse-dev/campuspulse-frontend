@@ -94,8 +94,8 @@ export default async function EventOpengraphImage({
           color: '#F3ECFB',
         }}
       >
-        <div>🗓️ {dateStr} WAT</div>
-        <div>📍 {venue}</div>
+        <div>{dateStr} WAT</div>
+        <div>{venue}</div>
       </div>
     </div>,
     size,

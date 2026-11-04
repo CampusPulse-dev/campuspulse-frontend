@@ -1,211 +1,164 @@
 'use client';
-
-import React from 'react';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { BrandLockup } from '@/components/ui/BrandLockup';
 import { usePathname } from 'next/navigation';
-import { DEMO_MODE } from '@/lib/mode';
-import { motion } from 'framer-motion';
-import { springSnappy } from '@/lib/motion';
+import { House, Ticket, Users, Bell, UserRound, Search, ArrowLeft } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
+import { VerifiedMark } from '@/components/ui/VerifiedMark';
+import { DemoBanner } from './DemoBanner';
 import styles from './AttendeeShell.module.css';
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: string;
-  matchPrefix?: string;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Home', icon: '⚡' },
-  { href: '/tickets', label: 'Tickets', icon: '🎟️', matchPrefix: '/tickets' },
-  { href: '/friends', label: 'Friends', icon: '👥', matchPrefix: '/friends' },
-  { href: '/notifications', label: 'Alerts', icon: '🔔', matchPrefix: '/notifications' },
-  { href: '/settings', label: 'Profile', icon: '👤', matchPrefix: '/settings' },
-];
-
 export interface AttendeeShellProps {
-  children: React.ReactNode;
+  children: ReactNode;
   onOpenSearch?: () => void;
   unreadNotificationsCount?: number;
   userDisplayName?: string | null;
   isVerifiedStudent?: boolean;
+  serverSignedIn?: boolean;
 }
-
 export function AttendeeShell({
   children,
   onOpenSearch,
   unreadNotificationsCount = 0,
   userDisplayName,
   isVerifiedStudent,
+  serverSignedIn = false,
 }: AttendeeShellProps) {
   const pathname = usePathname() ?? '/';
-
-  function isRouteActive(item: NavItem) {
-    if (item.href === '/') {
-      return pathname === '/' || pathname.startsWith('/e/') || pathname.startsWith('/o/');
-    }
-    return item.matchPrefix ? pathname.startsWith(item.matchPrefix) : pathname === item.href;
-  }
-
+  if (pathname === '/' && !serverSignedIn)
+    return (
+      <div>
+        <DemoBanner />
+        <main className={styles.landingContent}>{children}</main>
+      </div>
+    );
+  const home = userDisplayName ? '/' : '/explore';
+  const items = [
+    { href: home, label: 'Home', icon: House },
+    { href: '/tickets', label: 'Tickets', icon: Ticket },
+    { href: '/friends', label: 'Friends', icon: Users },
+    { href: '/notifications', label: 'Alerts', icon: Bell },
+    { href: '/settings', label: 'Profile', icon: UserRound },
+  ];
+  const detail = pathname.startsWith('/e/') || /^\/tickets\/.+/.test(pathname);
+  const passPage = /^\/tickets\/.+/.test(pathname);
+  const active = (href: string) =>
+    href === home ? pathname === '/' || pathname === '/explore' : pathname.startsWith(href);
+  const brand = <BrandLockup />;
   return (
-    <div className={styles.shell}>
-      {/* Desktop Left Rail Navigation (>= 1024px) */}
+    <div className={styles.shell} data-detail={detail || undefined}>
       <aside className={styles.sidebar} aria-label="Primary desktop navigation">
         <div className={styles.brandRow}>
-          <Link href="/" className={styles.brandLink}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.svg" alt="" className={styles.brandLogo} />
-            <span className={styles.brandWordmark}>CampusPulse</span>
+          <Link href={home} className={styles.brandLink}>
+            {brand}
           </Link>
-          <span className={styles.campusBadge}>UI · Ibadan</span>
         </div>
-
         <nav className={styles.sideNav}>
-          {NAV_ITEMS.map((item) => {
-            const active = isRouteActive(item);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`${styles.sideNavLink} ${active ? styles.sideNavActive : ''}`}
-                aria-current={active ? 'page' : undefined}
-              >
-                {active ? (
-                  <motion.span
-                    layoutId="cp-desktop-nav-pill"
-                    className={styles.sideNavIndicator}
-                    transition={springSnappy}
-                  />
-                ) : null}
-                <span className={styles.navIcon} aria-hidden="true">
-                  {item.icon}
-                </span>
-                <span className={styles.navText}>{item.label}</span>
-                {item.href === '/notifications' && unreadNotificationsCount > 0 ? (
-                  <span className={styles.unreadPill}>{unreadNotificationsCount}</span>
-                ) : null}
-              </Link>
-            );
-          })}
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={[styles.sideNavLink, active(item.href) ? styles.sideNavActive : ''].join(
+                ' ',
+              )}
+              aria-current={active(item.href) ? 'page' : undefined}
+            >
+              <Icon icon={item.icon} />
+              <span className={styles.navText}>{item.label}</span>
+              {item.href === '/notifications' && unreadNotificationsCount > 0 ? (
+                <span
+                  className={styles.unreadDot}
+                  aria-label={unreadNotificationsCount + ' unread alerts'}
+                />
+              ) : null}
+            </Link>
+          ))}
+          <Link href="/search" className={styles.sideNavLink}>
+            <Icon icon={Search} />
+            Search
+          </Link>
         </nav>
-
         <div className={styles.sidebarFooter}>
           {userDisplayName ? (
             <div className={styles.userCard}>
-              <div className={styles.userMeta}>
-                <span className={styles.userName}>{userDisplayName}</span>
-                <span className={styles.userRole}>
-                  {isVerifiedStudent ? '✓ Verified UI Student' : 'Unverified Student'}
-                </span>
-              </div>
+              <span className={styles.userName}>
+                {userDisplayName} {isVerifiedStudent ? <VerifiedMark /> : null}
+              </span>
+              <span className={styles.userRole}>
+                {isVerifiedStudent ? 'UI student' : 'Student status unverified'}
+              </span>
               {!isVerifiedStudent ? (
                 <Link href="/verify" className={styles.verifyLink}>
-                  Verify @stu.ui.edu.ng →
+                  Verify student status
                 </Link>
               ) : null}
             </div>
           ) : (
             <div className={styles.authPrompt}>
-              <p className={styles.authPromptCopy}>
-                Lock in free RSVPs and save offline QR passes for the door.
-              </p>
+              <p className={styles.authPromptCopy}>Find your people. Save your next plan.</p>
               <div className={styles.authLinks}>
                 <Link href="/sign-in" className={styles.signInBtn}>
-                  Sign In
+                  Sign in
                 </Link>
                 <Link href="/sign-up" className={styles.signUpBtn}>
-                  Join UI Feed
+                  Join CampusPulse
                 </Link>
               </div>
             </div>
           )}
         </div>
       </aside>
-
-      {/* Main Content Column */}
       <div className={styles.mainColumn}>
-        {DEMO_MODE ? (
-          <div
-            role="status"
-            style={{
-              padding: 'var(--space-3)',
-              background: 'var(--status-warning-bg)',
-              textAlign: 'center',
-            }}
-          >
-            Demo mode · Sample campus data · Passes are not valid for entry
-          </div>
-        ) : null}
+        <DemoBanner />
         <header className={styles.mobileHeader}>
-          <Link href="/" className={styles.mobileBrand}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.svg" alt="" className={styles.brandLogoSm} />
-            <span className={styles.brandWordmarkSm}>CampusPulse</span>
-          </Link>
-
-          <div className={styles.headerActions}>
-            {onOpenSearch ? (
-              <button
-                type="button"
-                className={styles.iconAction}
-                onClick={onOpenSearch}
-                aria-label="Search events and clubs"
-              >
-                🔍
-              </button>
-            ) : (
-              <Link
-                href="/search"
-                className={styles.iconAction}
-                aria-label="Search events and clubs"
-              >
-                ⌕
-              </Link>
-            )}
-            <Link href="/notifications" className={styles.iconAction} aria-label="Notifications">
-              🔔
-              {unreadNotificationsCount > 0 ? <span className={styles.unreadDot} /> : null}
+          {passPage ? (
+            <Link href="/tickets" className={styles.iconAction} aria-label="Back to tickets">
+              <Icon icon={ArrowLeft} />
             </Link>
-            {!userDisplayName ? (
-              <Link href="/sign-in" className={styles.headerSignIn}>
-                Sign In
-              </Link>
-            ) : null}
-          </div>
+          ) : null}
+          <Link href={home} className={styles.mobileBrand}>
+            {brand}
+          </Link>
+          {passPage ? null : onOpenSearch ? (
+            <button
+              type="button"
+              className={styles.iconAction}
+              onClick={onOpenSearch}
+              aria-label="Search events and clubs"
+            >
+              <Icon icon={Search} />
+            </button>
+          ) : (
+            <Link href="/search" className={styles.iconAction} aria-label="Search events and clubs">
+              <Icon icon={Search} />
+            </Link>
+          )}
         </header>
-
         <main className={styles.content}>{children}</main>
       </div>
-
-      {/* Mobile Bottom Tab Bar (< 768px) */}
-      <nav className={styles.bottomNav} aria-label="Mobile bottom navigation">
-        {NAV_ITEMS.map((item) => {
-          const active = isRouteActive(item);
-          return (
+      {!detail ? (
+        <nav className={styles.bottomNav} aria-label="Mobile bottom navigation">
+          {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`${styles.bottomNavItem} ${active ? styles.bottomNavActive : ''}`}
-              aria-current={active ? 'page' : undefined}
+              className={[
+                styles.bottomNavItem,
+                active(item.href) ? styles.bottomNavActive : '',
+              ].join(' ')}
+              aria-current={active(item.href) ? 'page' : undefined}
             >
-              {active ? (
-                <motion.span
-                  layoutId="cp-mobile-nav-pill"
-                  className={styles.bottomNavIndicator}
-                  transition={springSnappy}
-                />
-              ) : null}
-              <span className={styles.bottomNavIcon} aria-hidden="true">
-                {item.icon}
+              <span className={styles.bottomNavIcon}>
+                <Icon icon={item.icon} strokeWidth={active(item.href) ? 2.25 : 1.75} />
                 {item.href === '/notifications' && unreadNotificationsCount > 0 ? (
                   <span className={styles.bottomUnreadDot} />
                 ) : null}
               </span>
               <span className={styles.bottomNavLabel}>{item.label}</span>
             </Link>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
+      ) : null}
     </div>
   );
 }
