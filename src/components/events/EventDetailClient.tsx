@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, MapPin, Ticket, Shirt, Bookmark, Share2 } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
@@ -43,9 +43,7 @@ export function EventDetailView({
   const { user, accessToken, privacy, interestedEventIds, toggleInterested } = useAuth();
   const { pushToast } = useToast();
 
-  const [savedTicket, setSavedTicket] = useState<OfflineTicketPass | null>(() =>
-    isSignedOutPreview ? null : null,
-  );
+  const [savedTicket, setSavedTicket] = useState<OfflineTicketPass | null>(null);
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string | null>(
     event.showtimes?.[0]?.id ?? null,
   );
@@ -71,7 +69,9 @@ export function EventDetailView({
 
   async function reserve(target: EnrichedEvent) {
     if (!user) throw new Error('Sign in to RSVP.');
-    const selected = target.showtimes?.find((s) => s.id === selectedShowtimeId);
+    // The showtime picker belongs to this page's event; a linked after-party has its own schedule.
+    const showtimeId = target.id === event.id ? selectedShowtimeId : null;
+    const selected = target.showtimes?.find((s) => s.id === showtimeId);
     if (selected && selected.spotsLeft <= 0)
       throw new Error('This showtime is full. Choose another time.');
     if (target.studentsOnly && !user.isVerifiedStudent)
@@ -85,7 +85,7 @@ export function EventDetailView({
           body: JSON.stringify({
             eventId: target.id,
             hideFromFriends: privacy.hideFromFriends || privacy.stealthRsvp,
-            showtimeId: selectedShowtimeId ?? undefined,
+            showtimeId: showtimeId ?? undefined,
             ambassadorCode: new URLSearchParams(window.location.search).get('ref') ?? undefined,
             inviteCode: new URLSearchParams(window.location.search).get('invite') ?? undefined,
           }),
@@ -95,7 +95,7 @@ export function EventDetailView({
       event: target,
       attendeeName: user.displayName,
       isVerifiedStudent: user.isVerifiedStudent,
-      showtimeLabel: target.showtimes?.find((s) => s.id === selectedShowtimeId)?.label,
+      showtimeLabel: selected?.label,
       rsvp,
     });
   }
@@ -116,6 +116,20 @@ export function EventDetailView({
       setBusy(false);
     }
   }
+  // "Sign in & continue" comes back with ?autoRsvp=1; finish the RSVP once, then drop the flag
+  // so a refresh or back-navigation can't fire it again.
+  const autoRsvpHandled = useRef(false);
+  useEffect(() => {
+    if (!user || isSignedOutPreview || autoRsvpHandled.current) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('autoRsvp') !== '1') return;
+    autoRsvpHandled.current = true;
+    url.searchParams.delete('autoRsvp');
+    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    if (!activeTicket) queueMicrotask(() => void handleRsvpClick());
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once, when the signed-in user is known
+  }, [user, isSignedOutPreview]);
+
   async function handleAddAfterParty() {
     if (!event.linkedAfterParty) return;
     try {
@@ -383,7 +397,9 @@ export function EventDetailView({
             {!user ? (
               <Link
                 className={styles.primaryModalLink}
-                href={'/sign-in?next=' + encodeURIComponent(returnTo ?? '/e/' + event.slug)}
+                href={
+                  '/sign-in?autoRsvp=1&next=' + encodeURIComponent(returnTo ?? '/e/' + event.slug)
+                }
               >
                 Sign in to RSVP
               </Link>

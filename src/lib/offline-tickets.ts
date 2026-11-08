@@ -75,6 +75,14 @@ export async function clearTicketAccount() {
     for (const key of await caches.keys())
       if (key.startsWith('cp-wallet') || key.startsWith('cp-door')) await caches.delete(key);
   }
+  // The door scanner keeps roster names and scan logs (NDPA personal data) in its own
+  // database; it must not outlive the account that downloaded it.
+  if (typeof indexedDB !== 'undefined') {
+    await new Promise<void>((resolve) => {
+      const request = indexedDB.deleteDatabase('cp_scanner_v1');
+      request.onsuccess = request.onerror = request.onblocked = () => resolve();
+    });
+  }
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('cp_my_tickets_mirror_v1');
     localStorage.removeItem('cp_auth_user_v1');

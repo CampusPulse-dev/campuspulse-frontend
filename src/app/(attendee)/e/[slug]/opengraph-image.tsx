@@ -19,7 +19,8 @@ export default async function EventOpengraphImage({
 
   const title = event?.title ?? 'CampusPulse Event';
   const venue = event?.venueName ?? 'University of Ibadan';
-  const organizer = event?.organizer.name ?? 'Verified UI Club';
+  const organizer = event?.organizer.name ?? 'CampusPulse';
+  const organizerVerified = event?.organizer.isVerified ?? false;
   const rsvpCount = event?.rsvpCount ?? 0;
   const dateStr = event ? formatWatDateTime(event.startsAt).compactLabel : 'Live on CampusPulse';
 
@@ -69,7 +70,8 @@ export default async function EventOpengraphImage({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ fontSize: '26px', color: '#E0AAFF', fontWeight: 600 }}>
-          Hosted by {organizer} ✓
+          Hosted by {organizer}
+          {organizerVerified ? ' ✓' : ''}
         </div>
         <div
           style={{

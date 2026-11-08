@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useParams } from 'next/navigation';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { OrganizerShell } from '@/components/organizer/OrganizerShell';
 import { useAuth } from '@/lib/auth-context';
 

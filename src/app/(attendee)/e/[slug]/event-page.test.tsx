@@ -31,8 +31,9 @@ describe('SSR Public Event Page & Commitment Controls (S4-02)', () => {
   it('requires sign-in instead of issuing a local pass to a signed-out visitor', () => {
     const { getByRole } = render(<EventDetailView event={SEED_EVENTS[0]!} />);
     expect(document.querySelector('button[aria-busy]')).toBeNull();
-    expect(getByRole('link', { name: /Sign in to RSVP/i }).getAttribute('href')).toContain(
-      '/sign-in?next=',
-    );
+    const href = getByRole('link', { name: /Sign in to RSVP/i }).getAttribute('href') ?? '';
+    // autoRsvp=1 lets the event page finish the RSVP once the visitor is back from sign-in.
+    expect(href).toContain('/sign-in?autoRsvp=1&next=');
+    expect(href).toContain(encodeURIComponent('/e/' + SEED_EVENTS[0]!.slug));
   });
 });

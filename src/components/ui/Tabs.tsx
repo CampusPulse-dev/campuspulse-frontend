@@ -35,7 +35,7 @@ export function Tabs({ tabs, activeId, onChange, children, label = 'Views' }: Ta
             className={[styles.tab, activeId === tab.id ? styles.active : ''].join(' ')}
             onClick={() => onChange(tab.id)}
             onKeyDown={(event) => {
-              let next = index;
+              let next: number;
               if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
               else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
               else if (event.key === 'Home') next = 0;

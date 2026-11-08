@@ -188,7 +188,7 @@ export const SEED_EVENTS: EnrichedEvent[] = [
   },
   {
     id: '22222222-2222-4222-8222-222222222203',
-    slug: 'death-and-the-kings-horseman-stage',
+    slug: 'lion-and-the-jewel-stage',
     title: 'The Lion & The Jewel: Command Stage Adaptation',
     description:
       'An immersive candlelight stage production by the Department of Theatre Arts featuring live bata percussion and contemporary choreography.',
@@ -199,7 +199,7 @@ export const SEED_EVENTS: EnrichedEvent[] = [
     venueName: 'Wole Soyinka Arts Theatre',
     venueDetail:
       'Doors close strictly 10 minutes after curtain call. Pick your preferred showtime below.',
-    coverImageUrl: '/demo/events/death-and-the-kings-horseman-stage.webp',
+    coverImageUrl: '/demo/events/lion-and-the-jewel-stage.webp',
     capacity: 220,
     rsvpCount: 198,
     organizer: SEED_ORGANIZERS[1]!,

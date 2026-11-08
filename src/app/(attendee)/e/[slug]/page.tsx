@@ -1,8 +1,12 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchEventBySlug } from '@/lib/api';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { EventDetailView } from '@/components/events/EventDetailClient';
+
+// generateMetadata and the page render in the same request; fetch the event once for both.
+const getEvent = cache(fetchEventBySlug);
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
@@ -11,7 +15,7 @@ interface EventPageProps {
 
 export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const event = await fetchEventBySlug(slug);
+  const event = await getEvent(slug);
   if (!event) {
     return {
       title: 'Event Not Found',
@@ -40,7 +44,7 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
 
 export default async function PublicEventPage({ params, searchParams }: EventPageProps) {
   const { slug } = await params;
-  const event = await fetchEventBySlug(slug);
+  const event = await getEvent(slug);
 
   if (!event) {
     notFound();

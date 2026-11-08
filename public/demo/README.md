@@ -17,7 +17,7 @@ with official, permission-cleared logos when those assets are available.
 | ----------------------------------------- | ----------------------------------------------- | --------------- |
 | `havana-night-sub-field.webp`             | Sigma Havana Night: neon crowd and stage lights | 1080×1350 (4:5) |
 | `havana-official-afterparty-zik.webp`     | Zik Hall after-party lounge                     | 1080×1350 (4:5) |
-| `death-and-the-kings-horseman-stage.webp` | The Lion & The Jewel stage play                 | 1080×1350 (4:5) |
+| `lion-and-the-jewel-stage.webp`           | The Lion & The Jewel stage play                 | 1080×1350 (4:5) |
 | `mellanby-vs-tedder-interhall-final.webp` | Inter-hall football final under floodlights     | 1600×900 (16:9) |
 | `ui-ai-and-systems-summit.webp`           | Offline-First summit: speaker and audience      | 1600×900 (16:9) |
 

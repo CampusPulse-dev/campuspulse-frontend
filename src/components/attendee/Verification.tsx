@@ -54,8 +54,9 @@ export function Verification() {
     await query.refetch();
   }
   async function sendOtp() {
-    if (!/^[^@\s]+@stu\.ui\.edu\.ng$/i.test(email))
-      throw new Error('Use your @stu.ui.edu.ng student email.');
+    // Same rule as the backend StudentEmail contract: any *.ui.edu.ng mailbox.
+    if (!/^[^@\s]+@(?:[a-z0-9-]+\.)+ui\.edu\.ng$/i.test(email))
+      throw new Error('Use your University of Ibadan email (e.g. you@stu.ui.edu.ng).');
     if (!DEMO_MODE)
       await attendeeRequest(
         'StudentVerificationState',
