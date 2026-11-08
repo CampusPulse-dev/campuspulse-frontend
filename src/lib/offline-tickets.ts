@@ -76,13 +76,9 @@ export async function clearTicketAccount() {
       if (key.startsWith('cp-wallet') || key.startsWith('cp-door')) await caches.delete(key);
   }
   // The door scanner keeps roster names and scan logs (NDPA personal data) in its own
-  // database; it must not outlive the account that downloaded it.
-  if (typeof indexedDB !== 'undefined') {
-    await new Promise<void>((resolve) => {
-      const request = indexedDB.deleteDatabase('cp_scanner_v1');
-      request.onsuccess = request.onerror = request.onblocked = () => resolve();
-    });
-  }
+  // database; it must not outlive the account that downloaded it. Not awaited: the browser
+  // finishes the delete on its own, and WebKit can take long enough to stall sign-out.
+  if (typeof indexedDB !== 'undefined') indexedDB.deleteDatabase('cp_scanner_v1');
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('cp_my_tickets_mirror_v1');
     localStorage.removeItem('cp_auth_user_v1');
