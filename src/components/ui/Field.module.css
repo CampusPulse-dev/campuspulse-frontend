@@ -1,0 +1,123 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label,
+.toggleLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.control {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  /* >= 16px prevents iOS Safari viewport auto-zoom */
+  font-size: var(--text-base);
+  font-family: var(--font-body);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--status-danger);
+}
+
+.textarea {
+  padding: var(--space-3);
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.5rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--status-danger);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 64px;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-separator);
+  cursor: pointer;
+}
+.toggleCopy {
+  display: grid;
+  gap: var(--space-1);
+}
+.switchControl {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.switchInput {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  z-index: 1;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+}
+.switchTrack {
+  width: 44px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+  position: relative;
+}
+.switchTrack::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  transition: transform 160ms var(--ease-ui);
+}
+.switchInput:checked + .switchTrack {
+  background: var(--color-text);
+}
+.switchInput:checked + .switchTrack::after {
+  transform: translateX(18px);
+}
+.switchControl:has(:disabled) {
+  opacity: 0.65;
+}

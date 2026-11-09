@@ -1,0 +1,280 @@
+.feedContainer {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 58rem;
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-6);
+}
+.feedHeader h1 {
+  margin-bottom: var(--space-2);
+}
+.feedHeader p {
+  color: var(--color-text-muted);
+  margin: 0;
+  font: var(--type-meta);
+}
+.filterBar {
+  min-width: 0;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 25;
+  background: var(--color-bg);
+  padding-top: var(--space-2);
+  border-bottom: 1px solid var(--color-separator);
+}
+.periodRow {
+  display: flex;
+  gap: var(--space-5);
+}
+.periodRow button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: 600 var(--text-sm) var(--font-body);
+  cursor: pointer;
+}
+.periodRow .periodActive {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+.categoryBar {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-block: var(--space-2);
+  scrollbar-width: thin;
+}
+.catFilterBtn {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: 500 var(--text-sm) var(--font-body);
+  cursor: pointer;
+}
+.catFilterActive {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.moodRow {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: thin;
+}
+.moodRow .catFilterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.sectionHeaderInline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.sectionTitle {
+  margin: 0;
+  font: var(--type-title);
+}
+.forYouSection,
+.primaryFeedSection {
+  min-width: 0;
+}
+.forYouScroller {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--space-3);
+}
+.forYouItem {
+  flex: 0 0 min(82%, 20rem);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.feedStack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-5);
+}
+.eventCard {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+.poster {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  aspect-ratio: 16/9;
+  background: var(--cp-ink);
+}
+.posterLink {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+}
+.posterImage {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: var(--cp-ink);
+}
+.cover {
+  object-fit: cover;
+}
+.posterFallback {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--cp-purple), var(--cp-ink));
+  color: var(--color-hero-text);
+}
+.posterFallback strong {
+  font: 400 clamp(22px, 2.5vw, 34px)/1.04 var(--font-display);
+  max-width: 16ch;
+}
+.posterFallback > span {
+  font: var(--type-label);
+  color: var(--color-hero-muted);
+}
+.posterFallback > span:first-child {
+  padding-top: 16px;
+}
+.posterCategory {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-scrim);
+  color: var(--color-hero-text);
+  pointer-events: none;
+}
+.posterCategory span {
+  color: inherit;
+}
+.starBtn {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-hero-text);
+  cursor: pointer;
+}
+.starBtn[aria-pressed='true'] {
+  color: var(--cp-lavender);
+}
+.cardBody {
+  padding-block: var(--space-4);
+}
+.cardHeading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.titleLink {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 0;
+  flex: 1;
+  text-decoration: none;
+  color: var(--color-text);
+}
+.cardTitle {
+  font: 400 20px/1.25 var(--font-display);
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+.cardVenue {
+  color: var(--color-text-muted);
+  font: var(--type-meta);
+  margin-bottom: var(--space-3);
+}
+.cardVenue time {
+  font-family: var(--font-mono);
+}
+.templateMeta {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3);
+}
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.cardActions {
+  margin-left: auto;
+}
+.goingPillLink {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  font: 600 var(--text-sm) var(--font-body);
+  text-decoration: none;
+}
+.emptyState {
+  padding-block: var(--space-6);
+  color: var(--color-text-muted);
+}
+.inlineResetLink {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  min-height: 44px;
+  cursor: pointer;
+}
+.detailPoster {
+  position: absolute;
+  inset: 0;
+}
+@media (min-width: 1024px) {
+  .filterBar {
+    top: 0;
+  }
+}
+@media (max-width: 600px) {
+  .feedStack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+  .feedHeader h1 {
+    font-size: 30px;
+  }
+  .posterFallback strong {
+    font-size: 30px;
+  }
+}
