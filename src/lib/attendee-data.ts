@@ -1,6 +1,6 @@
 import { apiFetch, type Schemas, type EventPublic, enrichEventPublic } from './api';
 import { SEED_EVENTS, SEED_ORGANIZERS, DEFAULT_DEMO_USER } from './campus-data';
-import { DEMO_MODE, DATA_MODE } from './mode';
+import { DEMO_MODE, DATA_MODE, DEV_AUTH_MODE, getDevAuthEmail } from './mode';
 
 export type PersonaProfile = Schemas['AttendeePersona'];
 export type PrivacyPreferences = Schemas['AttendeePrivacy'];
@@ -24,7 +24,12 @@ export function readLocal<T>(key: string, fallback: T): T {
 export function writeLocal(key: string, value: unknown) {
   localStorage.setItem(`${DATA_MODE}:${key}`, JSON.stringify(value));
 }
+// TODO(S1-02): restore unconditional Bearer header once real JWT auth lands.
 export function authHeaders(token: string | null): HeadersInit {
+  if (DEV_AUTH_MODE) {
+    const devEmail = getDevAuthEmail();
+    return devEmail ? { 'X-Dev-User': devEmail } : {};
+  }
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 export async function attendeeRequest<K extends keyof Schemas>(

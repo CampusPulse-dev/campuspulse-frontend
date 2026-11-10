@@ -7,7 +7,7 @@ import {
   type EnrichedEvent,
   type EnrichedStory,
 } from './campus-data';
-import { DEMO_MODE } from './mode';
+import { DEMO_MODE, DEV_AUTH_MODE, getDevAuthEmail } from './mode';
 
 /**
  * Types generated from the backend's OpenAPI spec. Never hand-write a
@@ -65,10 +65,17 @@ export async function uploadPrivateDocument(url: string, file: File): Promise<vo
  * and typechecks in CI, not here at request time. See ADR 0001.
  */
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers({ 'content-type': 'application/json', ...init?.headers });
+  // TODO(S1-02): remove X-Dev-User header injection and Bearer stripping once JWT auth lands.
+  if (DEV_AUTH_MODE) {
+    headers.delete('authorization');
+    const devEmail = getDevAuthEmail();
+    if (devEmail) headers.set('X-Dev-User', devEmail);
+  }
   const response = await fetch(`${BASE_URL}/api/v1${path}`, {
     credentials: 'include',
     ...init,
-    headers: { 'content-type': 'application/json', ...init?.headers },
+    headers,
   });
 
   const body: unknown = await response.json().catch(() => null);

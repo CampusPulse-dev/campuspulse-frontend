@@ -43,10 +43,146 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Public event feed, filterable by category */
+        /** Public event feed, filterable by category, mood (next 6h), start time, and search */
         get: operations["EventsController_feed"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/for-you": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Personalized For You recommendations from follows, friends, check-ins, and persona */
+        get: operations["EventsController_forYou"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a draft event for an organizer team */
+        post: operations["EventsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update event details or template blocks */
+        patch: operations["EventsController_update"];
+        trace?: never;
+    };
+    "/events/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a draft event (verified organizers only) */
+        post: operations["EventsController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel an event with a mandatory attendee reason */
+        post: operations["EventsController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{id}/fixture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update live match score and period status */
+        patch: operations["EventsController_updateFixture"];
+        trace?: never;
+    };
+    "/events/{id}/approve-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve a cross-organizer after-party link (parent OWNER only) */
+        post: operations["EventsController_approveLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{eventId}/door-staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Grant per-event scanner access until endsAt + 4h (Club OWNER only) */
+        post: operations["EventsController_grantDoorStaff"];
         delete?: never;
         options?: never;
         head?: never;
@@ -70,26 +206,575 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active 24-hour stories grouped by organizer (followed first) */
+        get: operations["StoriesController_list"];
+        put?: never;
+        /** Post a 24-hour story for a verified organizer */
+        post: operations["StoriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a story (organizer team or moderator) */
+        delete: operations["StoriesController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue a short-lived presigned PUT URL for public media uploads */
+        post: operations["MediaController_createUploadUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search published campus events and verified clubs */
+        get: operations["SearchController_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current signed-in user profile */
+        get: operations["UsersController_getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update display name of signed-in user */
+        patch: operations["UsersController_updateMe"];
+        trace?: never;
+    };
+    "/users/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current attendee persona and privacy preferences */
+        get: operations["UsersController_getPreferences"];
+        /** Update attendee privacy and notification category mutes */
+        put: operations["UsersController_updatePreferences"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me/persona": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save attendee onboarding persona, UI cohort, and starter club follows */
+        put: operations["UsersController_updatePersona"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public organizer club profile by slug */
+        get: operations["OrganizersController_getBySlug"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{slug}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published events hosted by this organizer */
+        get: operations["OrganizersController_getEventsBySlug"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{id}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Follow an organizer club (idempotent) */
+        post: operations["OrganizersController_follow"];
+        /** Unfollow an organizer club (idempotent) */
+        delete: operations["OrganizersController_unfollow"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/creators/{handle}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public campus creator profile and featured events */
+        get: operations["CreatorsController_getByHandle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/creators/{id}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Follow a campus creator (idempotent) */
+        post: operations["CreatorsController_follow"];
+        /** Unfollow a campus creator (idempotent) */
+        delete: operations["CreatorsController_unfollow"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/friends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List accepted friends, pending requests, and hall/faculty cohort suggestions */
+        get: operations["FriendsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/friends/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a mutual friend request */
+        post: operations["FriendsController_requestFriendship"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/friends/{id}/respond": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept, decline, or block a friend request or suggested peer */
+        post: operations["FriendsController_respond"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/rsvps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reserve an event pass or waitlist spot with atomic capacity locking and Ed25519 QR */
+        post: operations["AttendanceController_createRsvp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/rsvps/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Cancel caller RSVP and atomically promote the oldest waitlisted attendee */
+        delete: operations["AttendanceController_cancelRsvp"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/me/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List signed-in attendee tickets and Your Night parent/after-party groups */
+        get: operations["AttendanceController_listMyTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/interested/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bookmark an event as Interested for reminder updates */
+        post: operations["AttendanceController_addInterest"];
+        /** Remove an event from Interested bookmarks */
+        delete: operations["AttendanceController_removeInterest"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/ambassador-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate a trackable ambassador referral link (verified Creators) */
+        post: operations["AttendanceController_createAmbassadorLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/events/{eventId}/scanner-pack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pre-sync offline scanner pack (Ed25519 public key + minimal QR digest roster for Owner/Manager/Door Staff) */
+        get: operations["AttendanceController_getScannerPack"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/events/{eventId}/roster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Full event RSVP roster with JSON or CSV export (Club OWNER and MANAGER only) */
+        get: operations["AttendanceController_getRoster"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a single online QR scan or manual check-in preserving client scannedAt */
+        post: operations["AttendanceController_checkIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/check-in/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Idempotently replay up to 500 queued offline scans preserving client scannedAt */
+        post: operations["AttendanceController_checkInBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance/events/{eventId}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Event headcount, north-star conversion rate, duplicates, and manual check-in stats */
+        get: operations["AttendanceController_getEventStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit an attendee moderation report for an event */
+        post: operations["ReportsController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List in-app notifications for the signed-in user (newest first) */
+        get: operations["NotificationsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark all unread notifications as read for the signed-in user */
+        post: operations["NotificationsController_markAllRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a single notification as read */
+        post: operations["NotificationsController_markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/push-subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register an HTTPS Web Push VAPID subscription for this device */
+        post: operations["NotificationsController_subscribePush"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update notification category mute preferences */
+        patch: operations["NotificationsController_updatePreferences"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
+        AfterPartyAccessRule: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+        /** @enum {string} */
         CheckInMethod: "QR_SCAN" | "MANUAL";
         /** @enum {string} */
         EventCategory: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
         /** @enum {string} */
+        EventLinkType: "AFTER_PARTY" | "SERIES_CHILD";
+        /** @enum {string} */
         EventStatus: "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+        /** @enum {string} */
+        EventTemplate: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT" | "DINNER_GALA" | "TALK_WORKSHOP";
+        /** @enum {string} */
+        FollowTargetType: "ORGANIZER" | "CREATOR" | "VENDOR";
+        /** @enum {string} */
+        FriendshipStatus: "PENDING" | "ACCEPTED" | "BLOCKED";
+        /** @enum {string} */
+        NotificationCategory: "REMINDER" | "EVENT_CRITICAL" | "FOLLOWED_POST" | "SOCIAL_FRIEND" | "RECOMMENDATION" | "SYSTEM_VERIFICATION";
         /** @enum {string} */
         NotificationChannel: "PUSH" | "IN_APP" | "EMAIL";
         /** @enum {string} */
+        OrganizerTeamRole: "OWNER" | "MANAGER";
+        /** @enum {string} */
         RsvpStatus: "CONFIRMED" | "WAITLISTED" | "CANCELLED";
         /** @enum {string} */
-        UserRole: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+        TonightMood: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME";
+        /** @enum {string} */
+        UserRole: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
         /** @enum {string} */
         VerificationStatus: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
         /** @enum {string} */
-        VerificationSubject: "ORGANIZER_CLUB" | "STUDENT_ID";
+        VerificationSubject: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
         AuditLogEntry: {
             /** Format: uuid */
             id: string;
@@ -263,14 +948,14 @@ export interface components {
             /** Format: uri */
             avatarUrl: string | null;
             /** @enum {string} */
-            role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+            role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
             isVerifiedStudent: boolean;
         };
         VerificationRequest: {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            subject: "ORGANIZER_CLUB" | "STUDENT_ID";
+            subject: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
             /** @enum {string} */
             status: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
             submittedBy: {
@@ -280,7 +965,7 @@ export interface components {
                 /** Format: uri */
                 avatarUrl: string | null;
                 /** @enum {string} */
-                role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                 isVerifiedStudent: boolean;
             };
             /** Format: date-time */
@@ -292,7 +977,7 @@ export interface components {
                 /** Format: uri */
                 avatarUrl: string | null;
                 /** @enum {string} */
-                role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                 isVerifiedStudent: boolean;
             } | null;
             /** Format: date-time */
@@ -305,10 +990,16 @@ export interface components {
             reason: string;
         };
         CreateEventBody: {
+            /** Format: uuid */
+            organizerId?: string;
             title: string;
             description: string;
             /** @enum {string} */
             category: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+            /** @enum {string} */
+            template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+            /** @enum {string|null} */
+            tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME" | null;
             /** Format: date-time */
             startsAt: string;
             /** Format: date-time */
@@ -320,8 +1011,79 @@ export interface components {
             coverImageUrl: string;
             /** @default null */
             capacity: number | null;
+            studentsOnly?: boolean;
+            waitlistEnabled?: boolean;
+            dressCode?: string | null;
+            doorPolicy?: string | null;
+            /** Format: uri */
+            whatsappGroupUrl?: string | null;
+            /** Format: uuid */
+            parentEventId?: string | null;
+            /** @enum {string|null} */
+            linkType?: "AFTER_PARTY" | "SERIES_CHILD" | null;
+            /** @enum {string} */
+            afterPartyAccess?: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+            lineup?: {
+                performerName: string;
+                role: string;
+                /** @default  */
+                setTime: string;
+                /** Format: uuid */
+                creatorId?: string | null;
+            }[];
+            castAndCrew?: string[];
+            showtimes?: {
+                label: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt?: string | null;
+                capacity?: number | null;
+            }[];
+            fixture?: {
+                homeTeam: string;
+                awayTeam: string;
+                /** @default 0 */
+                homeScore: number;
+                /** @default 0 */
+                awayScore: number;
+                /** @default false */
+                isLive: boolean;
+                /** @default Scheduled */
+                periodLabel: string;
+            };
+        };
+        CreateEventFixture: {
+            homeTeam: string;
+            awayTeam: string;
+            /** @default 0 */
+            homeScore: number;
+            /** @default 0 */
+            awayScore: number;
+            /** @default false */
+            isLive: boolean;
+            /** @default Scheduled */
+            periodLabel: string;
+        };
+        CreateEventLineupItem: {
+            performerName: string;
+            role: string;
+            /** @default  */
+            setTime: string;
+            /** Format: uuid */
+            creatorId?: string | null;
+        };
+        CreateEventShowtime: {
+            label: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt?: string | null;
+            capacity?: number | null;
         };
         CreateStoryBody: {
+            /** Format: uuid */
+            organizerId?: string;
             /**
              * Format: uuid
              * @default null
@@ -334,6 +1096,21 @@ export interface components {
             /** @default null */
             caption: string | null;
         };
+        DoorStaffGrantResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            eventId: string;
+            eventTitle: string;
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            emailHint: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
         FeedQuery: {
             cursor?: string;
             /** @default 20 */
@@ -342,6 +1119,9 @@ export interface components {
             category?: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
             /** Format: date-time */
             from?: string;
+            /** @enum {string} */
+            mood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME";
+            search?: string;
         };
         FeedResponse: {
             items: {
@@ -433,6 +1213,35 @@ export interface components {
             }[];
             nextCursor: string | null;
         };
+        ForYouQuery: {
+            /** @default 10 */
+            limit: number;
+        };
+        GrantDoorStaffBody: {
+            /** Format: email */
+            email: string;
+        };
+        /** @enum {string} */
+        MediaUploadPurpose: "EVENT_COVER" | "STORY_MEDIA" | "AVATAR" | "ORGANIZER_LOGO";
+        MediaUploadUrlBody: {
+            /** @enum {string} */
+            purpose: "EVENT_COVER" | "STORY_MEDIA" | "AVATAR" | "ORGANIZER_LOGO";
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "video/mp4" | "video/webm";
+            size: number;
+        };
+        MediaUploadUrlResponse: {
+            /** Format: uri */
+            uploadUrl: string;
+            /** Format: uri */
+            publicUrl: string;
+            key: string;
+            expiresIn: number;
+        };
+        SearchQuery: {
+            /** @default  */
+            q: string;
+        };
         StoriesResponse: {
             items: {
                 /** Format: uuid */
@@ -461,12 +1270,98 @@ export interface components {
                 expiresAt: string;
             }[];
             nextCursor: string | null;
+            groups?: {
+                organizer: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    bio: string | null;
+                    /** Format: uri */
+                    logoUrl: string | null;
+                    isVerified: boolean;
+                    followerCount: number;
+                };
+                following: boolean;
+                stories: {
+                    /** Format: uuid */
+                    id: string;
+                    organizer: {
+                        /** Format: uuid */
+                        id: string;
+                        slug: string;
+                        name: string;
+                        bio: string | null;
+                        /** Format: uri */
+                        logoUrl: string | null;
+                        isVerified: boolean;
+                        followerCount: number;
+                    };
+                    /** Format: uuid */
+                    eventId: string | null;
+                    /** Format: uri */
+                    mediaUrl: string;
+                    /** @enum {string} */
+                    mediaType: "IMAGE" | "VIDEO";
+                    caption: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    /** Format: date-time */
+                    expiresAt: string;
+                }[];
+            }[];
+        };
+        StoryGroup: {
+            organizer: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                bio: string | null;
+                /** Format: uri */
+                logoUrl: string | null;
+                isVerified: boolean;
+                followerCount: number;
+            };
+            following: boolean;
+            stories: {
+                /** Format: uuid */
+                id: string;
+                organizer: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    bio: string | null;
+                    /** Format: uri */
+                    logoUrl: string | null;
+                    isVerified: boolean;
+                    followerCount: number;
+                };
+                /** Format: uuid */
+                eventId: string | null;
+                /** Format: uri */
+                mediaUrl: string;
+                /** @enum {string} */
+                mediaType: "IMAGE" | "VIDEO";
+                caption: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+            }[];
         };
         UpdateEventBody: {
+            /** Format: uuid */
+            organizerId?: string;
             title?: string;
             description?: string;
             /** @enum {string} */
             category?: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+            /** @enum {string} */
+            template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+            /** @enum {string|null} */
+            tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME" | null;
             /** Format: date-time */
             startsAt?: string;
             /** Format: date-time */
@@ -478,6 +1373,74 @@ export interface components {
             coverImageUrl?: string;
             /** @default null */
             capacity: number | null;
+            studentsOnly?: boolean;
+            waitlistEnabled?: boolean;
+            dressCode?: string | null;
+            doorPolicy?: string | null;
+            /** Format: uri */
+            whatsappGroupUrl?: string | null;
+            /** Format: uuid */
+            parentEventId?: string | null;
+            /** @enum {string|null} */
+            linkType?: "AFTER_PARTY" | "SERIES_CHILD" | null;
+            /** @enum {string} */
+            afterPartyAccess?: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+            lineup?: {
+                performerName: string;
+                role: string;
+                /** @default  */
+                setTime: string;
+                /** Format: uuid */
+                creatorId?: string | null;
+            }[];
+            castAndCrew?: string[];
+            showtimes?: {
+                label: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt?: string | null;
+                capacity?: number | null;
+            }[];
+            fixture?: {
+                homeTeam: string;
+                awayTeam: string;
+                /** @default 0 */
+                homeScore: number;
+                /** @default 0 */
+                awayScore: number;
+                /** @default false */
+                isLive: boolean;
+                /** @default Scheduled */
+                periodLabel: string;
+            };
+        };
+        UpdateFixtureBody: {
+            homeScore: number;
+            awayScore: number;
+            isLive: boolean;
+            periodLabel: string;
+        };
+        AmbassadorLinkResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            creatorId: string;
+            /** Format: uuid */
+            eventId: string;
+            code: string;
+            /** Format: uri */
+            shareUrl: string;
+            clickCount: number;
+            rsvpCount: number;
+            checkInCount: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CancelRsvpResponse: {
+            cancelled: boolean;
+            /** Format: uuid */
+            promotedRsvpId: string | null;
         };
         CheckInBatchBody: {
             checkIns: {
@@ -490,6 +1453,27 @@ export interface components {
                 method: "QR_SCAN" | "MANUAL";
                 /** Format: date-time */
                 scannedAt: string;
+            }[];
+        };
+        CheckInBatchResponse: {
+            results: {
+                checkIn: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: uuid */
+                    eventId: string;
+                    /** Format: uuid */
+                    rsvpId: string | null;
+                    /** @enum {string} */
+                    method: "QR_SCAN" | "MANUAL";
+                    /** Format: date-time */
+                    checkedInAt: string;
+                    /** Format: uuid */
+                    checkedInBy: string;
+                    isDuplicate: boolean;
+                };
+                attendeeName: string;
+                duplicate: boolean;
             }[];
         };
         CheckInBody: {
@@ -522,6 +1506,10 @@ export interface components {
             attendeeName: string;
             duplicate: boolean;
         };
+        CreateAmbassadorLinkBody: {
+            /** Format: uuid */
+            eventId: string;
+        };
         CreateRsvpBody: {
             /** Format: uuid */
             eventId: string;
@@ -552,11 +1540,105 @@ export interface components {
             duplicateScanCount: number;
             manualCheckInCount: number;
         };
+        InterestedResponse: {
+            /** Format: uuid */
+            eventId: string;
+            interested: boolean;
+        };
+        RosterEntry: {
+            /** Format: uuid */
+            rsvpId: string;
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            isVerifiedStudent: boolean;
+            /** @enum {string} */
+            badge: "VERIFIED_STUDENT" | "GUEST";
+            hall: string | null;
+            faculty: string | null;
+            /** @enum {string} */
+            status: "CONFIRMED" | "WAITLISTED" | "CANCELLED";
+            showtimeLabel: string | null;
+            checkedIn: boolean;
+            /** Format: date-time */
+            checkedInAt: string | null;
+            /** @enum {string|null} */
+            checkInMethod: "QR_SCAN" | "MANUAL" | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RosterQuery: {
+            /**
+             * @default json
+             * @enum {string}
+             */
+            format: "json" | "csv";
+            /** @enum {string} */
+            status?: "CONFIRMED" | "WAITLISTED" | "CANCELLED";
+            search?: string;
+        };
+        RosterResponse: {
+            /** Format: uuid */
+            eventId: string;
+            items: {
+                /** Format: uuid */
+                rsvpId: string;
+                /** Format: uuid */
+                userId: string;
+                displayName: string;
+                isVerifiedStudent: boolean;
+                /** @enum {string} */
+                badge: "VERIFIED_STUDENT" | "GUEST";
+                hall: string | null;
+                faculty: string | null;
+                /** @enum {string} */
+                status: "CONFIRMED" | "WAITLISTED" | "CANCELLED";
+                showtimeLabel: string | null;
+                checkedIn: boolean;
+                /** Format: date-time */
+                checkedInAt: string | null;
+                /** @enum {string|null} */
+                checkInMethod: "QR_SCAN" | "MANUAL" | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        ScannerPackResponse: {
+            /** Format: uuid */
+            eventId: string;
+            publicKey: string;
+            /** Format: date-time */
+            syncedAt: string;
+            roster: {
+                /** Format: uuid */
+                rsvpId: string;
+                displayName: string;
+                isVerifiedStudent: boolean;
+                qrTokenDigest: string;
+                /** Format: date-time */
+                checkedInAt: string | null;
+            }[];
+        };
+        ScannerPackRosterItem: {
+            /** Format: uuid */
+            rsvpId: string;
+            displayName: string;
+            isVerifiedStudent: boolean;
+            qrTokenDigest: string;
+            /** Format: date-time */
+            checkedInAt: string | null;
+        };
         DecideVerificationBody: {
             /** @enum {string} */
             decision: "APPROVED" | "REJECTED" | "INFO_REQUESTED";
             /** @default null */
             note: string | null;
+        };
+        FollowCreatorResponse: {
+            /** Format: uuid */
+            creatorId: string;
+            following: boolean;
+            followerCount: number;
         };
         FollowOrganizerResponse: {
             /** Format: uuid */
@@ -586,7 +1668,7 @@ export interface components {
                 /** Format: uri */
                 avatarUrl: string | null;
                 /** @enum {string} */
-                role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                 isVerifiedStudent: boolean;
             };
             accessToken: string;
@@ -621,7 +1703,7 @@ export interface components {
             /** @default 20 */
             limit: number;
             /** @enum {string} */
-            subject?: "ORGANIZER_CLUB" | "STUDENT_ID";
+            subject?: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
             /** @enum {string} */
             status?: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
         };
@@ -630,7 +1712,7 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                subject: "ORGANIZER_CLUB" | "STUDENT_ID";
+                subject: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
                 /** @enum {string} */
                 status: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
                 submittedBy: {
@@ -640,7 +1722,7 @@ export interface components {
                     /** Format: uri */
                     avatarUrl: string | null;
                     /** @enum {string} */
-                    role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                    role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                     isVerifiedStudent: boolean;
                 };
                 /** Format: date-time */
@@ -652,7 +1734,7 @@ export interface components {
                     /** Format: uri */
                     avatarUrl: string | null;
                     /** @enum {string} */
-                    role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                    role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                     isVerifiedStudent: boolean;
                 } | null;
                 /** Format: date-time */
@@ -1029,6 +2111,10 @@ export interface components {
                     parentEventTitle?: string | null;
                 };
             }[];
+            yourNightGroups?: {
+                key: string;
+                eventIds: string[];
+            }[];
         };
         ConfirmStudentOtpBody: {
             /** Format: email */
@@ -1147,7 +2233,7 @@ export interface components {
                 /** Format: uri */
                 avatarUrl: string | null;
                 /** @enum {string} */
-                role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                 isVerifiedStudent: boolean;
             };
             hall: string | null;
@@ -1158,6 +2244,8 @@ export interface components {
         FriendRequestBody: {
             /** Format: uuid */
             userId: string;
+            /** @enum {string} */
+            action?: "REQUEST";
         };
         FriendsResponse: {
             items: {
@@ -1170,7 +2258,7 @@ export interface components {
                     /** Format: uri */
                     avatarUrl: string | null;
                     /** @enum {string} */
-                    role: "ATTENDEE" | "ORGANIZER" | "SUPER_ADMIN";
+                    role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
                     isVerifiedStudent: boolean;
                 };
                 hall: string | null;
@@ -1178,6 +2266,9 @@ export interface components {
                 /** @enum {string} */
                 status: "SUGGESTED" | "INCOMING" | "OUTGOING" | "ACCEPTED" | "BLOCKED";
             }[];
+        };
+        NotificationPreferencesResponse: {
+            mutedCategories: ("REMINDER" | "EVENT_CRITICAL" | "FOLLOWED_POST" | "SOCIAL_FRIEND" | "RECOMMENDATION" | "SYSTEM_VERIFICATION")[];
         };
         NotificationsResponse: {
             items: {
@@ -1192,6 +2283,14 @@ export interface components {
                 readAt: string | null;
             }[];
         };
+        PushSubscribeResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uri */
+            endpoint: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
         PushSubscriptionBody: {
             /** Format: uri */
             endpoint: string;
@@ -1199,6 +2298,16 @@ export interface components {
                 p256dh: string;
                 auth: string;
             };
+        };
+        ReadAllNotificationsResponse: {
+            updatedCount: number;
+        };
+        ReportSubmittedResponse: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            /** Format: date-time */
+            createdAt: string;
         };
         StudentIdRequestBody: {
             documentUploadId: string;
@@ -1227,8 +2336,15 @@ export interface components {
             eventId: string;
             reason: string;
         };
+        UpdateNotificationPreferencesBody: {
+            mutedCategories: ("REMINDER" | "EVENT_CRITICAL" | "FOLLOWED_POST" | "SOCIAL_FRIEND" | "RECOMMENDATION" | "SYSTEM_VERIFICATION")[];
+        };
         UpdateProfileBody: {
             displayName: string;
+        };
+        YourNightGroup: {
+            key: string;
+            eventIds: string[];
         };
     };
     responses: never;
@@ -1383,13 +2499,193 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of published events, soonest first. */
+            /** @description A page of published events, soonest first, with mutual friends social proof. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["FeedResponse"];
+                };
+            };
+        };
+    };
+    EventsController_forYou: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ranked event recommendations. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedResponse"];
+                };
+            };
+        };
+    };
+    EventsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEventBody"];
+            };
+        };
+        responses: {
+            /** @description Newly created draft event. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    EventsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEventBody"];
+            };
+        };
+        responses: {
+            /** @description Updated event. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    EventsController_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published event. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    EventsController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelEventBody"];
+            };
+        };
+        responses: {
+            /** @description Cancelled event. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    EventsController_updateFixture: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFixtureBody"];
+            };
+        };
+        responses: {
+            /** @description Event with updated fixture scoreboard. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    EventsController_approveLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Linked child event after parent owner approval. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    EventsController_grantDoorStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantDoorStaffBody"];
+            };
+        };
+        responses: {
+            /** @description Per-event door staff grant with masked email hint. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoorStaffGrantResponse"];
                 };
             };
         };
@@ -1403,13 +2699,807 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The event, including its organizer. */
+            /** @description The event, including its organizer and template blocks. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["EventPublic"];
+                };
+            };
+        };
+    };
+    StoriesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active non-expired stories. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoriesResponse"];
+                };
+            };
+        };
+    };
+    StoriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStoryBody"];
+            };
+        };
+        responses: {
+            /** @description Created story with server-assigned 24-hour expiry. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Story"];
+                };
+            };
+        };
+    };
+    StoriesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Story deleted. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MediaController_createUploadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaUploadUrlBody"];
+            };
+        };
+        responses: {
+            /** @description Presigned S3/MinIO upload URL and canonical public URL. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaUploadUrlResponse"];
+                };
+            };
+        };
+    };
+    SearchController_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching published events and verified organizers. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeeSearchResponse"];
+                };
+            };
+        };
+    };
+    UsersController_getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Public profile of the signed-in user. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
+                };
+            };
+        };
+    };
+    UsersController_updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileBody"];
+            };
+        };
+        responses: {
+            /** @description Updated user profile. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
+                };
+            };
+        };
+    };
+    UsersController_getPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attendee persona and privacy settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeePreferences"];
+                };
+            };
+        };
+    };
+    UsersController_updatePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendeePrivacy"];
+            };
+        };
+        responses: {
+            /** @description Updated attendee preferences. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeePreferences"];
+                };
+            };
+        };
+    };
+    UsersController_updatePersona: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendeePersona"];
+            };
+        };
+        responses: {
+            /** @description Saved attendee persona. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeePersona"];
+                };
+            };
+        };
+    };
+    OrganizersController_getBySlug: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organizer profile. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerPublic"];
+                };
+            };
+        };
+    };
+    OrganizersController_getEventsBySlug: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published events for the organizer. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedResponse"];
+                };
+            };
+        };
+    };
+    OrganizersController_follow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated follow state and follower count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowOrganizerResponse"];
+                };
+            };
+        };
+    };
+    OrganizersController_unfollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated follow state and follower count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowOrganizerResponse"];
+                };
+            };
+        };
+    };
+    CreatorsController_getByHandle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Creator profile. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatorPublic"];
+                };
+            };
+        };
+    };
+    CreatorsController_follow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated follow state and follower count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowCreatorResponse"];
+                };
+            };
+        };
+    };
+    CreatorsController_unfollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated follow state and follower count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowCreatorResponse"];
+                };
+            };
+        };
+    };
+    FriendsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Friend entries and campus suggestions. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendsResponse"];
+                };
+            };
+        };
+    };
+    FriendsController_requestFriendship: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FriendRequestBody"];
+            };
+        };
+        responses: {
+            /** @description Updated or created friend entry. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendEntry"];
+                };
+            };
+        };
+    };
+    FriendsController_respond: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FriendActionBody"];
+            };
+        };
+        responses: {
+            /** @description Updated friend entry. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendEntry"];
+                };
+            };
+        };
+    };
+    AttendanceController_createRsvp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRsvpBody"];
+            };
+        };
+        responses: {
+            /** @description Confirmed or waitlisted RSVP with signed QR token. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateRsvpResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_cancelRsvp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellation result and promoted waitlist RSVP id if any. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancelRsvpResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_listMyTickets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attendee tickets and Your Night itinerary groups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeeTicketsResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_addInterest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated Interested state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterestedResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_removeInterest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated Interested state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterestedResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_createAmbassadorLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAmbassadorLinkBody"];
+            };
+        };
+        responses: {
+            /** @description Generated or existing ambassador referral link. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AmbassadorLinkResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_getScannerPack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ed25519 public key and minimal offline validation roster. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScannerPackResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_getRoster: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Full RSVP roster (or text/csv attachment when format=csv / Accept: text/csv). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RosterResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_checkIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckInBody"];
+            };
+        };
+        responses: {
+            /** @description Recorded check-in with duplicate indicator. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckInResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_checkInBatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckInBatchBody"];
+            };
+        };
+        responses: {
+            /** @description Batch replay results aligned to input order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckInBatchResponse"];
+                };
+            };
+        };
+    };
+    AttendanceController_getEventStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aggregated attendance metrics for Club OWNER and MANAGER. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventStatsResponse"];
+                };
+            };
+        };
+    };
+    ReportsController_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitReportBody"];
+            };
+        };
+        responses: {
+            /** @description Recorded moderation report. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSubmittedResponse"];
+                };
+            };
+        };
+    };
+    NotificationsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User notifications. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationsResponse"];
+                };
+            };
+        };
+    };
+    NotificationsController_markAllRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Count of notifications marked read. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadAllNotificationsResponse"];
+                };
+            };
+        };
+    };
+    NotificationsController_markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated notification with readAt populated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeeNotification"];
+                };
+            };
+        };
+    };
+    NotificationsController_subscribePush: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionBody"];
+            };
+        };
+        responses: {
+            /** @description Saved Web Push subscription. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSubscribeResponse"];
+                };
+            };
+        };
+    };
+    NotificationsController_updatePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationPreferencesBody"];
+            };
+        };
+        responses: {
+            /** @description Saved notification mute preferences. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencesResponse"];
                 };
             };
         };

@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, expect, it, vi } from 'vitest';
 import { AuthProvider, useAuth } from './auth-context';
-vi.mock('./mode', () => ({ DEMO_MODE: false, DATA_MODE: 'live' }));
+vi.mock('./mode', () => ({ DEMO_MODE: false, DEV_AUTH_MODE: false, DATA_MODE: 'live' }));
 afterEach(() => {
   cleanup();
   localStorage.clear();

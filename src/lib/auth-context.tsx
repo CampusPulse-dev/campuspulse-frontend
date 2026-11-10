@@ -5,13 +5,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   ApiRequestError,
   apiFetch,
+  type Schemas,
   type SessionResponse,
   type SignInBody,
   type SignUpBody,
   type UserPublic,
 } from './api';
 import { DEFAULT_DEMO_USER } from './campus-data';
-import { DATA_MODE, DEMO_MODE } from './mode';
+import { DATA_MODE, DEMO_MODE, DEV_AUTH_MODE, getDevAuthEmail, setDevAuthEmail } from './mode';
 import {
   attendeeRequest,
   DEFAULT_PRIVACY,
@@ -81,11 +82,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [queryClient],
   );
+  const hydrateRemotePreferences = useCallback(async (userId: string) => {
+    try {
+      const prefs = await apiFetch<Schemas['AttendeePreferences']>('/users/me/preferences', {
+        cache: 'no-store',
+      });
+      if (prefs.persona) {
+        writeLocal(`persona:${userId}`, prefs.persona);
+        setPersona(prefs.persona);
+        writeLocal(`follows:${userId}`, prefs.persona.followedClubIds);
+        setFollows(prefs.persona.followedClubIds);
+      }
+      writeLocal(`privacy:${userId}`, prefs.privacy);
+      setPrivacy(prefs.privacy);
+    } catch {
+      // Fall back to local cache if preferences fetch fails transiently.
+    }
+  }, []);
+
   useEffect(() => {
     let alive = true;
     async function restore() {
       if (DEMO_MODE || !navigator.onLine) {
-        if (alive) await installUser(readLocal('user', null), null);
+        if (alive) await installUser(readLocal('user', null), DEV_AUTH_MODE ? 'dev-auth' : null);
+      } else if (DEV_AUTH_MODE) {
+        // TODO(S1-02): remove localStorage email restore once real /auth/refresh lands.
+        const devEmail = getDevAuthEmail();
+        if (!devEmail) {
+          if (alive) await installUser(null, null);
+        } else {
+          try {
+            const me = await apiFetch<UserPublic>('/users/me', { cache: 'no-store' });
+            if (alive) {
+              await installUser(me, 'dev-auth');
+              await hydrateRemotePreferences(me.id);
+            }
+          } catch (error) {
+            if (alive) {
+              if (error instanceof ApiRequestError && error.error.statusCode === 401) {
+                setDevAuthEmail(null);
+                await installUser(null, null);
+              } else {
+                await installUser(readLocal('user', null), 'dev-auth');
+              }
+            }
+          }
+        }
       } else {
         try {
           const s = await apiFetch<SessionResponse>('/auth/refresh', { method: 'POST' });
@@ -106,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       alive = false;
     };
-  }, [installUser]);
+  }, [hydrateRemotePreferences, installUser]);
   useEffect(() => {
     const changed = (event: StorageEvent) => {
       if (event.key === DATA_MODE + ':user') {
@@ -124,6 +166,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     else document.documentElement.setAttribute('data-theme', privacy.theme);
   }, [privacy.theme]);
   async function authenticate(body: SignInBody | SignUpBody, path: string) {
+    // TODO(S1-02): remove DEV_AUTH_MODE branch once /auth/sign-in and /auth/sign-up land.
+    if (DEV_AUTH_MODE) {
+      setDevAuthEmail(body.email);
+      let me = await apiFetch<UserPublic>('/users/me', { cache: 'no-store' });
+      if ('displayName' in body && body.displayName.trim()) {
+        me = await apiFetch<UserPublic>('/users/me', {
+          method: 'PATCH',
+          body: JSON.stringify({ displayName: body.displayName.trim() }),
+        });
+      }
+      await installUser(me, 'dev-auth');
+      await hydrateRemotePreferences(me.id);
+      return me;
+    }
+
     const digest = DEMO_MODE
       ? Array.from(
           new Uint8Array(
@@ -166,7 +223,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
   async function signOut() {
     try {
-      if (!DEMO_MODE) await apiFetch('/auth/sign-out', { method: 'POST' });
+      // TODO(S1-02): restore unconditional /auth/sign-out once real JWT auth lands.
+      if (DEV_AUTH_MODE) setDevAuthEmail(null);
+      else if (!DEMO_MODE) await apiFetch('/auth/sign-out', { method: 'POST' });
     } finally {
       await installUser(null, null);
     }
