@@ -1455,8 +1455,13 @@ export interface components {
                 scannedAt: string;
             }[];
         };
+        CheckInBatchRejection: {
+            index: number;
+            statusCode: number;
+            message: string;
+        };
         CheckInBatchResponse: {
-            results: {
+            results: ({
                 checkIn: {
                     /** Format: uuid */
                     id: string;
@@ -1474,6 +1479,11 @@ export interface components {
                 };
                 attendeeName: string;
                 duplicate: boolean;
+            } | null)[];
+            rejected: {
+                index: number;
+                statusCode: number;
+                message: string;
             }[];
         };
         CheckInBody: {
