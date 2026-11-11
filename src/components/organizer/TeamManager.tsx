@@ -1,5 +1,6 @@
 'use client';
 import { useAuth } from '@/lib/auth-context';
+import { DEMO_MODE } from '@/lib/mode';
 
 import { UserMinus } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
@@ -176,7 +177,11 @@ export function TeamManagerView({
             label="Manager email"
             type="email"
             autoComplete="off"
-            hint="Managers can create events, post stories and run the door. They cannot manage the team."
+            hint={
+              DEMO_MODE
+                ? 'Managers can create events, post stories and run the door. They cannot manage the team.'
+                : 'Use the email of an existing CampusPulse account. Managers can create events, post stories and run the door. They cannot manage the team.'
+            }
             value={inviteEmail}
             error={inviteError}
             onChange={(e) => setInviteEmail(e.target.value)}

@@ -52,6 +52,7 @@
     "fake-indexeddb": "^6.2.7",
     "husky": "^9.1.7",
     "jsdom": "^26.0.0",
+    "lighthouse": "13.6.0",
     "lint-staged": "^15.4.3",
     "openapi-typescript": "^7.6.1",
     "picomatch": "^4.0.7",
