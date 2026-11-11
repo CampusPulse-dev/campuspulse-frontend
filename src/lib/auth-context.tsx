@@ -48,6 +48,16 @@ interface AuthContextValue {
 /** Fired when the cp_signed_in cookie flips; ServerViewSync refreshes the route. */
 export const SIGNED_IN_CHANGE_EVENT = 'cp-signed-in-change';
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+/** Demo mode only: the email prefix picks the persona, mirroring the seeded staff accounts. */
+export function demoRoleForEmail(email: string): UserPublic['role'] {
+  const local = email.trim().toLowerCase();
+  if (local.startsWith('super.admin')) return 'SUPER_ADMIN';
+  if (local.startsWith('verifier')) return 'VERIFIER';
+  if (local.startsWith('moderator')) return 'MODERATOR';
+  if (local.startsWith('organizer')) return 'ORGANIZER';
+  return DEFAULT_DEMO_USER.role;
+}
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [user, setUser] = useState<UserPublic | null>(null);
@@ -228,9 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: {
             ...DEFAULT_DEMO_USER,
             id: demoId,
-            role: body.email.trim().toLowerCase().startsWith('organizer')
-              ? ('ORGANIZER' as const)
-              : DEFAULT_DEMO_USER.role,
+            role: demoRoleForEmail(body.email),
             isVerifiedStudent: false,
             displayName: 'displayName' in body ? body.displayName : 'Tobi Adeyemi',
           },

@@ -188,6 +188,55 @@ async function send<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+/**
+ * Binary responses: today only the audited student ID stream. Never cached,
+ * never given a URL the page could share. Same 401 → refresh → replay rule as
+ * `apiFetch`; a 401 means the server did not open (or audit) the document.
+ */
+export async function apiFetchBlob(path: string): Promise<Blob> {
+  const attempt = async () => {
+    const headers = new Headers();
+    if (DEV_AUTH_MODE) {
+      const devEmail = getDevAuthEmail();
+      if (devEmail) headers.set('X-Dev-User', devEmail);
+    } else if (LIVE_SESSIONS && sessionToken) {
+      headers.set('authorization', `Bearer ${sessionToken}`);
+    }
+    const response = await fetch(`${BASE_URL}/api/v1${path}`, {
+      credentials: 'include',
+      cache: 'no-store',
+      headers,
+    });
+    if (!response.ok) {
+      const body: unknown = await response.json().catch(() => null);
+      throw new ApiRequestError(
+        isApiError(body)
+          ? body
+          : {
+              statusCode: response.status,
+              code: 'UNKNOWN',
+              message: response.statusText || 'Request failed',
+              requestId: response.headers.get('x-request-id') ?? 'unknown',
+            },
+      );
+    }
+    return response.blob();
+  };
+  try {
+    return await attempt();
+  } catch (error) {
+    if (!LIVE_SESSIONS || !isUnauthorized(error)) throw error;
+    let session: SessionResponse;
+    try {
+      session = await refreshSession();
+    } catch {
+      throw error;
+    }
+    for (const listener of sessionListeners) listener(session);
+    return attempt();
+  }
+}
+
 /** Narrow enough to trust the fields the error UI reads. */
 function isApiError(value: unknown): value is ApiError {
   if (typeof value !== 'object' || value === null) return false;
