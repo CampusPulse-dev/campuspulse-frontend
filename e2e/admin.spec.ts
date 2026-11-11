@@ -31,7 +31,7 @@ test('a verifier never sees the student ID queue', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Student IDs/ })).toHaveCount(0);
   await page.goto('/admin/verifications/students');
-  await expect(page.getByRole('alert')).toContainText('Verifier');
+  await expect(page.getByRole('main').getByRole('alert')).toContainText('Verifier');
   await expect(page.getByRole('button', { name: 'Claim to review' })).toHaveCount(0);
 });
 
