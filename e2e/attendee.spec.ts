@@ -60,7 +60,7 @@ test('demo RSVP produces a labelled QR pass that survives a full offline reload'
     await page.getByLabel('Student or Personal Email').fill('tobi@stu.ui.edu.ng');
     await page.getByLabel('Password', { exact: true }).fill('CampusPulse2026!');
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await expect(page).toHaveURL(/\/settings$/);
+    await expect(page).toHaveURL(/\/$/);
     await page.goto(origin + '/tickets');
     await expect(page.getByText('Your next night starts here')).toBeVisible();
   } finally {
