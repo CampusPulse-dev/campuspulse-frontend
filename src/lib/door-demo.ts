@@ -4,7 +4,8 @@ import { demoClubsFor, readOrganizerEvents } from './organizer-data';
 import { hasDemoDoorGrant } from './organizer-team-data';
 import type { UserPublic } from './api';
 
-// TODO(S5-02): Replace this isolated simulation with generated scanner-pack and batch contracts.
+// Demo-mode simulation only. The live scanner (real scanner pack, on-device Ed25519
+// verification, batch replay) is door-live.ts; door-driver.ts picks between them.
 // Demo keys are generated on this device and can never establish real ticket authenticity.
 export type DemoAttendee = { id: string; name: string; checkedInAt: string | null };
 export type DemoPack = {

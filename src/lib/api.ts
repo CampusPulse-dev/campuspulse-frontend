@@ -122,7 +122,11 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   try {
     return await send<T>(path, init);
   } catch (error) {
-    const hadCredentials = sessionToken !== null || new Headers(init?.headers).has('authorization');
+    const hadCredentials =
+      sessionToken !== null ||
+      new Headers(init?.headers).has('authorization') ||
+      // Restored from cache while offline: signed in, but no access token yet.
+      (typeof document !== 'undefined' && /(?:^|;\s*)cp_signed_in=1(?:;|$)/.test(document.cookie));
     if (
       !LIVE_SESSIONS ||
       typeof window === 'undefined' ||

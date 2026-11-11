@@ -2060,6 +2060,7 @@ export interface components {
         ScannerPackResponse: {
             /** Format: uuid */
             eventId: string;
+            eventTitle: string;
             publicKey: string;
             /** Format: date-time */
             syncedAt: string;

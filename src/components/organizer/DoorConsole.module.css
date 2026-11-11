@@ -1,7 +1,7 @@
 .page {
   max-width: 46rem;
   margin: 0 auto;
-  padding: 0;
+  padding: var(--space-4) var(--space-4) var(--space-7);
   display: grid;
   gap: var(--space-4);
   color: var(--color-text);
@@ -10,40 +10,174 @@
 .page p {
   margin: 0;
 }
-.page header {
+.page h1 {
+  font: var(--type-title);
+  text-wrap: balance;
+}
+.header {
   display: grid;
   gap: var(--space-2);
+}
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 .eyebrow {
   color: var(--color-primary);
   font: 600 var(--text-sm) var(--font-mono);
   text-transform: uppercase;
 }
+
+/* Connection + outbox state. Always visible: at a door, "is it saving?" is the question. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-strong);
+  font: var(--type-data);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pillDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+.pillSynced {
+  color: var(--status-success);
+  background: var(--status-success-bg);
+  border-color: transparent;
+}
+.pillQueued,
+.pillOffline {
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+  border-color: transparent;
+}
+
 .readiness,
 .panel {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding-block: var(--space-4);
   border-bottom: 1px solid var(--color-separator);
 }
-.result {
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  display: grid;
-  gap: var(--space-2);
+.readiness p {
+  font-variant-numeric: tabular-nums;
 }
+.muted {
+  color: var(--color-text-muted);
+}
+.warn {
+  color: var(--status-warning);
+}
+.notice,
+.error {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+}
+.notice {
+  background: var(--status-warning-bg);
+}
+.error {
+  background: var(--status-danger-bg);
+}
+
+/* Status colours: outline + tint inline, solid when full-bleed. Never colour alone. */
 .valid {
   background: var(--status-success-bg);
-  border: 2px solid var(--status-success);
+  border-color: var(--status-success);
 }
 .duplicate {
   background: var(--status-warning-bg);
-  border: 2px solid var(--status-warning);
+  border-color: var(--status-warning);
 }
 .invalid {
   background: var(--status-danger-bg);
-  border: 2px solid var(--status-danger);
+  border-color: var(--status-danger);
 }
+.lastResult {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  border: 2px solid;
+  border-radius: var(--radius-lg);
+}
+.lastResult strong {
+  font: 600 var(--text-sm) var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+/*
+ * Full-bleed scan result. Seen hundreds of times a night, so it is fast and
+ * plain: 120 ms in, opacity + transform only, no exit animation (it must
+ * never delay the next scan).
+ */
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+  /* Fixed pairing in both themes: bright scanner colour, ink text (6.5:1 or better). */
+  color: var(--cp-ink);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: flashIn 120ms var(--ease-ui) both;
+}
+.flash strong {
+  font: 700 clamp(2.5rem, 12vw, 4.5rem) / 1 var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.flash p {
+  font: 600 var(--text-xl) / 1.3 var(--font-body);
+  max-width: 24ch;
+  text-wrap: balance;
+}
+.flashHint {
+  margin-top: var(--space-4);
+  font: var(--type-meta);
+  opacity: 0.8;
+}
+.flash_valid {
+  background: var(--_dark-status-success);
+}
+.flash_duplicate {
+  background: var(--_dark-status-warning);
+}
+.flash_invalid {
+  background: var(--_dark-status-danger);
+}
+@keyframes flashIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+  }
+}
+
 .camera {
   display: grid;
   gap: var(--space-3);
@@ -54,13 +188,16 @@
   background: var(--color-bg);
   border-radius: var(--radius-md);
 }
+.panel label {
+  font: var(--type-label);
+}
 .panel input {
-  min-height: 2.75rem;
-  padding: var(--space-2);
-  font-size: 1rem;
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-4);
+  font-size: 1.0625rem;
   color: var(--color-text);
   background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
 }
 .panel details img {
@@ -72,17 +209,31 @@
   margin: 0;
   list-style: none;
   display: grid;
-  gap: var(--space-2);
 }
 .list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.list li {
-  padding-block: var(--space-3);
+  gap: var(--space-3);
+  padding-block: var(--space-2);
   border-bottom: 1px solid var(--color-separator);
+}
+.person {
+  display: grid;
+  min-width: 0;
+}
+.personName {
+  font: var(--type-headline);
+  overflow-wrap: anywhere;
+}
+.personMeta {
+  font: var(--type-meta);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Gloved hands, dark doorway, moving queue: a generous target. */
+.checkInButton {
+  min-height: 3.5rem;
+  min-width: 6.5rem;
+  flex-shrink: 0;
 }
