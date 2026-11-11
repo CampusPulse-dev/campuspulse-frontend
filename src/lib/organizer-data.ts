@@ -21,13 +21,9 @@ import {
 } from './campus-data';
 import { DEMO_MODE } from './mode';
 import { readActiveStories } from './organizer-stories';
+import { liveDashboard, livePublish, liveSaveDraft } from './organizer-live';
 
-/*
- * TODO(S5-01): The organizer endpoints (dashboard, membership, event create/publish) and the
- * template fields on CreateEventBody do not exist in the backend contract yet. Everything in this
- * file is a demo-mode view model; replace it with generated types from `npm run codegen` once the
- * backend registers those schemas.
- */
+/** UI models for explicit demo mode; live operations delegate to generated-contract adapters. */
 
 export type OrganizerRole = 'OWNER' | 'MANAGER';
 export type OrganizerVerificationStatus = 'VERIFIED' | 'PENDING' | 'MORE_INFO';
@@ -75,7 +71,7 @@ export interface EventDraft {
   dressCode: string;
   doorPolicy: string;
   lineup: EventLineupSlot[];
-  showtimes: Omit<EventShowtimeOption, 'spotsLeft'>[];
+  showtimes: (Omit<EventShowtimeOption, 'spotsLeft'> & { capacity?: number | null })[];
   homeTeam: string;
   awayTeam: string;
   linkAfterParty: boolean;
@@ -171,6 +167,12 @@ export function validateDraftForPublish(draft: EventDraft): string[] {
 
 /** A draft only needs a title and category to be saved. */
 export function validateDraftForSave(draft: EventDraft): string[] {
+  if (!DEMO_MODE)
+    return [
+      ...validateStep(1, draft),
+      ...validateStep(2, draft),
+      ...(!draft.coverDataUrl ? ['Add a cover image before saving.'] : []),
+    ];
   const errors: string[] = [];
   if (draft.title.trim().length < 3) errors.push('Give the event a title before saving a draft.');
   if (!draft.category) errors.push('Choose a category before saving a draft.');
@@ -512,7 +514,7 @@ function unavailable(): never {
 }
 
 export async function fetchOrganizerDashboard(slug: string): Promise<OrganizerDashboardData> {
-  if (!DEMO_MODE) return unavailable();
+  if (!DEMO_MODE) return liveDashboard(slug);
   const club = DEMO_CLUBS.find((c) => c.organizer.slug === slug);
   if (!club) {
     throw new ApiRequestError({
@@ -623,7 +625,7 @@ export async function saveEventDraft(
   draft: EventDraft,
   id?: string,
 ): Promise<OrganizerEventSummary> {
-  if (!DEMO_MODE) return unavailable();
+  if (!DEMO_MODE) return liveSaveDraft(slug, draft, id);
   const errors = validateDraftForSave(draft);
   if (errors.length > 0) throw new Error(errors[0]);
   if (id) requireDraft(slug, id);
@@ -638,7 +640,7 @@ export async function publishEvent(
   draft: EventDraft,
   id?: string,
 ): Promise<OrganizerEventSummary> {
-  if (!DEMO_MODE) return unavailable();
+  if (!DEMO_MODE) return livePublish(slug, draft, id);
   const club = DEMO_CLUBS.find((c) => c.organizer.slug === slug);
   if (!club?.organizer.isVerified) {
     throw new ApiRequestError({

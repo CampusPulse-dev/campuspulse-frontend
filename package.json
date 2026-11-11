@@ -21,7 +21,7 @@
     "prepare": "husky",
     "codegen": "openapi-typescript ../campuspulse-backend/openapi.json -o src/lib/api-schema.d.ts",
     "codegen:remote": "openapi-typescript https://raw.githubusercontent.com/CampusPulse-dev/campuspulse-backend/main/openapi.json -o src/lib/api-schema.d.ts",
-    "codegen:check": "npm run codegen:remote && git diff --exit-code src/lib/api-schema.d.ts"
+    "codegen:check": "node scripts/check-contract.mjs"
   },
   "dependencies": {
     "@noble/ed25519": "^3.2.0",

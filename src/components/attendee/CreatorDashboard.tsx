@@ -9,6 +9,7 @@ import { SEED_EVENTS } from '@/lib/campus-data';
 import { DEMO_MODE } from '@/lib/mode';
 import { Button } from '@/components/ui/Button';
 import { AccountGate, PageFrame, styles } from './Shared';
+import { LiveCreatorDashboard } from './LiveCreatorDashboard';
 
 type DemoLink = { eventId: string; code: string; rsvps: number; checkIns: number };
 
@@ -84,13 +85,7 @@ function CreatorForm({ userId }: { userId: string }) {
 
 function CreatorContent() {
   const { user } = useAuth();
-  if (!DEMO_MODE)
-    return (
-      <section className={styles.panel}>
-        <h2>Creator tools are not live yet</h2>
-        <p>Ambassador links will be available when the service is ready.</p>
-      </section>
-    );
+  if (!DEMO_MODE) return <LiveCreatorDashboard />;
   return user ? <CreatorForm key={user.id} userId={user.id} /> : null;
 }
 

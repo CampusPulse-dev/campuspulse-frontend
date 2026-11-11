@@ -21,6 +21,9 @@ import {
 } from '@/lib/organizer-hub-data';
 import { ClubGate } from './OrganizerGate';
 import styles from './Organizer.module.css';
+import { DEMO_MODE } from '@/lib/mode';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 const REFRESH_MS = 15_000;
 
@@ -130,15 +133,19 @@ export function EventHubView({
   now = new Date(),
   onSaveScore,
   onExportCsv,
+  onCancel,
 }: {
   data: OrganizerEventHubData;
   now?: Date;
   onSaveScore: (fixture: EventMatchFixture) => Promise<void>;
   onExportCsv: () => Promise<void>;
+  onCancel?: (reason: string) => Promise<void>;
 }) {
   const { event } = data;
   const [exportError, setExportError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [reason, setReason] = useState('');
+  const [cancelling, setCancelling] = useState(false);
   const group = (['live', 'upcoming', 'drafts', 'past'] as const).find(
     (key) => groupEvents([event], now)[key].length > 0,
   );
@@ -166,6 +173,9 @@ export function EventHubView({
       <header className={styles.headerText}>
         <div className={styles.eyebrow}>{data.organizerName}</div>
         <h1>{event.title}</h1>
+        {!DEMO_MODE && event.status !== 'CANCELLED' ? (
+          <Link href={`/organizer/${data.organizerSlug}/events/${event.id}/edit`}>Edit event</Link>
+        ) : null}
         <div className={styles.eventMeta}>
           <CategoryPill category={event.category} />
           {group === 'live' ? <LiveIndicator label="Live today" /> : null}
@@ -195,9 +205,7 @@ export function EventHubView({
       </header>
 
       {isDraft ? (
-        <p className={styles.notice}>
-          This event is still a draft, so it has no RSVPs yet. Editing drafts is coming soon.
-        </p>
+        <p className={styles.notice}>This event is still a draft, so it has no RSVPs yet.</p>
       ) : (
         <>
           <dl className={styles.kpis} aria-label="Event stats">
@@ -260,20 +268,53 @@ export function EventHubView({
                 ))}
               </ul>
               <p className={styles.stepSubtitle}>
-                Demo figures. Real counts come from the stats service.
+                {DEMO_MODE
+                  ? 'Demo figures. Real counts come from the stats service.'
+                  : 'Counts come from attributed RSVPs and unique check-ins.'}
               </p>
             </section>
           ) : null}
         </>
       )}
+      {onCancel && event.status === 'PUBLISHED' ? (
+        <section className={styles.panel}>
+          <h2>Cancel event</h2>
+          <TextField
+            label="Cancellation reason"
+            required
+            value={reason}
+            maxLength={500}
+            onChange={(e) => setReason(e.target.value)}
+          />
+          <Button
+            variant="danger"
+            disabled={!reason.trim()}
+            isLoading={cancelling}
+            onClick={async () => {
+              setCancelling(true);
+              setExportError(null);
+              try {
+                await onCancel(reason.trim());
+              } catch (error) {
+                setExportError(error instanceof Error ? error.message : 'Cancellation failed.');
+              } finally {
+                setCancelling(false);
+              }
+            }}
+          >
+            Cancel event and notify attendees
+          </Button>
+        </section>
+      ) : null}
     </div>
   );
 }
 
 function EventHubData({ slug, eventId }: { slug: string; eventId: string }) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['organizer-event', slug, eventId],
+    queryKey: ['organizer-event', slug, eventId, user?.id],
     queryFn: () => fetchOrganizerEvent(slug, eventId),
     refetchInterval: REFRESH_MS,
   });
@@ -297,6 +338,20 @@ function EventHubData({ slug, eventId }: { slug: string; eventId: string }) {
           await fetchEventAttendeesCsv(slug, eventId),
         );
       }}
+      onCancel={
+        DEMO_MODE
+          ? undefined
+          : async (reason) => {
+              await apiFetch(`/events/${eventId}/cancel`, {
+                method: 'POST',
+                body: JSON.stringify({ reason }),
+              });
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['organizer-event', slug, eventId] }),
+                queryClient.invalidateQueries({ queryKey: ['organizer-dashboard', slug] }),
+              ]);
+            }
+      }
     />
   );
 }

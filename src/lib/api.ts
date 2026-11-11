@@ -45,7 +45,7 @@ export class ApiRequestError extends Error {
 /** Private uploads bypass JSON serialization; no token or cookie goes to storage. */
 export async function uploadPrivateDocument(url: string, file: File): Promise<void> {
   const target = new URL(url);
-  if (target.protocol !== 'https:' && target.hostname !== 'localhost')
+  if (target.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(target.hostname))
     throw new Error('Invalid secure upload URL.');
   const response = await fetch(target, {
     method: 'PUT',
@@ -55,6 +55,30 @@ export async function uploadPrivateDocument(url: string, file: File): Promise<vo
     cache: 'no-store',
   });
   if (!response.ok) throw new Error('ID upload failed. Please retry.');
+}
+
+/** Public media uses the same credential-free storage PUT as private documents. */
+export async function uploadPublicMedia(
+  file: File,
+  purpose: Schemas['MediaUploadPurpose'],
+): Promise<Schemas['MediaUploadUrlResponse']> {
+  const image = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+  const video = ['video/mp4', 'video/webm'].includes(file.type);
+  if ((!image && !video) || (purpose !== 'STORY_MEDIA' && !image))
+    throw new Error('Unsupported media type.');
+  if (file.size <= 0 || file.size > (image ? 5 : 25) * 1024 * 1024)
+    throw new Error('Media exceeds the upload limit.');
+  const body: Schemas['MediaUploadUrlBody'] = {
+    purpose,
+    contentType: file.type as Schemas['MediaUploadUrlBody']['contentType'],
+    size: file.size,
+  };
+  const upload = await apiFetch<Schemas['MediaUploadUrlResponse']>('/media/upload-url', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  await uploadPrivateDocument(upload.uploadUrl, file);
+  return upload;
 }
 
 /** Real sessions: a short-lived access token in memory, a rotating httpOnly refresh cookie. */

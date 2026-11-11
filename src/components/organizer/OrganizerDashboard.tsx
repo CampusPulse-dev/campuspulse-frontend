@@ -1,4 +1,5 @@
 'use client';
+import { useAuth } from '@/lib/auth-context';
 
 import React from 'react';
 import Link from 'next/link';
@@ -166,8 +167,9 @@ export function OrganizerDashboardView({
 }
 
 function DashboardData({ slug, eventsOnly }: { slug: string; eventsOnly?: boolean }) {
+  const { user } = useAuth();
   const query = useQuery({
-    queryKey: ['organizer-dashboard', slug],
+    queryKey: ['organizer-dashboard', slug, user?.id],
     queryFn: () => fetchOrganizerDashboard(slug),
   });
   if (!query.data) {

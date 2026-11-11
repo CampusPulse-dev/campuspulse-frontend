@@ -275,6 +275,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/organizers/{id}/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Private club dashboard for OWNER and MANAGER */
+        get: operations["ManagementController_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{id}/managed-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Private events across all statuses for OWNER and MANAGER */
+        get: operations["ManagementController_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{id}/manage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Editable private event details for OWNER and MANAGER */
+        get: operations["ManagementController_event"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/sign-up": {
         parameters: {
             query?: never;
@@ -528,6 +579,23 @@ export interface paths {
         put?: never;
         /** Apply for a campus creator profile (pending verification) */
         post: operations["CreatorsController_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/creators/me/ambassador-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Own creator links and attributed attendance counts */
+        get: operations["CreatorsController_links"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1993,6 +2061,11 @@ export interface components {
             conversionRate: number;
             duplicateScanCount: number;
             manualCheckInCount: number;
+            ambassadors: {
+                creatorName: string;
+                rsvps: number;
+                checkIns: number;
+            }[];
         };
         InterestedResponse: {
             /** Format: uuid */
@@ -2235,6 +2308,21 @@ export interface components {
                 emailHint: string | null;
                 /** @enum {string} */
                 role: "OWNER" | "MANAGER";
+            }[];
+            doorStaff: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                eventId: string;
+                eventTitle: string;
+                /** Format: uuid */
+                userId: string;
+                displayName: string;
+                emailHint: string;
+                /** Format: date-time */
+                expiresAt: string;
+                /** Format: date-time */
+                createdAt: string;
             }[];
         };
         VerificationQueueQuery: {
@@ -3169,6 +3257,481 @@ export interface components {
             /** @enum {string} */
             role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
         };
+        CreatorAmbassadorLinksResponse: {
+            creator: {
+                /** Format: uuid */
+                id: string;
+                handle: string;
+                isVerified: boolean;
+            };
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                creatorId: string;
+                /** Format: uuid */
+                eventId: string;
+                code: string;
+                /** Format: uri */
+                shareUrl: string;
+                clickCount: number;
+                rsvpCount: number;
+                checkInCount: number;
+                /** Format: date-time */
+                createdAt: string;
+                event: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    title: string;
+                    description: string;
+                    /** @enum {string} */
+                    category: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+                    /** @enum {string} */
+                    status: "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+                    /** Format: date-time */
+                    startsAt: string;
+                    /** Format: date-time */
+                    endsAt: string;
+                    venueName: string;
+                    venueDetail: string | null;
+                    /** Format: uri */
+                    coverImageUrl: string | null;
+                    capacity: number | null;
+                    rsvpCount: number;
+                    organizer: {
+                        /** Format: uuid */
+                        id: string;
+                        slug: string;
+                        name: string;
+                        bio: string | null;
+                        /** Format: uri */
+                        logoUrl: string | null;
+                        isVerified: boolean;
+                        followerCount: number;
+                    };
+                    /** Format: date-time */
+                    createdAt: string;
+                    /** Format: date-time */
+                    updatedAt: string;
+                    /** @enum {string} */
+                    template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+                    studentsOnly?: boolean;
+                    waitlistEnabled?: boolean;
+                    dressCode?: string | null;
+                    doorPolicy?: string | null;
+                    /** @enum {string} */
+                    tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME";
+                    friendsGoing?: {
+                        /** Format: uuid */
+                        id: string;
+                        displayName: string;
+                        /** Format: uri */
+                        avatarUrl: string | null;
+                    }[];
+                    friendsGoingCount?: number;
+                    lineup?: {
+                        id: string;
+                        performerName: string;
+                        role: string;
+                        setTime: string;
+                    }[];
+                    castAndCrew?: string[];
+                    showtimes?: {
+                        id: string;
+                        label: string;
+                        /** Format: date-time */
+                        startsAt: string;
+                        spotsLeft: number;
+                    }[];
+                    fixture?: {
+                        homeTeam: string;
+                        awayTeam: string;
+                        homeScore: number;
+                        awayScore: number;
+                        isLive: boolean;
+                        periodLabel: string;
+                    };
+                    linkedAfterParty?: {
+                        /** Format: uuid */
+                        id: string;
+                        slug: string;
+                        title: string;
+                        /** Format: date-time */
+                        startsAt: string;
+                        venueName: string;
+                        /** @enum {string} */
+                        accessRule: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+                    } | null;
+                    parentEventSlug?: string | null;
+                    parentEventTitle?: string | null;
+                };
+            }[];
+        };
+        ManagedEvent: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            /** @enum {string} */
+            category: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            venueName: string;
+            venueDetail: string | null;
+            /** Format: uri */
+            coverImageUrl: string | null;
+            capacity: number | null;
+            rsvpCount: number;
+            organizer: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                bio: string | null;
+                /** Format: uri */
+                logoUrl: string | null;
+                isVerified: boolean;
+                followerCount: number;
+            };
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @enum {string} */
+            template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+            studentsOnly?: boolean;
+            waitlistEnabled?: boolean;
+            dressCode?: string | null;
+            doorPolicy?: string | null;
+            /** @enum {string} */
+            tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME";
+            friendsGoing?: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                /** Format: uri */
+                avatarUrl: string | null;
+            }[];
+            friendsGoingCount?: number;
+            lineup?: {
+                id: string;
+                performerName: string;
+                role: string;
+                setTime: string;
+            }[];
+            castAndCrew?: string[];
+            showtimes?: {
+                id: string;
+                label: string;
+                /** Format: date-time */
+                startsAt: string;
+                spotsLeft: number;
+            }[];
+            fixture?: {
+                homeTeam: string;
+                awayTeam: string;
+                homeScore: number;
+                awayScore: number;
+                isLive: boolean;
+                periodLabel: string;
+            };
+            linkedAfterParty?: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                /** Format: date-time */
+                startsAt: string;
+                venueName: string;
+                /** @enum {string} */
+                accessRule: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+            } | null;
+            parentEventSlug?: string | null;
+            parentEventTitle?: string | null;
+            checkInCount: number;
+            draft: {
+                /** Format: uuid */
+                organizerId?: string;
+                title: string;
+                description: string;
+                /** @enum {string} */
+                category: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+                /** @enum {string} */
+                template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+                /** @enum {string|null} */
+                tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME" | null;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+                venueName: string;
+                /** @default null */
+                venueDetail: string | null;
+                /** Format: uri */
+                coverImageUrl: string | null;
+                /** @default null */
+                capacity: number | null;
+                studentsOnly?: boolean;
+                waitlistEnabled?: boolean;
+                dressCode?: string | null;
+                doorPolicy?: string | null;
+                /** Format: uri */
+                whatsappGroupUrl?: string | null;
+                /** Format: uuid */
+                parentEventId?: string | null;
+                /** @enum {string|null} */
+                linkType?: "AFTER_PARTY" | "SERIES_CHILD" | null;
+                /** @enum {string} */
+                afterPartyAccess?: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+                lineup?: {
+                    performerName: string;
+                    role: string;
+                    /** @default  */
+                    setTime: string;
+                    /** Format: uuid */
+                    creatorId?: string | null;
+                }[];
+                castAndCrew?: string[];
+                showtimes?: {
+                    label: string;
+                    /** Format: date-time */
+                    startsAt: string;
+                    /** Format: date-time */
+                    endsAt?: string | null;
+                    capacity?: number | null;
+                }[];
+                fixture?: {
+                    homeTeam: string;
+                    awayTeam: string;
+                    /** @default 0 */
+                    homeScore: number;
+                    /** @default 0 */
+                    awayScore: number;
+                    /** @default false */
+                    isLive: boolean;
+                    /** @default Scheduled */
+                    periodLabel: string;
+                };
+            };
+            parentLinkApproved: boolean;
+        };
+        ManagedEventSummary: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            description: string;
+            /** @enum {string} */
+            category: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            venueName: string;
+            venueDetail: string | null;
+            /** Format: uri */
+            coverImageUrl: string | null;
+            capacity: number | null;
+            rsvpCount: number;
+            organizer: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                bio: string | null;
+                /** Format: uri */
+                logoUrl: string | null;
+                isVerified: boolean;
+                followerCount: number;
+            };
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @enum {string} */
+            template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+            studentsOnly?: boolean;
+            waitlistEnabled?: boolean;
+            dressCode?: string | null;
+            doorPolicy?: string | null;
+            /** @enum {string} */
+            tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME";
+            friendsGoing?: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                /** Format: uri */
+                avatarUrl: string | null;
+            }[];
+            friendsGoingCount?: number;
+            lineup?: {
+                id: string;
+                performerName: string;
+                role: string;
+                setTime: string;
+            }[];
+            castAndCrew?: string[];
+            showtimes?: {
+                id: string;
+                label: string;
+                /** Format: date-time */
+                startsAt: string;
+                spotsLeft: number;
+            }[];
+            fixture?: {
+                homeTeam: string;
+                awayTeam: string;
+                homeScore: number;
+                awayScore: number;
+                isLive: boolean;
+                periodLabel: string;
+            };
+            linkedAfterParty?: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                /** Format: date-time */
+                startsAt: string;
+                venueName: string;
+                /** @enum {string} */
+                accessRule: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+            } | null;
+            parentEventSlug?: string | null;
+            parentEventTitle?: string | null;
+            checkInCount: number;
+        };
+        ManagedEventsQuery: {
+            /** Format: uuid */
+            cursor?: string;
+            /** @default 20 */
+            limit: number;
+        };
+        ManagedEventsResponse: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                description: string;
+                /** @enum {string} */
+                category: "SOCIAL_PARTY" | "PERFORMANCE_ARTS" | "ACADEMIC_CONFERENCE" | "SPORTS_RECREATION" | "CLUB_SOCIETY";
+                /** @enum {string} */
+                status: "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+                venueName: string;
+                venueDetail: string | null;
+                /** Format: uri */
+                coverImageUrl: string | null;
+                capacity: number | null;
+                rsvpCount: number;
+                organizer: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    bio: string | null;
+                    /** Format: uri */
+                    logoUrl: string | null;
+                    isVerified: boolean;
+                    followerCount: number;
+                };
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+                /** @enum {string} */
+                template?: "GENERIC" | "CONCERT_PARTY" | "PLAY_CULTURAL" | "MATCH_TOURNAMENT";
+                studentsOnly?: boolean;
+                waitlistEnabled?: boolean;
+                dressCode?: string | null;
+                doorPolicy?: string | null;
+                /** @enum {string} */
+                tonightMood?: "CHILL" | "TURN_UP" | "LEARN" | "WATCH_GAME";
+                friendsGoing?: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    /** Format: uri */
+                    avatarUrl: string | null;
+                }[];
+                friendsGoingCount?: number;
+                lineup?: {
+                    id: string;
+                    performerName: string;
+                    role: string;
+                    setTime: string;
+                }[];
+                castAndCrew?: string[];
+                showtimes?: {
+                    id: string;
+                    label: string;
+                    /** Format: date-time */
+                    startsAt: string;
+                    spotsLeft: number;
+                }[];
+                fixture?: {
+                    homeTeam: string;
+                    awayTeam: string;
+                    homeScore: number;
+                    awayScore: number;
+                    isLive: boolean;
+                    periodLabel: string;
+                };
+                linkedAfterParty?: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    title: string;
+                    /** Format: date-time */
+                    startsAt: string;
+                    venueName: string;
+                    /** @enum {string} */
+                    accessRule: "OPEN" | "PRIORITY_CHECKED_IN" | "CHECKED_IN_ONLY";
+                } | null;
+                parentEventSlug?: string | null;
+                parentEventTitle?: string | null;
+                checkInCount: number;
+            }[];
+            nextCursor: string | null;
+        };
+        OrganizerDashboardResponse: {
+            membership: {
+                organizer: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    bio: string | null;
+                    /** Format: uri */
+                    logoUrl: string | null;
+                    isVerified: boolean;
+                    followerCount: number;
+                };
+                /** @enum {string} */
+                role: "OWNER" | "MANAGER";
+                /** @enum {string} */
+                verificationStatus: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
+                reviewerNote: string | null;
+            };
+            kpis: {
+                followers: number;
+                upcomingRsvps: number;
+                showUpRate: number | null;
+                activeStories: number;
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -3639,6 +4202,63 @@ export interface operations {
             };
         };
     };
+    ManagementController_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerDashboardResponse"];
+                };
+            };
+        };
+    };
+    ManagementController_events: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedEventsResponse"];
+                };
+            };
+        };
+    };
+    ManagementController_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedEvent"];
+                };
+            };
+        };
+    };
     AuthController_signUp: {
         parameters: {
             query?: never;
@@ -4045,6 +4665,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VerificationSubmittedResponse"];
+                };
+            };
+        };
+    };
+    CreatorsController_links: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatorAmbassadorLinksResponse"];
                 };
             };
         };

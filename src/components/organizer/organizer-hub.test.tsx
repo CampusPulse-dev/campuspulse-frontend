@@ -213,6 +213,7 @@ describe('StoryComposerView (S5-01)', () => {
       mediaType: 'IMAGE',
       caption: 'Doors at 7',
       eventId: 'e1',
+      file: expect.any(File),
     });
     expect(await screen.findByText('Story posted. It will disappear in 24 hours.')).toBeDefined();
     expect((screen.getByLabelText('Caption') as HTMLTextAreaElement).value).toBe('');

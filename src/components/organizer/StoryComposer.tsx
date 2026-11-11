@@ -26,6 +26,8 @@ import {
 } from '@/lib/organizer-stories';
 import { ClubGate } from './OrganizerGate';
 import styles from './Organizer.module.css';
+import { DEMO_MODE } from '@/lib/mode';
+import { useAuth } from '@/lib/auth-context';
 
 function hoursLeft(expiresAt: string, now: Date) {
   return Math.max(1, Math.ceil((Date.parse(expiresAt) - now.getTime()) / 3_600_000));
@@ -47,6 +49,7 @@ export function StoryComposerView({
   const [caption, setCaption] = useState('');
   const [eventId, setEventId] = useState('');
   const [mediaType, setMediaType] = useState<StoryMediaType | null>(null);
+  const [file, setFile] = useState<File | undefined>();
   const [preview, setPreview] = useState<string | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
@@ -64,6 +67,7 @@ export function StoryComposerView({
     setPosted(false);
     setErrors([]);
     setMediaType(null);
+    setFile(undefined);
     setPreview(null);
     if (!file) return;
     const result = classifyMedia(file);
@@ -72,11 +76,17 @@ export function StoryComposerView({
       return;
     }
     setMediaType(result.mediaType);
+    setFile(file);
     setPreview(URL.createObjectURL(file));
   }
 
   async function post() {
-    const draft: StoryDraft = { mediaType, caption, eventId: eventId || null };
+    const draft: StoryDraft = {
+      mediaType,
+      caption,
+      eventId: eventId || null,
+      ...(file ? { file } : {}),
+    };
     const found = validateStory(draft);
     setErrors(found);
     setPosted(false);
@@ -86,6 +96,7 @@ export function StoryComposerView({
       await onPost(draft);
       setPosted(true);
       setCaption('');
+      setFile(undefined);
       setEventId('');
       setMediaType(null);
       setPreview(null);
@@ -153,8 +164,10 @@ export function StoryComposerView({
             onChange={(e) => chooseMedia(e.target.files?.[0])}
           />
           <p className={styles.stepSubtitle}>
-            JPEG, PNG or WebP up to 5 MB, or MP4 or WebM up to 25 MB. Demo mode keeps the media on
-            this device only.
+            JPEG, PNG or WebP up to 5 MB, or MP4 or WebM up to 25 MB.{' '}
+            {DEMO_MODE
+              ? 'Demo mode keeps the media on this device only.'
+              : 'Media is uploaded when you post.'}
           </p>
         </div>
 
@@ -244,9 +257,10 @@ export function StoryComposerView({
 }
 
 function StoryComposerData({ slug }: { slug: string }) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['organizer-stories', slug],
+    queryKey: ['organizer-stories', slug, user?.id],
     queryFn: () => fetchStoryComposer(slug),
   });
   if (!query.data) {

@@ -1,4 +1,5 @@
 'use client';
+import { useAuth } from '@/lib/auth-context';
 
 import { UserMinus } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
@@ -280,8 +281,12 @@ export function TeamManagerView({
 }
 
 function TeamData({ slug }: { slug: string }) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ['organizer-team', slug], queryFn: () => fetchTeam(slug) });
+  const query = useQuery({
+    queryKey: ['organizer-team', slug, user?.id],
+    queryFn: () => fetchTeam(slug),
+  });
   if (!query.data) {
     return <ResourceState pending={query.isPending} error={query.error} retry={query.refetch} />;
   }

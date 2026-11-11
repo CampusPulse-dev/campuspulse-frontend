@@ -274,9 +274,7 @@ export function EventWizard({
                 accept={COVER_TYPES.join(',')}
                 onChange={(e) => chooseCover(e.target.files?.[0])}
               />
-              <p className={styles.stepSubtitle}>
-                JPEG, PNG or WebP up to 5 MB. Demo mode keeps the cover on this device only.
-              </p>
+              <p className={styles.stepSubtitle}>JPEG, PNG or WebP up to 5 MB.</p>
               {coverError ? (
                 <p role="alert" className={styles.stepSubtitle}>
                   {coverError}
