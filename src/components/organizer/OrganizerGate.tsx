@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { DEMO_MODE } from '@/lib/mode';
 import { useOrganizerAccess, type OrganizerAccess } from '@/lib/organizer-data';
 import { styles } from '@/components/attendee/Shared';
 
@@ -63,6 +64,8 @@ export function OrganizerRoleGate({ children }: { children: React.ReactNode }) {
   const isOrganizer = user?.role === 'ORGANIZER' || user?.role === 'SUPER_ADMIN';
   if (!ready) return <p role="status">Checking your club access…</p>;
   if (!user) return <OrganizerAccessMessage access={{ status: 'signed-out' }} slug={null} />;
-  if (!isOrganizer) return <OrganizerAccessMessage access={{ status: 'denied' }} slug={null} />;
+  // Live: memberships decide (a manager, or an owner awaiting review, is still an ATTENDEE).
+  if (DEMO_MODE && !isOrganizer)
+    return <OrganizerAccessMessage access={{ status: 'denied' }} slug={null} />;
   return <>{children}</>;
 }

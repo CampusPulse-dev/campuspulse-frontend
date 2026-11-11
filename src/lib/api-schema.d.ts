@@ -275,6 +275,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/sign-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an account and start a session */
+        post: operations["AuthController_signUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign in with email and password */
+        post: operations["AuthController_signIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate the refresh cookie and issue a new access token */
+        post: operations["AuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End the session and clear the refresh cookie */
+        post: operations["AuthController_signOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -328,6 +396,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/organizers/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Clubs the signed-in user owns or manages */
+        get: operations["OrganizersController_listMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply to register a club (creates a pending verification) */
+        post: operations["OrganizersController_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/organizers/{slug}": {
         parameters: {
             query?: never;
@@ -375,6 +477,58 @@ export interface paths {
         post: operations["OrganizersController_follow"];
         /** Unfollow an organizer club (idempotent) */
         delete: operations["OrganizersController_unfollow"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{id}/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Club team with masked email hints (team members only) */
+        get: operations["OrganizersController_getTeam"];
+        put?: never;
+        /** Add a registered user as MANAGER (Club OWNER only) */
+        post: operations["OrganizersController_addManager"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizers/{id}/team/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a manager from the team (Club OWNER only) */
+        delete: operations["OrganizersController_removeMember"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/creators/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply for a campus creator profile (pending verification) */
+        post: operations["CreatorsController_apply"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -737,6 +891,296 @@ export interface paths {
         head?: never;
         /** Update notification category mute preferences */
         patch: operations["NotificationsController_updatePreferences"];
+        trace?: never;
+    };
+    "/verification/student": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current student verification state for the signed-in user */
+        get: operations["StudentVerificationController_getState"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/verification/student/email-otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a 6-digit code to a *.ui.edu.ng address (10 min TTL) */
+        post: operations["StudentVerificationController_requestOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/verification/student/confirm-otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the emailed code (5 attempts, then a 15 min lock) */
+        post: operations["StudentVerificationController_confirmOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/verification/student/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Presigned PUT to the private bucket for a student ID image */
+        post: operations["StudentVerificationController_createUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/verification/student/id-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit the uploaded student ID for Super Admin review */
+        post: operations["StudentVerificationController_submitIdRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Queue counts and oldest-pending age for the SLA header */
+        get: operations["AdminController_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verification queue, oldest first (STUDENT_ID: Super Admin only) */
+        get: operations["AdminController_listVerifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/verifications/{id}/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Take or extend the 15-minute review soft-lock */
+        post: operations["AdminController_claim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/verifications/{id}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream a student ID image (Super Admin holding the claim; every view is audited) */
+        get: operations["AdminController_document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/verifications/{id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve, reject or request info. Deletes any held ID image immediately. */
+        post: operations["AdminController_decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Moderation reports, oldest first */
+        get: operations["AdminController_listReports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/reports/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss, take down an event, remove a story, or suspend a user */
+        post: operations["AdminController_resolveReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Find accounts for role administration (emails masked) */
+        get: operations["AdminController_listUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{id}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change an account role (audited; not your own) */
+        patch: operations["AdminController_setRole"];
+        trace?: never;
+    };
+    "/admin/users/{id}/suspension": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Suspend or reinstate an account (audited) */
+        put: operations["AdminController_setSuspension"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Runtime platform settings */
+        get: operations["AdminController_listSettings"];
+        /** Create or change one platform setting (audited) */
+        put: operations["AdminController_putSetting"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/audit-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Immutable audit log, newest first */
+        get: operations["AdminController_listAuditLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -1638,6 +2082,26 @@ export interface components {
             /** Format: date-time */
             checkedInAt: string | null;
         };
+        AddTeamMemberBody: {
+            /** Format: email */
+            email: string;
+        };
+        CreatorApplyBody: {
+            handle: string;
+            displayName: string;
+            /** @default  */
+            bio: string;
+            /**
+             * Format: uri
+             * @default null
+             */
+            instagramUrl: string | null;
+            /**
+             * Format: uri
+             * @default null
+             */
+            tiktokUrl: string | null;
+        };
         DecideVerificationBody: {
             /** @enum {string} */
             decision: "APPROVED" | "REJECTED" | "INFO_REQUESTED";
@@ -1656,6 +2120,26 @@ export interface components {
             following: boolean;
             followerCount: number;
         };
+        MyOrganizersResponse: {
+            items: {
+                organizer: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    bio: string | null;
+                    /** Format: uri */
+                    logoUrl: string | null;
+                    isVerified: boolean;
+                    followerCount: number;
+                };
+                /** @enum {string} */
+                role: "OWNER" | "MANAGER";
+                /** @enum {string} */
+                verificationStatus: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
+                reviewerNote: string | null;
+            }[];
+        };
         OrganizerListResponse: {
             items: {
                 /** Format: uuid */
@@ -1669,6 +2153,24 @@ export interface components {
                 followerCount: number;
             }[];
             nextCursor: string | null;
+        };
+        OrganizerMembership: {
+            organizer: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                bio: string | null;
+                /** Format: uri */
+                logoUrl: string | null;
+                isVerified: boolean;
+                followerCount: number;
+            };
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER";
+            /** @enum {string} */
+            verificationStatus: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
+            reviewerNote: string | null;
         };
         SessionResponse: {
             user: {
@@ -1695,6 +2197,10 @@ export interface components {
             password: string;
             displayName: string;
         };
+        StudentOtpSentResponse: {
+            expiresIn: number;
+            resendAfter: number;
+        };
         SubmitOrganizerVerificationBody: {
             organizerName: string;
             slug: string;
@@ -1707,6 +2213,28 @@ export interface components {
             /** Format: email */
             studentEmail: string;
             documentUploadId: string;
+        };
+        TeamMember: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            emailHint: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER";
+        };
+        TeamResponse: {
+            /** Format: uuid */
+            organizerId: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER";
+            members: {
+                /** Format: uuid */
+                userId: string;
+                displayName: string;
+                emailHint: string | null;
+                /** @enum {string} */
+                role: "OWNER" | "MANAGER";
+            }[];
         };
         VerificationQueueQuery: {
             cursor?: string;
@@ -1754,6 +2282,14 @@ export interface components {
                 decidedAt: string | null;
             }[];
             nextCursor: string | null;
+        };
+        VerificationSubmittedResponse: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            subject: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
+            /** @enum {string} */
+            status: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
         };
         ApiError: {
             statusCode: number;
@@ -2356,6 +2892,282 @@ export interface components {
             key: string;
             eventIds: string[];
         };
+        AdminOverview: {
+            pendingVerifications: {
+                organizerClub: number;
+                creatorProfile: number;
+                studentId: number | null;
+            };
+            openReports: number | null;
+            /** Format: date-time */
+            oldestPendingSubmittedAt: string | null;
+            slaHours: number;
+        };
+        AdminReport: {
+            /** Format: uuid */
+            id: string;
+            reporter: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                /** Format: uri */
+                avatarUrl: string | null;
+                /** @enum {string} */
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                isVerifiedStudent: boolean;
+            };
+            targetType: string;
+            targetId: string;
+            targetLabel: string | null;
+            reasonCategory: string;
+            details: string;
+            /** @enum {string} */
+            status: "OPEN" | "RESOLVED" | "DISMISSED";
+            resolutionNote: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminReportsQuery: {
+            cursor?: string;
+            /** @default 20 */
+            limit: number;
+            /**
+             * @default OPEN
+             * @enum {string}
+             */
+            status: "OPEN" | "RESOLVED" | "DISMISSED";
+        };
+        AdminReportsResponse: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                reporter: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    /** Format: uri */
+                    avatarUrl: string | null;
+                    /** @enum {string} */
+                    role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                    isVerifiedStudent: boolean;
+                };
+                targetType: string;
+                targetId: string;
+                targetLabel: string | null;
+                reasonCategory: string;
+                details: string;
+                /** @enum {string} */
+                status: "OPEN" | "RESOLVED" | "DISMISSED";
+                resolutionNote: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            nextCursor: string | null;
+        };
+        AdminUser: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            emailHint: string;
+            /** @enum {string} */
+            role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+            isVerifiedStudent: boolean;
+            /** Format: date-time */
+            suspendedAt: string | null;
+        };
+        AdminUsersQuery: {
+            cursor?: string;
+            /** @default 20 */
+            limit: number;
+            search?: string;
+            /**
+             * @default false
+             * @enum {string}
+             */
+            staffOnly: "true" | "false";
+        };
+        AdminUsersResponse: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                emailHint: string;
+                /** @enum {string} */
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                isVerifiedStudent: boolean;
+                /** Format: date-time */
+                suspendedAt: string | null;
+            }[];
+            nextCursor: string | null;
+        };
+        AdminVerificationItem: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            subject: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
+            /** @enum {string} */
+            status: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
+            submittedBy: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                /** Format: uri */
+                avatarUrl: string | null;
+                /** @enum {string} */
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                isVerifiedStudent: boolean;
+            };
+            /** Format: date-time */
+            submittedAt: string;
+            claimedBy: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                /** Format: uri */
+                avatarUrl: string | null;
+                /** @enum {string} */
+                role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                isVerifiedStudent: boolean;
+            } | null;
+            /** Format: date-time */
+            claimedAt: string | null;
+            reviewerNote: string | null;
+            /** Format: date-time */
+            decidedAt: string | null;
+            /** Format: uri */
+            evidenceUrl: string | null;
+            hasDocument: boolean;
+            /** Format: date-time */
+            lockExpiresAt: string | null;
+            organizer: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                bio: string | null;
+                /** Format: uri */
+                logoUrl: string | null;
+                isVerified: boolean;
+                followerCount: number;
+            } | null;
+            creatorHandle: string | null;
+        };
+        AdminVerificationQueueResponse: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                subject: "ORGANIZER_CLUB" | "STUDENT_ID" | "CREATOR_PROFILE" | "VENDOR_CLAIM";
+                /** @enum {string} */
+                status: "PENDING" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "INFO_REQUESTED";
+                submittedBy: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    /** Format: uri */
+                    avatarUrl: string | null;
+                    /** @enum {string} */
+                    role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                    isVerifiedStudent: boolean;
+                };
+                /** Format: date-time */
+                submittedAt: string;
+                claimedBy: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    /** Format: uri */
+                    avatarUrl: string | null;
+                    /** @enum {string} */
+                    role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+                    isVerifiedStudent: boolean;
+                } | null;
+                /** Format: date-time */
+                claimedAt: string | null;
+                reviewerNote: string | null;
+                /** Format: date-time */
+                decidedAt: string | null;
+                /** Format: uri */
+                evidenceUrl: string | null;
+                hasDocument: boolean;
+                /** Format: date-time */
+                lockExpiresAt: string | null;
+                organizer: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    bio: string | null;
+                    /** Format: uri */
+                    logoUrl: string | null;
+                    isVerified: boolean;
+                    followerCount: number;
+                } | null;
+                creatorHandle: string | null;
+            }[];
+            nextCursor: string | null;
+        };
+        AuditLogQuery: {
+            cursor?: string;
+            /** @default 20 */
+            limit: number;
+            /** Format: uuid */
+            actorId?: string;
+            targetType?: string;
+            targetId?: string;
+        };
+        AuditLogResponse: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                actorId: string;
+                action: string;
+                targetType: string;
+                targetId: string;
+                metadata: {
+                    [key: string]: unknown;
+                };
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            nextCursor: string | null;
+        };
+        PlatformSettingEntry: {
+            key: string;
+            value: unknown;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PlatformSettingsResponse: {
+            items: {
+                key: string;
+                value: unknown;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        PutPlatformSettingBody: {
+            key: string;
+            value: string | number | boolean | string[];
+        };
+        /** @enum {string} */
+        ReportStatus: "OPEN" | "RESOLVED" | "DISMISSED";
+        ResolveReportBody: {
+            /** @enum {string} */
+            action: "DISMISS" | "UNPUBLISH_EVENT" | "REMOVE_STORY" | "SUSPEND_USER";
+            note: string;
+            /** Format: uuid */
+            userId?: string;
+        };
+        SetUserSuspensionBody: {
+            suspended: boolean;
+            note: string;
+        };
+        UpdateUserRoleBody: {
+            /** @enum {string} */
+            role: "ATTENDEE" | "ORGANIZER" | "CREATOR" | "VERIFIER" | "MODERATOR" | "SUPER_ADMIN";
+        };
     };
     responses: never;
     parameters: never;
@@ -2826,6 +3638,92 @@ export interface operations {
             };
         };
     };
+    AuthController_signUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignUpBody"];
+            };
+        };
+        responses: {
+            /** @description Session for the new account. The refresh token is set as an httpOnly cookie. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    AuthController_signIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignInBody"];
+            };
+        };
+        responses: {
+            /** @description Session. The refresh token is set as an httpOnly cookie. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    AuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Fresh session. The previous refresh token stops working. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    AuthController_signOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed out. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     UsersController_getMe: {
         parameters: {
             query?: never;
@@ -2938,6 +3836,50 @@ export interface operations {
             };
         };
     };
+    OrganizersController_listMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Memberships with role and club verification state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyOrganizersResponse"];
+                };
+            };
+        };
+    };
+    OrganizersController_apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitOrganizerVerificationBody"];
+            };
+        };
+        responses: {
+            /** @description The new, not-yet-verified club with the caller as OWNER. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerMembership"];
+                };
+            };
+        };
+    };
     OrganizersController_getBySlug: {
         parameters: {
             query?: never;
@@ -3014,6 +3956,94 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FollowOrganizerResponse"];
+                };
+            };
+        };
+    };
+    OrganizersController_getTeam: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Team members and the caller role. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamResponse"];
+                };
+            };
+        };
+    };
+    OrganizersController_addManager: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddTeamMemberBody"];
+            };
+        };
+        responses: {
+            /** @description Updated team. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamResponse"];
+                };
+            };
+        };
+    };
+    OrganizersController_removeMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Updated team. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamResponse"];
+                };
+            };
+        };
+    };
+    CreatorsController_apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatorApplyBody"];
+            };
+        };
+        responses: {
+            /** @description The pending creator verification request. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationSubmittedResponse"];
                 };
             };
         };
@@ -3510,6 +4540,400 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationPreferencesResponse"];
+                };
+            };
+        };
+    };
+    StudentVerificationController_getState: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Verification state. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentVerificationState"];
+                };
+            };
+        };
+    };
+    StudentVerificationController_requestOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentOtpBody"];
+            };
+        };
+        responses: {
+            /** @description Code accepted for delivery. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentOtpSentResponse"];
+                };
+            };
+        };
+    };
+    StudentVerificationController_confirmOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmStudentOtpBody"];
+            };
+        };
+        responses: {
+            /** @description The now-verified user. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
+                };
+            };
+        };
+    };
+    StudentVerificationController_createUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentUploadBody"];
+            };
+        };
+        responses: {
+            /** @description Upload URL plus an opaque handle. No public URL exists for the image. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentUploadResponse"];
+                };
+            };
+        };
+    };
+    StudentVerificationController_submitIdRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentIdRequestBody"];
+            };
+        };
+        responses: {
+            /** @description Verification state after submission. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentVerificationState"];
+                };
+            };
+        };
+    };
+    AdminController_overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Counts scoped to the caller role. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverview"];
+                };
+            };
+        };
+    };
+    AdminController_listVerifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Queue page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminVerificationQueueResponse"];
+                };
+            };
+        };
+    };
+    AdminController_claim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The claimed request. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminVerificationItem"];
+                };
+            };
+        };
+    };
+    AdminController_document: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The image bytes. Not cacheable. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminController_decide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideVerificationBody"];
+            };
+        };
+        responses: {
+            /** @description The decided request. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminVerificationItem"];
+                };
+            };
+        };
+    };
+    AdminController_listReports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reports page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReportsResponse"];
+                };
+            };
+        };
+    };
+    AdminController_resolveReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveReportBody"];
+            };
+        };
+        responses: {
+            /** @description The closed report. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReport"];
+                };
+            };
+        };
+    };
+    AdminController_listUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Users page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUsersResponse"];
+                };
+            };
+        };
+    };
+    AdminController_setRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRoleBody"];
+            };
+        };
+        responses: {
+            /** @description The updated account. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+        };
+    };
+    AdminController_setSuspension: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetUserSuspensionBody"];
+            };
+        };
+        responses: {
+            /** @description The updated account. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUser"];
+                };
+            };
+        };
+    };
+    AdminController_listSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformSettingsResponse"];
+                };
+            };
+        };
+    };
+    AdminController_putSetting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutPlatformSettingBody"];
+            };
+        };
+        responses: {
+            /** @description All settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformSettingsResponse"];
+                };
+            };
+        };
+    };
+    AdminController_listAuditLogs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit page. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditLogResponse"];
                 };
             };
         };

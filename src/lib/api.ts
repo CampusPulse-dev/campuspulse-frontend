@@ -57,20 +57,108 @@ export async function uploadPrivateDocument(url: string, file: File): Promise<vo
   if (!response.ok) throw new Error('ID upload failed. Please retry.');
 }
 
+/** Real sessions: a short-lived access token in memory, a rotating httpOnly refresh cookie. */
+const LIVE_SESSIONS = !DEMO_MODE && !DEV_AUTH_MODE;
+
+/**
+ * The access token lives only in this module's memory: never in localStorage,
+ * never in a cookie the page can read. A reload gets a new one from the
+ * refresh cookie.
+ */
+let sessionToken: string | null = null;
+type SessionListener = (session: SessionResponse | null) => void;
+const sessionListeners = new Set<SessionListener>();
+
+export function setSessionToken(token: string | null): void {
+  sessionToken = token;
+}
+
+/** Fires when a background refresh replaces the session, or finds it has ended (`null`). */
+export function onSessionChange(listener: SessionListener): () => void {
+  sessionListeners.add(listener);
+  return () => sessionListeners.delete(listener);
+}
+
+let refreshInFlight: Promise<SessionResponse> | null = null;
+
+/**
+ * Rotates the refresh cookie and returns a new session.
+ *
+ * Refresh tokens are single-use, and the server treats a replayed one as theft
+ * and ends the session. So refreshes must never overlap: one in flight per tab,
+ * and a Web Lock so two tabs waking up together take turns.
+ */
+export function refreshSession(): Promise<SessionResponse> {
+  refreshInFlight ??= (async () => {
+    const run = () => send<SessionResponse>('/auth/refresh', { method: 'POST' });
+    const session =
+      typeof navigator !== 'undefined' && navigator.locks
+        ? await navigator.locks.request('cp-auth-refresh', run)
+        : await run();
+    sessionToken = session.accessToken;
+    return session;
+  })().finally(() => {
+    refreshInFlight = null;
+  });
+  return refreshInFlight;
+}
+
+function isUnauthorized(error: unknown): boolean {
+  return error instanceof ApiRequestError && error.error.statusCode === 401;
+}
+
 /**
  * Single fetch path for the whole app.
+ *
+ * Attaches the in-memory access token, and when the API answers 401 (the
+ * token expired) refreshes once and replays the request. A 401 means the
+ * request was not executed, so replaying a POST is safe.
  *
  * Note this does not validate the response at runtime — types come from
  * the OpenAPI spec, so a mismatch is caught when the frontend regenerates
  * and typechecks in CI, not here at request time. See ADR 0001.
  */
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  try {
+    return await send<T>(path, init);
+  } catch (error) {
+    const hadCredentials = sessionToken !== null || new Headers(init?.headers).has('authorization');
+    if (
+      !LIVE_SESSIONS ||
+      typeof window === 'undefined' ||
+      !isUnauthorized(error) ||
+      !hadCredentials ||
+      path.startsWith('/auth/')
+    ) {
+      throw error;
+    }
+
+    let session: SessionResponse;
+    try {
+      session = await refreshSession();
+    } catch (refreshError) {
+      if (isUnauthorized(refreshError)) {
+        sessionToken = null;
+        for (const listener of sessionListeners) listener(null);
+      }
+      throw error;
+    }
+    for (const listener of sessionListeners) listener(session);
+    return send<T>(path, init);
+  }
+}
+
+async function send<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers({ 'content-type': 'application/json', ...init?.headers });
-  // TODO(S1-02): remove X-Dev-User header injection and Bearer stripping once JWT auth lands.
   if (DEV_AUTH_MODE) {
+    // Explicit local-development mode (NEXT_PUBLIC_DEV_AUTH): the backend must
+    // also run with DEV_AUTH_ENABLED=true, which it refuses to do in production.
     headers.delete('authorization');
     const devEmail = getDevAuthEmail();
     if (devEmail) headers.set('X-Dev-User', devEmail);
+  } else if (LIVE_SESSIONS && sessionToken && !path.startsWith('/auth/')) {
+    // Always the current token: callers may still hold one from before a refresh.
+    headers.set('authorization', `Bearer ${sessionToken}`);
   }
   const response = await fetch(`${BASE_URL}/api/v1${path}`, {
     credentials: 'include',

@@ -1,6 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './auth-context';
 import {
   ApiRequestError,
+  apiFetch,
+  type Schemas,
   type EventCategory,
   type EventPublic,
   type OrganizerPublic,
@@ -273,7 +276,7 @@ export function computeKpis(
   };
 }
 
-interface DemoClub {
+export interface DemoClub {
   organizer: OrganizerPublic;
   role: OrganizerRole;
   verification: OrganizerDashboardData['verification'];
@@ -329,7 +332,7 @@ export function resolveOrganizerAccess(
 ): OrganizerAccess {
   if (!ready) return { status: 'loading' };
   if (!user) return { status: 'signed-out' };
-  // TODO(S5-01): live mode needs a "my organizers" membership endpoint.
+  // Demo-mode resolution; live access comes from useMyClubs().
   if (!DEMO_MODE) return { status: 'unavailable' };
   const club = demoClubsFor(user).find((c) => c.organizer.slug === slug);
   return club
@@ -337,9 +340,48 @@ export function resolveOrganizerAccess(
     : { status: 'denied' };
 }
 
-export function useOrganizerAccess(slug: string): OrganizerAccess {
+function toClub(membership: Schemas['OrganizerMembership']): DemoClub {
+  const status: OrganizerVerificationStatus =
+    membership.verificationStatus === 'APPROVED'
+      ? 'VERIFIED'
+      : membership.verificationStatus === 'INFO_REQUESTED'
+        ? 'MORE_INFO'
+        : 'PENDING';
+  return {
+    organizer: membership.organizer,
+    role: membership.role,
+    verification: { status, reviewerNote: membership.reviewerNote },
+  };
+}
+
+export type MyClubs =
+  { status: 'loading' | 'signed-out' | 'unavailable' } | { status: 'ready'; clubs: DemoClub[] };
+
+/** Clubs the signed-in user owns or manages: `GET /organizers/mine` live, fixtures in demo. */
+export function useMyClubs(): MyClubs {
   const { user, ready } = useAuth();
-  return resolveOrganizerAccess(user, ready, slug);
+  const live = useQuery({
+    queryKey: ['my-organizers', user?.id],
+    enabled: !DEMO_MODE && ready && !!user,
+    staleTime: 60_000,
+    retry: false,
+    queryFn: () => apiFetch<Schemas['MyOrganizersResponse']>('/organizers/mine'),
+  });
+  if (!ready) return { status: 'loading' };
+  if (!user) return { status: 'signed-out' };
+  if (DEMO_MODE) return { status: 'ready', clubs: demoClubsFor(user) };
+  if (live.isPending) return { status: 'loading' };
+  if (live.isError) return { status: 'unavailable' };
+  return { status: 'ready', clubs: live.data.items.map(toClub) };
+}
+
+export function useOrganizerAccess(slug: string): OrganizerAccess {
+  const mine = useMyClubs();
+  if (mine.status !== 'ready') return { status: mine.status };
+  const club = mine.clubs.find((c) => c.organizer.slug === slug);
+  return club
+    ? { status: 'granted', role: club.role, organizer: club.organizer }
+    : { status: 'denied' };
 }
 
 function offsetIso(now: Date, hours: number): string {

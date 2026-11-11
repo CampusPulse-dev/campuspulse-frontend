@@ -24,7 +24,7 @@ export function readLocal<T>(key: string, fallback: T): T {
 export function writeLocal(key: string, value: unknown) {
   localStorage.setItem(`${DATA_MODE}:${key}`, JSON.stringify(value));
 }
-// TODO(S1-02): restore unconditional Bearer header once real JWT auth lands.
+/** `apiFetch` swaps in the current access token, so a stale one here is harmless. */
 export function authHeaders(token: string | null): HeadersInit {
   if (DEV_AUTH_MODE) {
     const devEmail = getDevAuthEmail();

@@ -10,6 +10,9 @@ import {
   type SignInBody,
   type SignUpBody,
   type UserPublic,
+  onSessionChange,
+  refreshSession,
+  setSessionToken,
 } from './api';
 import { DEFAULT_DEMO_USER } from './campus-data';
 import { DATA_MODE, DEMO_MODE, DEV_AUTH_MODE, getDevAuthEmail, setDevAuthEmail } from './mode';
@@ -74,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       writeLocal('user', next);
       setUser(next);
       setAccessToken(token);
+      setSessionToken(token && token !== 'demo' && token !== 'dev-auth' ? token : null);
       const key = next?.id ?? 'guest';
       setPersona(readLocal(`persona:${key}`, null));
       setPrivacy(readLocal(`privacy:${key}`, DEFAULT_PRIVACY));
@@ -106,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (DEMO_MODE || !navigator.onLine) {
         if (alive) await installUser(readLocal('user', null), DEV_AUTH_MODE ? 'dev-auth' : null);
       } else if (DEV_AUTH_MODE) {
-        // TODO(S1-02): remove localStorage email restore once real /auth/refresh lands.
         const devEmail = getDevAuthEmail();
         if (!devEmail) {
           if (alive) await installUser(null, null);
@@ -130,8 +133,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         try {
-          const s = await apiFetch<SessionResponse>('/auth/refresh', { method: 'POST' });
-          if (alive) await installUser(s.user, s.accessToken);
+          const s = await refreshSession();
+          if (alive) {
+            await installUser(s.user, s.accessToken);
+            await hydrateRemotePreferences(s.user.id);
+          }
         } catch (error) {
           if (alive)
             await installUser(
@@ -149,6 +155,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       alive = false;
     };
   }, [hydrateRemotePreferences, installUser]);
+  // A background refresh (triggered by a 401 inside apiFetch) replaced or ended the session.
+  useEffect(
+    () =>
+      onSessionChange((session) => {
+        if (!session) {
+          void installUser(null, null);
+          return;
+        }
+        writeLocal('user', session.user);
+        setUser(session.user);
+        setAccessToken(session.accessToken);
+      }),
+    [installUser],
+  );
   useEffect(() => {
     const changed = (event: StorageEvent) => {
       if (event.key === DATA_MODE + ':user') {
@@ -166,7 +186,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     else document.documentElement.setAttribute('data-theme', privacy.theme);
   }, [privacy.theme]);
   async function authenticate(body: SignInBody | SignUpBody, path: string) {
-    // TODO(S1-02): remove DEV_AUTH_MODE branch once /auth/sign-in and /auth/sign-up land.
     if (DEV_AUTH_MODE) {
       setDevAuthEmail(body.email);
       let me = await apiFetch<UserPublic>('/users/me', { cache: 'no-store' });
@@ -223,7 +242,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
   async function signOut() {
     try {
-      // TODO(S1-02): restore unconditional /auth/sign-out once real JWT auth lands.
       if (DEV_AUTH_MODE) setDevAuthEmail(null);
       else if (!DEMO_MODE) await apiFetch('/auth/sign-out', { method: 'POST' });
     } finally {
@@ -288,7 +306,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return added;
   }
   function markStudentVerified(verified = true) {
-    if (!DEMO_MODE || !user) return;
+    // Presentation only: in live mode the server already holds the real flag.
+    if (!user) return;
     const next = { ...user, isVerifiedStudent: verified };
     setUser(next);
     writeLocal('user', next);
