@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import { createHash, generateKeyPairSync, sign, webcrypto } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const apiFetch = vi.fn();
@@ -146,7 +147,15 @@ describe('on-device ticket verification (S5-02)', () => {
     await verifyLiveToken(TOKEN_A, pack);
     const started = performance.now();
     for (let i = 0; i < 20; i += 1) await verifyLiveToken(TOKEN_A, pack);
-    expect((performance.now() - started) / 20).toBeLessThan(5);
+    const warmAverageMs = (performance.now() - started) / 20;
+    if (process.env.S6_TIMING_EVIDENCE === 'true') {
+      mkdirSync('test-results', { recursive: true });
+      writeFileSync(
+        'test-results/qr-timing.json',
+        JSON.stringify({ warmAverageMs, iterations: 20, budgetMs: 5, passed: warmAverageMs < 5 }),
+      );
+    }
+    expect(warmAverageMs).toBeLessThan(5);
   });
 });
 

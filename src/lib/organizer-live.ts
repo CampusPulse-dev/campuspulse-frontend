@@ -69,7 +69,9 @@ export async function liveDashboard(slug: string): Promise<OrganizerDashboardDat
           ? 'VERIFIED'
           : m.verificationStatus === 'INFO_REQUESTED'
             ? 'MORE_INFO'
-            : 'PENDING',
+            : m.verificationStatus === 'REJECTED'
+              ? 'REJECTED'
+              : 'PENDING',
       reviewerNote: m.reviewerNote,
     },
     kpis: dashboard.kpis,
@@ -107,12 +109,14 @@ export async function liveReadDraft(slug: string, eventId: string): Promise<Even
     showtimes: (d.showtimes ?? []).map((s, i) => ({
       id: detail.showtimes?.[i]?.id ?? `showtime-${i}`,
       label: s.label,
-      startsAt: s.startsAt,
+      startsAt: localTime(s.startsAt),
+      endsAt: s.endsAt ? localTime(s.endsAt) : null,
       capacity: s.capacity ?? null,
     })),
     homeTeam: d.fixture?.homeTeam ?? '',
     awayTeam: d.fixture?.awayTeam ?? '',
-    linkAfterParty: !!d.parentEventId,
+    linkAfterParty: !!d.parentEventId && d.linkType === 'AFTER_PARTY',
+    linkType: d.linkType ?? null,
     parentEventId: d.parentEventId ?? null,
     afterPartyAccessRule: d.afterPartyAccess ?? 'OPEN',
   };
@@ -121,6 +125,8 @@ export async function liveReadDraft(slug: string, eventId: string): Promise<Even
 async function eventBody(slug: string, draft: EventDraft): Promise<Schemas['CreateEventBody']> {
   const errors = validateStep(1, draft).concat(validateStep(2, draft));
   if (errors.length) throw new Error(errors[0]);
+  if (draft.lineup.some((slot) => !slot.performerName.trim() || !slot.role.trim()))
+    throw new Error('Every lineup slot needs a performer name and role.');
   if (!draft.coverDataUrl) throw new Error('Add a cover image before saving the event.');
   let cover = draft.coverDataUrl;
   if (cover.startsWith('data:')) {
@@ -153,7 +159,8 @@ async function eventBody(slug: string, draft: EventDraft): Promise<Schemas['Crea
     lineup: draft.lineup,
     showtimes: draft.showtimes.map((s) => ({
       label: s.label,
-      startsAt: s.startsAt,
+      startsAt: lagosLocalToIso(s.startsAt),
+      endsAt: s.endsAt ? lagosLocalToIso(s.endsAt) : null,
       capacity: s.capacity ?? null,
     })),
     ...(draft.template === 'MATCH_TOURNAMENT'
@@ -168,8 +175,13 @@ async function eventBody(slug: string, draft: EventDraft): Promise<Schemas['Crea
           },
         }
       : {}),
-    parentEventId: draft.linkAfterParty ? draft.parentEventId : null,
-    linkType: draft.linkAfterParty ? 'AFTER_PARTY' : null,
+    parentEventId:
+      draft.linkAfterParty || draft.linkType === 'SERIES_CHILD' ? draft.parentEventId : null,
+    linkType: draft.linkAfterParty
+      ? 'AFTER_PARTY'
+      : draft.linkType === 'SERIES_CHILD'
+        ? 'SERIES_CHILD'
+        : null,
     afterPartyAccess: draft.afterPartyAccessRule,
   };
 }
@@ -207,10 +219,17 @@ export async function livePublish(
   id?: string,
 ): Promise<OrganizerEventSummary> {
   const saved = await liveSaveDraft(slug, draft, id);
-  const event = await apiFetch<Schemas['EventPublic']>(`/events/${saved.id}/publish`, {
-    method: 'POST',
-  });
-  return liveSummary({ ...event, checkInCount: saved.checkInCount ?? 0 });
+  return livePublishSaved(saved.id);
+}
+
+export async function livePublishSaved(id: string): Promise<OrganizerEventSummary> {
+  const event = await apiFetch<Schemas['EventPublic']>(
+    `/events/${encodeURIComponent(id)}/publish`,
+    {
+      method: 'POST',
+    },
+  );
+  return liveSummary({ ...event, checkInCount: 0 });
 }
 
 export async function liveHub(slug: string, eventId: string): Promise<OrganizerEventHubData> {

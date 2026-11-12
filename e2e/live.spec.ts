@@ -5,6 +5,7 @@ import {
   authorization,
   signIn,
   offlineJourney,
+  privateStorageCounts,
   API,
   type Scenario,
 } from './live-fixture';
@@ -29,10 +30,20 @@ async function session(page: Page, s: Scenario, path: string) {
   await authenticate(page.context(), s);
   await page.goto(path);
 }
-async function draft(page: Page, s: Scenario) {
+async function draft(
+  page: Page,
+  s: Scenario,
+  template: 'CONCERT_PARTY' | 'PLAY_CULTURAL' = 'CONCERT_PARTY',
+) {
   await session(page, s, `${dashboard(s)}/events/new`);
-  await page.getByRole('button', { name: /Concert \/ Party/ }).click();
-  await page.getByLabel('Category').selectOption('SOCIAL_PARTY');
+  await page
+    .getByRole('button', {
+      name: template === 'PLAY_CULTURAL' ? /Play \/ Cultural/ : /Concert \/ Party/,
+    })
+    .click();
+  await page
+    .getByLabel('Category')
+    .selectOption(template === 'PLAY_CULTURAL' ? 'PERFORMANCE_ARTS' : 'SOCIAL_PARTY');
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Title', { exact: true }).fill(`Draft ${s.runId}`);
   await page.getByLabel('Description').fill('Synthetic browser publishing acceptance event.');
@@ -153,6 +164,7 @@ test('L13 template publication saves exactly one event', async ({ page, request,
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'Add performer' }).click();
   await page.getByLabel('Performer 1').fill('Synthetic DJ');
+  await page.getByLabel('Role 1', { exact: true }).fill('DJ');
   await page.getByRole('button', { name: 'Publish Now' }).click();
   await expect(page.getByRole('heading', { name: 'Event published' })).toBeVisible();
   const events = await request.get(`${API}/api/v1/organizers/${s.organizerId}/managed-events`, {
@@ -220,7 +232,7 @@ test('L19 manager can read dashboard but cannot manage team', async ({
   await session(page, s, dashboard(s));
   await expect(page.getByRole('heading', { name: s.organizerName, exact: true })).toBeVisible();
   const result = await request.delete(
-    `${API}/api/v1/organizers/${s.organizerId}/members/${s.users[2]!.id}`,
+    `${API}/api/v1/organizers/${s.organizerId}/team/${s.users[2]!.id}`,
     { headers: authorization(s, 2) },
   );
   expect(result.status()).toBe(403);
@@ -298,22 +310,55 @@ test('L22 camera video scans a real signed ticket and catches duplicates', async
   }
   await page.getByRole('button', { name: 'Start camera' }).click();
   await expect(page.getByText('VALID', { exact: true })).toBeVisible({ timeout: 30000 });
+  let feedbackMs = Infinity;
+  await expect
+    .poll(async () => {
+      feedbackMs = await page.evaluate(
+        () => performance.getEntriesByName('cp-qr-feedback').at(-1)?.duration ?? Infinity,
+      );
+      return feedbackMs;
+    })
+    .toBeLessThan(500);
+  await test.info().attach('scan-feedback.json', {
+    body: JSON.stringify({ feedbackMs, budgetMs: 500 }),
+    contentType: 'application/json',
+  });
   await expect(page.getByText('DUPLICATE', { exact: true })).toBeVisible({ timeout: 15000 });
 });
 test('L23 server rejects tampered and wrong-event tokens', async ({ request, scenario: s }) => {
   const endpoint = `${API}/api/v1/attendance/check-in`;
-  for (const qrToken of [s.qrToken.slice(0, -8) + 'tampered', s.qrToken]) {
-    const result = await request.post(endpoint, {
-      headers: authorization(s, 3),
-      data: { eventId: s.runId, qrToken, method: 'QR_SCAN' },
-    });
-    expect(result.ok()).toBe(false);
-  }
+  const other = await request.post(`${API}/api/v1/events`, {
+    headers: authorization(s),
+    data: {
+      organizerId: s.organizerId,
+      title: `Other ${s.runId}`,
+      description: 'Synthetic wrong-event ticket acceptance',
+      category: 'SOCIAL_PARTY',
+      startsAt: '2030-11-20T18:00:00.000Z',
+      endsAt: '2030-11-20T22:00:00.000Z',
+      venueName: 'Synthetic SUB',
+      coverImageUrl: 'https://example.test/cover.png',
+    },
+  });
+  expect(other.status()).toBe(201);
+  const otherEvent = await other.json();
+  const published = await request.post(`${API}/api/v1/events/${otherEvent.id}/publish`, {
+    headers: authorization(s),
+  });
+  expect(published.ok()).toBe(true);
+  const common = { method: 'QR_SCAN', scannedAt: new Date().toISOString() };
+  const wrong = await request.post(endpoint, {
+    headers: authorization(s),
+    data: { ...common, eventId: otherEvent.id, qrToken: s.qrToken },
+  });
+  expect(wrong.status()).toBe(400);
+  expect((await wrong.json()).message).toBe('QR token belongs to a different event');
   const result = await request.post(endpoint, {
     headers: authorization(s, 3),
-    data: { eventId: s.eventId, qrToken: s.qrToken.slice(0, -8) + 'tampered', method: 'QR_SCAN' },
+    data: { ...common, eventId: s.eventId, qrToken: s.qrToken.slice(0, -8) + 'tampered' },
   });
-  expect(result.ok()).toBe(false);
+  expect(result.status()).toBe(400);
+  expect((await result.json()).message).toBe('Invalid QR token signature');
 });
 test('L24 creator attribution belongs to the authenticated creator', async ({
   page,
@@ -370,15 +415,29 @@ test('L28 super admin can open the live audit trail', async ({ page, scenario: s
 });
 test('L29 sign out removes private offline ticket and scanner caches', async ({
   page,
+  request,
   scenario: s,
 }) => {
+  const grant = await request.post(`${API}/api/v1/events/${s.eventId}/door-staff`, {
+    headers: authorization(s),
+    data: { email: s.email },
+  });
+  expect(grant.ok()).toBe(true);
   await session(page, s, `/tickets/${s.rsvpId}`);
   await expect(page.getByRole('img', { name: 'Event entry QR code' })).toBeVisible();
+  await page.context().route(`${API}/api/v1/attendance/check-in/batch`, (route) => route.abort());
+  await readyDoor(page, s);
+  await page.getByRole('tab', { name: 'Manual Check-In' }).click();
+  await page.getByLabel('Find an attendee').fill(s.attendeeName);
+  await page.getByRole('button', { name: `Check in ${s.attendeeName}`, exact: true }).click();
+  await expect.poll(async () => (await privateStorageCounts(page)).scans).toBe(1);
   await page.goto('/settings');
+  expect(await privateStorageCounts(page)).toEqual({ passes: 1, packs: 1, scans: 1 });
   await page.getByRole('button', { name: 'Sign out and clear cached tickets' }).click();
   await expect
     .poll(async () => (await page.context().cookies()).some((c) => c.name === 'cp_refresh'))
     .toBe(false);
+  await expect.poll(() => privateStorageCounts(page)).toEqual({ passes: 0, packs: 0, scans: 0 });
   await page.goto(`/tickets/${s.rsvpId}`);
   await expect(page.getByRole('img', { name: 'Event entry QR code' })).toHaveCount(0);
 });
@@ -387,7 +446,30 @@ test('L30 development headers cannot authenticate on the live stack', async ({
   scenario: s,
 }) => {
   const result = await request.get(`${API}/api/v1/organizers/${s.organizerId}/dashboard`, {
-    headers: { 'X-Dev-User': s.users[1]!.id },
+    headers: { 'X-Dev-User': s.users[1]!.email },
   });
   expect(result.status()).toBe(401);
+});
+test('L31 play template publishes WAT showtimes through the live contract', async ({
+  page,
+  request,
+  scenario: s,
+}) => {
+  await draft(page, s, 'PLAY_CULTURAL');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Add showtime' }).click();
+  await page.getByLabel('Showtime label 1').fill('Matinee');
+  await page.getByLabel('Showtime starts 1').fill('2030-11-20T20:00');
+  await page.getByRole('button', { name: 'Publish Now' }).click();
+  await expect(page.getByRole('heading', { name: 'Event published' })).toBeVisible();
+  const response = await request.get(`${API}/api/v1/organizers/${s.organizerId}/managed-events`, {
+    headers: authorization(s),
+  });
+  const event = (await response.json()).items.find(
+    (row: { title: string }) => row.title === `Draft ${s.runId}`,
+  );
+  const details = await request.get(`${API}/api/v1/events/${event.id}/manage`, {
+    headers: authorization(s),
+  });
+  expect((await details.json()).draft.showtimes[0].startsAt).toBe('2030-11-20T19:00:00.000Z');
 });

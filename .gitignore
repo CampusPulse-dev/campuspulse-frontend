@@ -1,5 +1,6 @@
 node_modules/
 .playwright-cli/
+e2e/.generated/
 .next/
 out/
 build/

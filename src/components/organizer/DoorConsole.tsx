@@ -165,6 +165,7 @@ function Door({
   eventTitle: string | null;
 }) {
   const demo = driver.demo;
+  const decodedAt = useRef<number | null>(null);
   const [pack, setPack] = useState<DoorPackView | null>(null);
   const [scans, setScans] = useState<DoorScanView[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -258,6 +259,12 @@ function Door({
   // The full-bleed result clears itself so the next person can step up.
   useEffect(() => {
     if (!flash) return;
+    if (decodedAt.current !== null) {
+      // Duration only: no token, attendee identity or event data is recorded.
+      performance.clearMeasures('cp-qr-feedback');
+      performance.measure('cp-qr-feedback', { start: decodedAt.current, end: performance.now() });
+      decodedAt.current = null;
+    }
     const dismiss = () => setFlash((current) => (current?.id === flash.id ? null : current));
     const timer = window.setTimeout(dismiss, RESULT_HOLD_MS[flash.kind]);
     const onKey = (event: KeyboardEvent) => {
@@ -348,6 +355,7 @@ function Door({
   const scan = useCallback(
     async (code: string) => {
       if (!pack || lock.current) return;
+      decodedAt.current = performance.now();
       const verdict = await driver.verify(code, pack);
       if (!verdict.ok) {
         show(

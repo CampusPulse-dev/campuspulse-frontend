@@ -72,10 +72,15 @@ export function EphemeralIdViewer({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const alive = useRef(true);
+  const generation = useRef(0);
+  const pendingUrl = useRef<string | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
   const [problem, setProblem] = useState<string | null>(null);
 
   const hide = useCallback(() => {
+    generation.current += 1;
+    if (pendingUrl.current) URL.revokeObjectURL(pendingUrl.current);
+    pendingUrl.current = null;
     wipe(canvasRef.current);
     setPhase('idle');
   }, []);
@@ -89,36 +94,45 @@ export function EphemeralIdViewer({
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       alive.current = false;
+      generation.current += 1;
+      if (pendingUrl.current) URL.revokeObjectURL(pendingUrl.current);
+      pendingUrl.current = null;
       document.removeEventListener('visibilitychange', onVisibility);
       wipe(canvas);
     };
   }, [hide]);
 
   async function show() {
+    const request = ++generation.current;
+    const current = () => alive.current && generation.current === request && !document.hidden;
     setProblem(null);
     setPhase('loading');
     let url: string | null = null;
     try {
       const blob = await load();
-      if (!alive.current) return;
+      if (!current()) return;
       url = URL.createObjectURL(blob);
+      pendingUrl.current = url;
       const image = new Image();
       await new Promise<void>((resolve, reject) => {
         image.onload = () => resolve();
         image.onerror = () => reject(new Error('This image could not be displayed.'));
         image.src = url as string;
       });
-      if (!alive.current || !canvasRef.current) return;
+      if (!current() || !canvasRef.current) return;
       if (!paintDocument(canvasRef.current, image, watermark))
         throw new Error('This image could not be displayed.');
       setPhase('shown');
     } catch (error) {
-      if (!alive.current) return;
+      if (!current()) return;
       wipe(canvasRef.current);
       setPhase('idle');
       setProblem(errorMessage(error, 'Could not load the ID image. Please retry.'));
     } finally {
-      if (url) URL.revokeObjectURL(url);
+      if (url && pendingUrl.current === url) {
+        URL.revokeObjectURL(url);
+        pendingUrl.current = null;
+      }
     }
   }
 

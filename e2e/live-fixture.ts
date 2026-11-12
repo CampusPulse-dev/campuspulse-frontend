@@ -63,6 +63,34 @@ export async function authenticate(context: BrowserContext, scenario: Scenario) 
 export const authorization = (s: Scenario, role = 1) => ({
   Authorization: `Bearer ${s.users[role]!.token}`,
 });
+export async function privateStorageCounts(page: Page) {
+  return page.evaluate(async () => {
+    const databases = await indexedDB.databases();
+    async function count(name: string, store: string) {
+      if (!databases.some((database) => database.name === name)) return 0;
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open(name);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      try {
+        if (!db.objectStoreNames.contains(store)) return 0;
+        return await new Promise<number>((resolve, reject) => {
+          const request = db.transaction(store).objectStore(store).count();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      } finally {
+        db.close();
+      }
+    }
+    return {
+      passes: await count('cp_my_tickets', 'passes'),
+      packs: await count('cp_scanner_v1', 'packs'),
+      scans: await count('cp_scanner_v1', 'scans'),
+    };
+  });
+}
 export async function signIn(page: Page, scenario: Scenario) {
   await page.goto('/sign-in');
   await page.getByLabel('Student or Personal Email').fill(scenario.email);

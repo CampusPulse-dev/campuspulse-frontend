@@ -8,8 +8,8 @@ const data = JSON.parse(
     'utf8',
   ),
 );
-mkdirSync('test-results', { recursive: true });
-await QRCode.toFile('test-results/live-camera.png', data.chromium[21].qrToken, {
+mkdirSync('e2e/.generated', { recursive: true });
+await QRCode.toFile('e2e/.generated/live-camera.png', data.chromium[21].qrToken, {
   width: 720,
   margin: 8,
   errorCorrectionLevel: 'M',
@@ -21,14 +21,14 @@ const result = spawnSync(
     '-loop',
     '1',
     '-i',
-    resolve('test-results/live-camera.png'),
+    resolve('e2e/.generated/live-camera.png'),
     '-t',
     '3',
     '-r',
     '10',
     '-pix_fmt',
     'yuv420p',
-    resolve('test-results/live-camera.y4m'),
+    resolve('e2e/.generated/live-camera.y4m'),
   ],
   { stdio: ['ignore', 'ignore', 'pipe'] },
 );

@@ -19,13 +19,23 @@ export function LiveClubApplication() {
   const [busy, setBusy] = useState(false);
   const owned =
     result ?? (mine.status === 'ready' ? mine.clubs.find((c) => c.role === 'OWNER') : null);
+  const rejected =
+    owned && 'verificationStatus' in owned && owned.verificationStatus === 'REJECTED';
+  const reviewerNote = owned && 'reviewerNote' in owned ? owned.reviewerNote : null;
   return (
     <div className={styles.page}>
       <h1>Apply for your club</h1>
       {owned ? (
         <section className={styles.banner} role="status">
-          <h2>{owned.organizer.isVerified ? 'Club verified' : 'Application submitted'}</h2>
+          <h2>
+            {owned.organizer.isVerified
+              ? 'Club verified'
+              : rejected
+                ? 'Application rejected'
+                : 'Application submitted'}
+          </h2>
           <p>{owned.organizer.name}</p>
+          {reviewerNote ? <p>{reviewerNote}</p> : null}
           <Link href={`/organizer/${owned.organizer.slug}`}>Open club dashboard</Link>
         </section>
       ) : (

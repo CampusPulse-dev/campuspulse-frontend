@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ResourceState } from '@/components/attendee/Shared';
@@ -15,13 +15,14 @@ import { ClubGate } from './OrganizerGate';
 import { EventWizard } from './EventWizard';
 import styles from './Organizer.module.css';
 import { DEMO_MODE } from '@/lib/mode';
-import { liveReadDraft } from '@/lib/organizer-live';
+import { liveReadDraft, livePublishSaved } from '@/lib/organizer-live';
 import { useAuth } from '@/lib/auth-context';
 
 function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [workingId, setWorkingId] = useState(draftId);
+  const lastSave = useRef<{ fingerprint: string; id: string } | null>(null);
   const [saved, setSaved] = useState<{ kind: 'draft' | 'published'; title: string } | null>(null);
   const [round, setRound] = useState(0);
   const query = useQuery({
@@ -64,6 +65,14 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
     setSaved({ kind, title: draft.title.trim() });
     await queryClient.invalidateQueries({ queryKey: ['organizer-dashboard', slug] });
   }
+  async function persistDraft(draft: EventDraft) {
+    const fingerprint = JSON.stringify(draft);
+    if (lastSave.current?.fingerprint === fingerprint) return lastSave.current.id;
+    const event = await saveEventDraft(slug, draft, workingId);
+    setWorkingId(event.id);
+    lastSave.current = { fingerprint, id: event.id };
+    return event.id;
+  }
 
   if (saved) {
     return (
@@ -88,6 +97,7 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
                 onClick={() => {
                   setSaved(null);
                   setWorkingId(undefined);
+                  lastSave.current = null;
                   setRound((n) => n + 1);
                 }}
               >
@@ -114,14 +124,13 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
           .filter((event) => event.status === 'PUBLISHED')
           .map((event) => ({ id: event.id, title: event.title }))}
         onSaveDraft={async (draft) => {
-          const event = await saveEventDraft(slug, draft, workingId);
-          setWorkingId(event.id);
+          await persistDraft(draft);
           await finish('draft', draft);
         }}
         onPublish={async (draft) => {
-          const event = await saveEventDraft(slug, draft, workingId);
-          setWorkingId(event.id);
-          await publishEvent(slug, draft, event.id);
+          const id = await persistDraft(draft);
+          if (DEMO_MODE) await publishEvent(slug, draft, id);
+          else await livePublishSaved(id);
           await finish('published', draft);
         }}
       />

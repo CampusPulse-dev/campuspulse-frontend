@@ -41,7 +41,13 @@ jobs:
         working-directory: campuspulse-backend
       - run: npx tsx scripts/test-stack.ts up && npx tsx scripts/test-stack.ts migrate && npx tsx scripts/test-stack.ts browser-fixtures
         working-directory: campuspulse-backend
+      - name: Record exact source, runtime and machine specifications
+        working-directory: campuspulse-backend
+        env:
+          FRONTEND_SHA: ${{ github.sha }}
+        run: npx tsx scripts/test-stack.ts evidence
       - name: Start API without development header auth
+        id: api
         working-directory: campuspulse-backend
         run: |
           npx tsx scripts/test-stack.ts serve-live > test-results/api.log 2>&1 &
@@ -53,16 +59,24 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: node scripts/prepare-camera.mjs
       - name: Clean production build with external font access blocked
+        id: build
         env:
           NODE_OPTIONS: --require=./scripts/block-font-network.cjs
         run: npm run build
-      - name: Live browser journeys (60 executions)
-        run: npx playwright test live.spec.ts --reporter=list,html
+      - name: Live browser journeys (62 executions)
+        id: browsers
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/live-summary.json
+        run: npx playwright test live.spec.ts --reporter=list,html,json
       - name: Warm QR timing in isolation
+        id: crypto
         if: '!cancelled()'
+        env:
+          S6_TIMING_EVIDENCE: 'true'
         run: npx vitest run src/lib/door-live.test.ts --maxWorkers=1
       - name: Start production frontend for cold Lighthouse samples
-        if: '!cancelled()'
+        id: lighthouse_server
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.api.outcome == 'success' }}
         run: |
           npm run start -- --port 3104 > test-results/frontend.log 2>&1 &
           for attempt in $(seq 1 60); do
@@ -71,10 +85,20 @@ jobs:
           done
           exit 1
       - name: Three cold mobile samples per route
-        if: '!cancelled()'
+        id: lighthouse
+        if: ${{ !cancelled() && steps.lighthouse_server.outcome == 'success' }}
         env:
           BACKEND_SHA: ${{ steps.backend.outputs.sha }}
         run: node scripts/lighthouse-budget.mjs
+      - name: Assemble release report and Android handoff
+        if: always()
+        env:
+          BACKEND_SHA: ${{ steps.backend.outputs.sha }}
+          BUILD_RESULT: ${{ steps.build.outcome }}
+          BROWSER_RESULT: ${{ steps.browsers.outcome }}
+          QR_RESULT: ${{ steps.crypto.outcome }}
+          LIGHTHOUSE_RESULT: ${{ steps.lighthouse.outcome }}
+        run: node scripts/release-report.mjs
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -84,3 +108,9 @@ jobs:
             campuspulse-frontend/test-results/**/trace.zip
             campuspulse-frontend/test-results/**/error-context.md
             campuspulse-frontend/test-results/lighthouse/
+            campuspulse-frontend/test-results/live-summary.json
+            campuspulse-frontend/test-results/qr-timing.json
+            campuspulse-frontend/test-results/*-report.md
+            campuspulse-frontend/test-results/android-acceptance.md
+            campuspulse-frontend/test-results/backend-engineering-controls.md
+            campuspulse-backend/test-results/runtime-evidence.json

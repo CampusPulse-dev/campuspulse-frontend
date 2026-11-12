@@ -26,7 +26,7 @@ import { liveDashboard, livePublish, liveSaveDraft } from './organizer-live';
 /** UI models for explicit demo mode; live operations delegate to generated-contract adapters. */
 
 export type OrganizerRole = 'OWNER' | 'MANAGER';
-export type OrganizerVerificationStatus = 'VERIFIED' | 'PENDING' | 'MORE_INFO';
+export type OrganizerVerificationStatus = 'VERIFIED' | 'PENDING' | 'MORE_INFO' | 'REJECTED';
 export type AfterPartyAccessRule = LinkedAfterPartyPreview['accessRule'];
 export type EventBlock =
   'lineup' | 'showtimes' | 'matchTeams' | 'dressCode' | 'doorPolicy' | 'afterParty';
@@ -71,7 +71,9 @@ export interface EventDraft {
   dressCode: string;
   doorPolicy: string;
   lineup: EventLineupSlot[];
-  showtimes: (Omit<EventShowtimeOption, 'spotsLeft'> & { capacity?: number | null })[];
+  showtimes: (Omit<EventShowtimeOption, 'spotsLeft'> &
+    Pick<Schemas['CreateEventShowtime'], 'endsAt'> & { capacity?: number | null })[];
+  linkType?: Schemas['EventLinkType'] | null;
   homeTeam: string;
   awayTeam: string;
   linkAfterParty: boolean;
@@ -144,6 +146,8 @@ export function validateStep(step: WizardStep, draft: EventDraft): string[] {
     const blocks = TEMPLATE_BLOCKS[draft.template];
     if (blocks.includes('lineup') && draft.lineup.some((slot) => !slot.performerName.trim()))
       errors.push('Every lineup slot needs a performer name.');
+    if (!DEMO_MODE && blocks.includes('lineup') && draft.lineup.some((slot) => !slot.role.trim()))
+      errors.push('Every lineup slot needs a role.');
     if (
       blocks.includes('showtimes') &&
       (draft.showtimes.length === 0 ||

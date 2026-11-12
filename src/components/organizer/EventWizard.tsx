@@ -1,4 +1,5 @@
 'use client';
+import { DEMO_MODE } from '@/lib/mode';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -321,6 +322,7 @@ export function EventWizard({
                     <div className={styles.twoCol}>
                       <TextField
                         label={`Role ${index + 1}`}
+                        required={!DEMO_MODE}
                         value={slot.role}
                         onChange={(e) =>
                           patch({

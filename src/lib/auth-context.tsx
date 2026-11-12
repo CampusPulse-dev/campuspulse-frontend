@@ -182,6 +182,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const changed = (event: StorageEvent) => {
       if (event.key === DATA_MODE + ':user') {
+        const next = readLocal<UserPublic | null>('user', null);
+        if (next?.id === user?.id) {
+          // Another tab edited this account's profile, not its identity/session.
+          setUser(next);
+          return;
+        }
         void clearTicketAccount().then(() => {
           queryClient.clear();
           return installUser(readLocal('user', null), null);
@@ -190,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener('storage', changed);
     return () => window.removeEventListener('storage', changed);
-  }, [installUser, queryClient]);
+  }, [installUser, queryClient, user?.id]);
   useEffect(() => {
     if (privacy.theme === 'system') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', privacy.theme);

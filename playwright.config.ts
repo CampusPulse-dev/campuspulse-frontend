@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL,
-    trace: 'on-first-retry',
+    trace: process.env.LIVE_E2E === 'true' ? 'retain-on-failure' : 'on-first-retry',
   },
   projects: [
     {
@@ -26,7 +26,7 @@ export default defineConfig({
                 args: [
                   '--use-fake-device-for-media-stream',
                   '--use-fake-ui-for-media-stream',
-                  `--use-file-for-fake-video-capture=${resolve('test-results/live-camera.y4m')}`,
+                  `--use-file-for-fake-video-capture=${resolve('e2e/.generated/live-camera.y4m')}`,
                 ],
               },
             }
