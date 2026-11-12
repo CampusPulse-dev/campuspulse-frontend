@@ -57,6 +57,9 @@ jobs:
           done
           exit 1
       - run: npx playwright install --with-deps chromium webkit
+      # prepare-camera.mjs encodes the QR image into the fake camera feed; runner images ship no ffmpeg.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: node scripts/prepare-camera.mjs
       - name: Clean production build with external font access blocked
         id: build
