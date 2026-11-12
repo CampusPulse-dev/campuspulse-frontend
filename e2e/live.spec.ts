@@ -76,7 +76,9 @@ test('L02 real signup and onboarding lead to RSVP', async ({ page, scenario: s }
   await page.getByLabel('Password (min. 10 characters)').fill(s.password);
   await page.getByRole('button', { name: 'Create account' }).click();
   await page.getByRole('button', { name: /Skip/ }).click();
-  await page.goto(`/e/${s.eventSlug}`);
+  // Skipping onboarding follows `next` to the event page; navigating there ourselves
+  // races that navigation (WebKit aborts one of them).
+  await page.waitForURL(`**/e/${s.eventSlug}`);
   await page.getByRole('button', { name: 'RSVP — Free' }).click();
   await expect(page.getByRole('heading', { name: 'Your RSVP is saved' })).toBeVisible();
 });
