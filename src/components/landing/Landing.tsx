@@ -58,7 +58,7 @@ export function Landing({
         <section className={styles.hero} aria-labelledby="hero-title">
           {posters.length ? (
             <div className={styles.posterWall} aria-hidden="true">
-              {posters.map((event) => (
+              {posters.map((event, index) => (
                 <Image
                   key={event.id}
                   src={event.coverImageUrl!}
@@ -66,7 +66,10 @@ export function Landing({
                   width={360}
                   height={480}
                   sizes="180px"
-                  loading="lazy"
+                  // The first poster is the page's largest paint; the rest can wait.
+                  {...(index === 0
+                    ? { preload: true, fetchPriority: 'high' as const }
+                    : { loading: 'lazy' as const })}
                   unoptimized={!isOptimizableImage(event.coverImageUrl!)}
                 />
               ))}

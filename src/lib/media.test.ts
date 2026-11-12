@@ -16,4 +16,10 @@ describe('media allowlist', () => {
     expect(isOptimizableImage('https://evil.example/a.jpg', hosts)).toBe(false);
     expect(isOptimizableImage('not a url', hosts)).toBe(false);
   });
+
+  it('optimizes our own static paths but not protocol-relative URLs', () => {
+    expect(isOptimizableImage('/demo/events/a.webp', [])).toBe(true);
+    expect(isOptimizableImage('//evil.example/a.jpg', [])).toBe(false);
+    expect(isOptimizableImage('/\\evil.example/a.jpg', [])).toBe(false);
+  });
 });

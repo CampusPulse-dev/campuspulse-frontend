@@ -5,7 +5,8 @@ import './globals.css';
 
 // Checked-in fonts keep builds independent of Google Fonts availability.
 const inter = localFont({
-  src: './fonts/InterVariable.woff2',
+  // Latin + Yoruba diacritics subset of Inter (352 KB -> 89 KB); see fonts/PROVENANCE.md.
+  src: './fonts/InterLatin.woff2',
   weight: '100 900',
   display: 'swap',
   variable: '--font-inter',
@@ -16,6 +17,8 @@ const jetbrainsMono = localFont({
   src: './fonts/JetBrainsMonoVariable.woff2',
   weight: '100 800',
   display: 'swap',
+  // Never in the first paint of a public page; don't let it compete with the hero.
+  preload: false,
   variable: '--font-jetbrains-mono',
 });
 

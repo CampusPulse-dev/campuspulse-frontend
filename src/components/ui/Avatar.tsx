@@ -54,6 +54,9 @@ export function Avatar({
             ref={imgRef}
             src={src!}
             alt={name}
+            // Avatars are never a page's largest paint; keep them off the critical path.
+            loading="lazy"
+            decoding="async"
             className={styles.image}
             onError={() => setFailedSrc(src ?? null)}
           />
