@@ -396,6 +396,8 @@ test('L25 super admin claims views and approves synthetic ID with audit evidence
 });
 test('L26 verifier cannot view student ID documents', async ({ page, request, scenario: s }) => {
   await session(page, s, '/admin');
+  // Wait for the signed-in shell (its session refresh has landed) before navigating on.
+  await expect(page.getByRole('link', { name: /Clubs & creators/ }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /Student IDs/ })).toHaveCount(0);
   await page.goto('/admin/verifications/students');
   await expect(page.getByRole('main').getByRole('alert')).toContainText('Verifier');
@@ -438,6 +440,10 @@ test('L29 sign out removes private offline ticket and scanner caches', async ({
     .poll(async () => (await page.context().cookies()).some((c) => c.name === 'cp_refresh'))
     .toBe(false);
   await expect.poll(() => privateStorageCounts(page)).toEqual({ passes: 0, packs: 0, scans: 0 });
+  // Let the app finish settling into its signed-out state before navigating, or the
+  // navigation races the account-change re-render (WebKit aborts the goto).
+  await expect(page.getByRole('heading', { name: 'Your campus, connected' })).toBeVisible();
+  await page.waitForLoadState('networkidle');
   await page.goto(`/tickets/${s.rsvpId}`);
   await expect(page.getByRole('img', { name: 'Event entry QR code' })).toHaveCount(0);
 });
