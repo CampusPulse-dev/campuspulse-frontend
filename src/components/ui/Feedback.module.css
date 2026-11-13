@@ -76,3 +76,33 @@
   border-color: var(--status-danger);
   color: var(--status-danger);
 }
+
+/* Toast motion in CSS, so no animation library ships on public pages. */
+.toast {
+  animation: toast-in 200ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.toastLeaving {
+  animation: toast-out 160ms cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toastLeaving {
+    animation-duration: 1ms;
+  }
+}
