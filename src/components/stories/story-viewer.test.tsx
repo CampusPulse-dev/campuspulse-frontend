@@ -73,7 +73,8 @@ describe('Stories and discovery', () => {
     const trigger = view.getByRole('button', { name: /Sigma Club UI/i });
     trigger.focus();
     fireEvent.click(trigger);
-    expect(view.getByRole('dialog')).toBeDefined();
+    // The viewer is code-split and arrives a tick after the first open.
+    expect(await view.findByRole('dialog')).toBeDefined();
     expect(view.getByRole('img', { name: /Soundcheck Live at SUB Field/i })).toBeDefined();
     const close = view.getByRole('button', { name: /Pause stories/i });
     expect(document.activeElement).toBe(close);

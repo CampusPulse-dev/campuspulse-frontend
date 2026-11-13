@@ -14,7 +14,7 @@ const inter = localFont({
 
 // JetBrains Mono carries timestamps, live RSVP/check-in counters, and QR pass IDs.
 const jetbrainsMono = localFont({
-  src: './fonts/JetBrainsMonoVariable.woff2',
+  src: './fonts/JetBrainsMonoLatin.woff2',
   weight: '100 800',
   display: 'swap',
   // Never in the first paint of a public page; don't let it compete with the hero.
@@ -23,7 +23,7 @@ const jetbrainsMono = localFont({
 });
 
 const goodly = localFont({
-  src: './fonts/GoodlyRegular.woff2',
+  src: './fonts/GoodlyLatin.woff2',
   weight: '400',
   display: 'swap',
   variable: '--font-goodly',
