@@ -29,7 +29,7 @@ The redesign follows the supplied six-phase brief and `../docs/03-DESIGN-SYSTEM-
 - Stored dark values once in private `--_dark-*` properties, referenced by explicit and system theme selectors.
 - Added Icon, VerifiedMark, PulseLine, ListRow, Section, TextLink and BrandLockup primitives.
 - Installed only `lucide-react`; CSS Modules and the existing motion package remain the UI foundation.
-- Goodly is loaded locally from the supplied `src/app/fonts/GoodlyRegular.woff2`, replacing the earlier handwritten font file. Inter remains the UI and body face. Official SVG lockups preserve the original logo lettering.
+- Goodly is loaded locally from the supplied Goodly Regular (now shipped as the subset `src/app/fonts/GoodlyLatin.woff2`; see `src/app/fonts/PROVENANCE.md`), replacing the earlier handwritten font file. Inter remains the UI and body face. Official SVG lockups preserve the original logo lettering.
 - Focus outlines no longer change the shape of focused controls.
 
 ## Phase 1 — Shells

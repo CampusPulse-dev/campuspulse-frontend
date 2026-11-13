@@ -95,7 +95,7 @@
   --text-2xl: 1.75rem;
   --text-3xl: 2.25rem;
 
-  /* Goodly ships as Regular only (src/app/fonts/GoodlyRegular.woff2); hierarchy
+  /* Goodly ships as Regular only (subset to src/app/fonts/GoodlyLatin.woff2); hierarchy
      comes from size. If GoodlyBold.woff2 is added, register it in layout.tsx
      and raise these weights. */
   --type-display: 400 2.25rem / 1.12 var(--font-display);

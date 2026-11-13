@@ -1,20 +1,16 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { motion, useReducedMotion } from 'framer-motion';
 import type { EnrichedEvent } from '@/lib/campus-data';
 import { isOptimizableImage } from '@/lib/media';
 import styles from './HomeFeed.module.css';
 export function EventPoster({ event, detail = false }: { event: EnrichedEvent; detail?: boolean }) {
-  const reduced = useReducedMotion();
   // A cover that fails to load falls back to the branded poster instead of a broken image.
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const cover =
     event.coverImageUrl && failedSrc !== event.coverImageUrl ? event.coverImageUrl : null;
   return (
-    <motion.div
-      layoutId={reduced ? undefined : `poster-${event.id}`}
-      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+    <div
       className={`${styles.posterImage} ${detail ? styles.detailPoster : ''}`}
       aria-hidden="true"
     >
@@ -41,6 +37,6 @@ export function EventPoster({ event, detail = false }: { event: EnrichedEvent; d
           <span>University of Ibadan</span>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

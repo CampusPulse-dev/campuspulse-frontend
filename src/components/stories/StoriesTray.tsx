@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useState } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
 import type { EnrichedStory } from '@/lib/campus-data';
-import { StoryViewer } from './StoryViewer';
 import styles from './Stories.module.css';
+
+// The viewer (and its animation library) only loads once someone opens a story, so
+// it never weighs on the feed's first paint. Hover or focus starts the download early.
+const loadViewer = () => import('./StoryViewer');
+const StoryViewer = lazy(() => loadViewer().then((m) => ({ default: m.StoryViewer })));
 
 export interface StoriesTrayProps {
   stories: EnrichedStory[];
@@ -13,6 +17,7 @@ export interface StoriesTrayProps {
 export function StoriesTray({ stories }: StoriesTrayProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [viewedIds, setViewedIds] = useState<string[]>([]);
+  const [viewerWanted, setViewerWanted] = useState(false);
 
   const close = useCallback(() => setActiveIndex(null), []);
   const select = useCallback(
@@ -28,6 +33,7 @@ export function StoriesTray({ stories }: StoriesTrayProps) {
   }
 
   function handleOpenStory(idx: number, storyId: string) {
+    setViewerWanted(true);
     setActiveIndex(idx);
     setViewedIds((prev) => (prev.includes(storyId) ? prev : [...prev, storyId]));
   }
@@ -43,6 +49,8 @@ export function StoriesTray({ stories }: StoriesTrayProps) {
               type="button"
               className={styles.storyTrigger}
               onClick={() => handleOpenStory(idx, story.id)}
+              onPointerEnter={() => void loadViewer()}
+              onFocus={() => void loadViewer()}
               aria-label={`${story.organizer.name} story`}
             >
               <Avatar
@@ -59,12 +67,16 @@ export function StoriesTray({ stories }: StoriesTrayProps) {
         })}
       </div>
 
-      <StoryViewer
-        stories={stories}
-        activeIndex={activeIndex}
-        onSelectIndex={select}
-        onClose={close}
-      />
+      {viewerWanted ? (
+        <Suspense fallback={null}>
+          <StoryViewer
+            stories={stories}
+            activeIndex={activeIndex}
+            onSelectIndex={select}
+            onClose={close}
+          />
+        </Suspense>
+      ) : null}
     </section>
   );
 }
