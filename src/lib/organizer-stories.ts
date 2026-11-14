@@ -1,10 +1,6 @@
 import { readLocal, writeLocal } from './attendee-data';
 
-/*
- * TODO(S5-01): There is no POST /stories route or public-media upload endpoint yet, so this is a
- * demo-mode view model. Replace with generated CreateStoryBody types once the backend contract
- * exposes them. The server must set expiresAt = now + 24h; the client only mirrors it for demo.
- */
+/** Local story persistence for explicit demo mode. Live uploads and expiry are server-owned. */
 
 export const STORY_TTL_MS = 24 * 60 * 60 * 1000;
 export const CAPTION_MAX = 280;
@@ -26,6 +22,7 @@ export interface OrganizerStory {
 }
 
 export interface StoryDraft {
+  file?: File;
   mediaType: StoryMediaType | null;
   caption: string;
   eventId: string | null;

@@ -4,6 +4,7 @@ import { SEED_ORGANIZERS } from '@/lib/campus-data';
 import type { OrganizerDashboardData } from '@/lib/organizer-data';
 import { EventWizard } from './EventWizard';
 import { OrganizerDashboardView } from './OrganizerDashboard';
+vi.mock('@/lib/mode', () => ({ DEMO_MODE: true, DATA_MODE: 'demo', DEV_AUTH_MODE: false }));
 
 afterEach(() => {
   cleanup();

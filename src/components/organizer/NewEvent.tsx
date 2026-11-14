@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ResourceState } from '@/components/attendee/Shared';
@@ -14,21 +14,44 @@ import {
 import { ClubGate } from './OrganizerGate';
 import { EventWizard } from './EventWizard';
 import styles from './Organizer.module.css';
+import { DEMO_MODE } from '@/lib/mode';
+import { liveReadDraft, livePublishSaved } from '@/lib/organizer-live';
+import { useAuth } from '@/lib/auth-context';
 
 function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [workingId, setWorkingId] = useState(draftId);
+  const lastSave = useRef<{ fingerprint: string; id: string } | null>(null);
   const [saved, setSaved] = useState<{ kind: 'draft' | 'published'; title: string } | null>(null);
   const [round, setRound] = useState(0);
   const query = useQuery({
-    queryKey: ['organizer-dashboard', slug],
+    queryKey: ['organizer-dashboard', slug, user?.id],
     queryFn: () => fetchOrganizerDashboard(slug),
+  });
+  const draftQuery = useQuery({
+    queryKey: ['organizer-draft', slug, draftId, user?.id],
+    queryFn: () => liveReadDraft(slug, draftId!),
+    enabled: !DEMO_MODE && !!draftId,
   });
 
   if (!query.data) {
     return <ResourceState pending={query.isPending} error={query.error} retry={query.refetch} />;
   }
   const data = query.data;
-  const initialDraft = draftId ? readEventDraft(slug, draftId) : undefined;
+  if (!DEMO_MODE && draftId && !draftQuery.data)
+    return (
+      <ResourceState
+        pending={draftQuery.isPending}
+        error={draftQuery.error}
+        retry={draftQuery.refetch}
+      />
+    );
+  const initialDraft = draftId
+    ? DEMO_MODE
+      ? readEventDraft(slug, draftId)
+      : draftQuery.data
+    : undefined;
   if (draftId && !initialDraft && !saved)
     return (
       <div className={styles.page}>
@@ -42,6 +65,14 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
     setSaved({ kind, title: draft.title.trim() });
     await queryClient.invalidateQueries({ queryKey: ['organizer-dashboard', slug] });
   }
+  async function persistDraft(draft: EventDraft) {
+    const fingerprint = JSON.stringify(draft);
+    if (lastSave.current?.fingerprint === fingerprint) return lastSave.current.id;
+    const event = await saveEventDraft(slug, draft, workingId);
+    setWorkingId(event.id);
+    lastSave.current = { fingerprint, id: event.id };
+    return event.id;
+  }
 
   if (saved) {
     return (
@@ -50,7 +81,9 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
           <h1>{saved.kind === 'published' ? 'Event published' : 'Draft saved'}</h1>
           <p className={styles.muted}>
             {saved.kind === 'published'
-              ? `“${saved.title}” is published in this device's demo data. It is not live for students.`
+              ? DEMO_MODE
+                ? `“${saved.title}” is published in this device's demo data. It is not live for students.`
+                : `“${saved.title}” is now published for students.`
               : `“${saved.title}” is saved in your drafts. Publish it from here once it is ready.`}
           </p>
           <div className={styles.actions}>
@@ -63,6 +96,8 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
                 className={`${styles.linkButton} ${styles.secondaryLink}`}
                 onClick={() => {
                   setSaved(null);
+                  setWorkingId(undefined);
+                  lastSave.current = null;
                   setRound((n) => n + 1);
                 }}
               >
@@ -89,11 +124,13 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
           .filter((event) => event.status === 'PUBLISHED')
           .map((event) => ({ id: event.id, title: event.title }))}
         onSaveDraft={async (draft) => {
-          await saveEventDraft(slug, draft, draftId);
+          await persistDraft(draft);
           await finish('draft', draft);
         }}
         onPublish={async (draft) => {
-          await publishEvent(slug, draft, draftId);
+          const id = await persistDraft(draft);
+          if (DEMO_MODE) await publishEvent(slug, draft, id);
+          else await livePublishSaved(id);
           await finish('published', draft);
         }}
       />

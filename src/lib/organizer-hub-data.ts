@@ -1,10 +1,10 @@
-import { ApiRequestError } from './api';
+import { ApiRequestError, apiFetch } from './api';
+import { liveHub, liveCsv, liveStories, livePostStory } from './organizer-live';
 import type { EventMatchFixture } from './campus-data';
 import { buildCsv } from './csv';
 import { DEMO_MODE } from './mode';
 import {
   findDemoClub,
-  liveUnavailable,
   readOrganizerEvents,
   writeOrganizerEvents,
   type OrganizerEventSummary,
@@ -19,11 +19,7 @@ import {
   type StoryDraft,
 } from './organizer-stories';
 
-/*
- * TODO(S5-01): GET /attendance/events/:id/stats, the roster/CSV endpoint and PATCH
- * /events/:id/fixture are not in the backend contract yet. The numbers below are derived from the
- * demo event so the screens can be built; replace with generated types once they exist.
- */
+/** Derived counters below are explicit demo fixtures; live counters always come from the API. */
 
 export interface AmbassadorBreakdown {
   name: string;
@@ -97,7 +93,7 @@ export async function fetchOrganizerEvent(
   slug: string,
   eventId: string,
 ): Promise<OrganizerEventHubData> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveHub(slug, eventId);
   const club = findDemoClub(slug);
   if (!club) return notFound('We could not find that club.');
   const event = readOrganizerEvents(slug, new Date()).find((e) => e.id === eventId);
@@ -134,7 +130,19 @@ export async function updateEventFixture(
   eventId: string,
   fixture: EventMatchFixture,
 ): Promise<OrganizerEventDetail> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) {
+    await liveHub(slug, eventId);
+    await apiFetch(`/events/${eventId}/fixture`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        homeScore: fixture.homeScore,
+        awayScore: fixture.awayScore,
+        isLive: fixture.isLive,
+        periodLabel: fixture.periodLabel,
+      }),
+    });
+    return (await liveHub(slug, eventId)).event;
+  }
   const events = readOrganizerEvents(slug, new Date());
   const target = events.find((e) => e.id === eventId);
   if (!target) return notFound('We could not find that event.');
@@ -179,7 +187,7 @@ export function attendeesToCsv(rows: AttendeeRow[]): string {
 }
 
 export async function fetchEventAttendeesCsv(slug: string, eventId: string): Promise<string> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveCsv(slug, eventId);
   const event = readOrganizerEvents(slug, new Date()).find((e) => e.id === eventId);
   if (!event) return notFound('We could not find that event.');
   return attendeesToCsv(demoAttendees(event));
@@ -194,7 +202,7 @@ export interface StoryComposerData {
 }
 
 export async function fetchStoryComposer(slug: string): Promise<StoryComposerData> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveStories(slug);
   const club = findDemoClub(slug);
   if (!club) return notFound('We could not find that club.');
   const now = new Date();
@@ -209,7 +217,7 @@ export async function fetchStoryComposer(slug: string): Promise<StoryComposerDat
 }
 
 export async function postStory(slug: string, draft: StoryDraft): Promise<OrganizerStory> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return livePostStory(slug, draft);
   const club = findDemoClub(slug);
   if (!club) return notFound('We could not find that club.');
   if (club.verification.status !== 'VERIFIED')
@@ -229,7 +237,12 @@ export async function postStory(slug: string, draft: StoryDraft): Promise<Organi
 }
 
 export async function deleteStory(slug: string, id: string): Promise<void> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) {
+    const data = await liveStories(slug);
+    if (!data.stories.some((s) => s.id === id)) throw new Error('Story not found for this club.');
+    await apiFetch(`/stories/${id}`, { method: 'DELETE' });
+    return;
+  }
   if (!findDemoClub(slug)) return notFound('We could not find that club.');
   removeStory(slug, id, new Date());
 }

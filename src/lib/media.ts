@@ -12,6 +12,8 @@ export function mediaHosts(raw = process.env.NEXT_PUBLIC_MEDIA_HOSTS ?? ''): str
 }
 
 export function isOptimizableImage(url: string, hosts = mediaHosts()): boolean {
+  // Our own static files (/demo/…, /brand/…) are safe to optimize: not a proxy.
+  if (url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\')) return true;
   try {
     const { protocol, hostname } = new URL(url);
     return protocol === 'https:' && hosts.includes(hostname.toLowerCase());

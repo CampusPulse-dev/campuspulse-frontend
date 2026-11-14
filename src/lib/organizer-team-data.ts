@@ -1,19 +1,10 @@
 import { ApiRequestError } from './api';
 import { readLocal, writeLocal } from './attendee-data';
 import { DEMO_MODE } from './mode';
-import {
-  findDemoClub,
-  liveUnavailable,
-  readOrganizerEvents,
-  type OrganizerRole,
-} from './organizer-data';
+import { liveTeam, liveInvite, liveRemove, liveGrant } from './organizer-live';
+import { findDemoClub, readOrganizerEvents, type OrganizerRole } from './organizer-data';
 
-/*
- * TODO(S5-01): GET/POST/DELETE /organizers/:id/team and POST /events/:eventId/door-staff are not in
- * the backend contract yet, and the contract has no way to revoke a door-staff grant (they only
- * expire at event end + 4h). This is a demo-mode view model; replace it with generated types once
- * the schemas exist. The server must hold the invited email; the UI only ever shows a masked hint.
- */
+/** Demo persistence stays here; live team operations use generated schemas in organizer-live. */
 
 export const DOOR_ACCESS_GRACE_MS = 4 * 60 * 60 * 1000;
 const MAX_EMAIL_LENGTH = 254;
@@ -210,7 +201,7 @@ function publicGrant(grant: StoredGrant): DoorStaffGrant {
 }
 
 export async function fetchTeam(slug: string): Promise<TeamData> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveTeam(slug);
   const club = findDemoClub(slug);
   if (!club) return fail(404, 'ORGANIZER_NOT_FOUND', 'We could not find that club.');
   const now = new Date();
@@ -225,7 +216,7 @@ export async function fetchTeam(slug: string): Promise<TeamData> {
 }
 
 export async function inviteManager(slug: string, rawEmail: string): Promise<TeamMember> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveInvite(slug, rawEmail);
   requireOwner(slug);
   const problem = validateEmail(rawEmail);
   if (problem) throw new Error(problem);
@@ -246,7 +237,7 @@ export async function inviteManager(slug: string, rawEmail: string): Promise<Tea
 }
 
 export async function removeMember(slug: string, userId: string): Promise<void> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveRemove(slug, userId);
   requireOwner(slug);
   const team = readTeam(slug, new Date());
   const target = team.members.find((m) => m.userId === userId);
@@ -260,7 +251,7 @@ export async function grantDoorStaff(
   eventId: string,
   rawEmail: string,
 ): Promise<DoorStaffGrant> {
-  if (!DEMO_MODE) return liveUnavailable();
+  if (!DEMO_MODE) return liveGrant(slug, eventId, rawEmail);
   requireOwner(slug);
   const now = new Date();
   const event = grantableEvents(slug, now).find((e) => e.id === eventId);

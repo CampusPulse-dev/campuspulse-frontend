@@ -2,7 +2,7 @@
 import { SelectField, ToggleRow } from '@/components/ui/Field';
 
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { MotionConfig, AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { fadeInUp, springBouncy } from '@/lib/motion';
 import { SEED_ORGANIZERS, UI_FACULTIES, UI_HALLS, VIBE_OPTIONS } from '@/lib/campus-data';
@@ -115,260 +115,263 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   }
 
   return (
-    <div className={styles.onboardingCard}>
-      <div className={styles.onboardingTopBar}>
-        <div className={styles.stepDots} aria-label={`Step ${step} of 4`}>
-          {[1, 2, 3, 4].map((idx) => (
-            <span
-              key={idx}
-              className={`${styles.stepDot} ${idx <= step ? styles.stepDotActive : ''}`}
-            />
-          ))}
+    <MotionConfig reducedMotion="user">
+      <div className={styles.onboardingCard}>
+        <div className={styles.onboardingTopBar}>
+          <div className={styles.stepDots} aria-label={`Step ${step} of 4`}>
+            {[1, 2, 3, 4].map((idx) => (
+              <span
+                key={idx}
+                className={`${styles.stepDot} ${idx <= step ? styles.stepDotActive : ''}`}
+              />
+            ))}
+          </div>
+          <button type="button" className={styles.skipButton} onClick={handleSkip}>
+            Skip →
+          </button>
         </div>
-        <button type="button" className={styles.skipButton} onClick={handleSkip}>
-          Skip →
-        </button>
-      </div>
 
-      <AnimatePresence>
-        {step === 1 ? (
-          <motion.section
-            key="step-1"
-            variants={fadeInUp}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className={styles.stepSection}
-          >
-            <h1 className={styles.stepTitle}>What are you into?</h1>
-            <p className={styles.stepSubtitle}>
-              Pick up to 5 vibes so your &ldquo;For You&rdquo; row and Tonight chips match your
-              energy.
-            </p>
+        <AnimatePresence>
+          {step === 1 ? (
+            <motion.section
+              key="step-1"
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={styles.stepSection}
+            >
+              <h1 className={styles.stepTitle}>What are you into?</h1>
+              <p className={styles.stepSubtitle}>
+                Pick up to 5 vibes so your &ldquo;For You&rdquo; row and Tonight chips match your
+                energy.
+              </p>
 
-            <div className={styles.chipGrid}>
-              {VIBE_OPTIONS.map((vibe) => {
-                const selected = vibes.includes(vibe);
-                return (
-                  <button
-                    key={vibe}
-                    type="button"
-                    aria-pressed={selected}
-                    className={`${styles.vibeChip} ${selected ? styles.vibeChipActive : ''}`}
-                    onClick={() => toggleVibe(vibe)}
-                  >
-                    {vibe}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className={styles.stepActions}>
-              <Button fullWidth size="lg" onClick={() => setStep(2)}>
-                Continue to Cohort →
-              </Button>
-            </div>
-          </motion.section>
-        ) : null}
-
-        {step === 2 ? (
-          <motion.section
-            key="step-2"
-            variants={fadeInUp}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className={styles.stepSection}
-          >
-            <h1 className={styles.stepTitle}>Your Campus Cohort</h1>
-            <p className={styles.stepSubtitle}>
-              Used for Hall inter-match alerts and mutual friend suggestions—never shared publicly.
-            </p>
-
-            <div className={styles.fieldGrid}>
-              <SelectField
-                label={
-                  <>
-                    <span>Hall of Residence</span>
-                  </>
-                }
-                value={hall}
-                onChange={(e) => setHall(e.target.value)}
-              >
-                {UI_HALLS.map((h) => (
-                  <option key={h} value={h}>
-                    {h}
-                  </option>
-                ))}
-              </SelectField>
-
-              <SelectField
-                label={
-                  <>
-                    <span>Faculty</span>
-                  </>
-                }
-                value={faculty}
-                onChange={(e) => setFaculty(e.target.value)}
-              >
-                {UI_FACULTIES.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
-                ))}
-              </SelectField>
-
-              <SelectField
-                label={
-                  <>
-                    <span>Level</span>
-                  </>
-                }
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-              >
-                {['100L', '200L', '300L', '400L', '500L', '600L', 'PG'].map((lvl) => (
-                  <option key={lvl} value={lvl}>
-                    {lvl}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-
-            <div className={styles.clubSuggestBlock}>
-              <span className={styles.smallHeading}>One-Tap Verified UI Clubs to Follow</span>
-              <div className={styles.clubList}>
-                {SEED_ORGANIZERS.map((org) => {
-                  const following = followedClubIds.includes(org.id);
+              <div className={styles.chipGrid}>
+                {VIBE_OPTIONS.map((vibe) => {
+                  const selected = vibes.includes(vibe);
                   return (
                     <button
-                      key={org.id}
+                      key={vibe}
                       type="button"
-                      className={`${styles.clubChip} ${following ? styles.clubChipActive : ''}`}
-                      onClick={() => toggleClub(org.id)}
+                      aria-pressed={selected}
+                      className={`${styles.vibeChip} ${selected ? styles.vibeChipActive : ''}`}
+                      onClick={() => toggleVibe(vibe)}
                     >
-                      <span>{org.name}</span>
-                      <span className={styles.followState}>
-                        {following ? <Icon icon={Check} size={16} /> : null}
-                        {following ? 'Following' : 'Follow'}
-                      </span>
+                      {vibe}
                     </button>
                   );
                 })}
               </div>
-            </div>
 
-            <div className={styles.stepActions}>
-              <Button variant="secondary" onClick={() => setStep(1)}>
-                ← Back
-              </Button>
-              <Button fullWidth size="lg" onClick={() => setStep(3)}>
-                Continue to Rhythm →
-              </Button>
-            </div>
-          </motion.section>
-        ) : null}
-
-        {step === 3 ? (
-          <motion.section
-            key="step-3"
-            variants={fadeInUp}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className={styles.stepSection}
-          >
-            <h1 className={styles.stepTitle}>When do you usually go out?</h1>
-            <p className={styles.stepSubtitle}>
-              We&apos;ll time your event reminders and Tonight suggestions around your schedule.
-            </p>
-
-            <div className={styles.rhythmOptions}>
-              {(
-                [
-                  {
-                    id: 'WEEKNIGHTS',
-                    label: 'Weeknights',
-                    desc: 'Talks, theatre & chill evenings',
-                  },
-                  {
-                    id: 'WEEKENDS',
-                    label: 'Weekends',
-                    desc: 'Friday concerts, hall nights & finals',
-                  },
-                  { id: 'BOTH', label: 'Both', desc: 'Show me everything happening on campus' },
-                ] as const
-              ).map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-pressed={rhythm === item.id}
-                  className={`${styles.rhythmCard} ${rhythm === item.id ? styles.rhythmCardActive : ''}`}
-                  onClick={() => setRhythm(item.id)}
-                >
-                  <span className={styles.rhythmLabel}>{item.label}</span>
-                  <span className={styles.rhythmDesc}>{item.desc}</span>
-                </button>
-              ))}
-            </div>
-
-            <ToggleRow
-              label={
-                <>
-                  <span>Prioritize free RSVP events in my feed</span>
-                </>
-              }
-              checked={freeEventsOnly}
-              onChange={(e) => setFreeEventsOnly(e.target.checked)}
-            />
-
-            <div className={styles.stepActions}>
-              <Button variant="secondary" onClick={() => setStep(2)}>
-                ← Back
-              </Button>
-              <Button fullWidth size="lg" onClick={() => setStep(4)}>
-                Reveal my persona
-              </Button>
-            </div>
-          </motion.section>
-        ) : null}
-
-        {step === 4 ? (
-          <motion.section
-            key="step-4"
-            variants={fadeInUp}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className={styles.stepSection}
-          >
-            <motion.div
-              className={styles.personaRevealCard}
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={springBouncy}
-            >
-              <span className={styles.personaEmoji} aria-hidden="true">
-                {badge.emoji}
-              </span>
-
-              <h1 className={styles.personaTitle}>{badge.title}</h1>
-              <p className={styles.personaTagline}>{badge.tagline}</p>
-              <div className={styles.personaMetaRow}>
-                <span>{hall}</span>
-                <span>{faculty}</span>
-                <span>{level}</span>
+              <div className={styles.stepActions}>
+                <Button fullWidth size="lg" onClick={() => setStep(2)}>
+                  Continue to Cohort →
+                </Button>
               </div>
-            </motion.div>
+            </motion.section>
+          ) : null}
 
-            <div className={styles.stepActions}>
-              <Button fullWidth size="lg" onClick={handleFinish}>
-                Jump into Feed →
-              </Button>
-            </div>
-          </motion.section>
-        ) : null}
-      </AnimatePresence>
-    </div>
+          {step === 2 ? (
+            <motion.section
+              key="step-2"
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={styles.stepSection}
+            >
+              <h1 className={styles.stepTitle}>Your Campus Cohort</h1>
+              <p className={styles.stepSubtitle}>
+                Used for Hall inter-match alerts and mutual friend suggestions—never shared
+                publicly.
+              </p>
+
+              <div className={styles.fieldGrid}>
+                <SelectField
+                  label={
+                    <>
+                      <span>Hall of Residence</span>
+                    </>
+                  }
+                  value={hall}
+                  onChange={(e) => setHall(e.target.value)}
+                >
+                  {UI_HALLS.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </SelectField>
+
+                <SelectField
+                  label={
+                    <>
+                      <span>Faculty</span>
+                    </>
+                  }
+                  value={faculty}
+                  onChange={(e) => setFaculty(e.target.value)}
+                >
+                  {UI_FACULTIES.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </SelectField>
+
+                <SelectField
+                  label={
+                    <>
+                      <span>Level</span>
+                    </>
+                  }
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                >
+                  {['100L', '200L', '300L', '400L', '500L', '600L', 'PG'].map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      {lvl}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
+
+              <div className={styles.clubSuggestBlock}>
+                <span className={styles.smallHeading}>One-Tap Verified UI Clubs to Follow</span>
+                <div className={styles.clubList}>
+                  {SEED_ORGANIZERS.map((org) => {
+                    const following = followedClubIds.includes(org.id);
+                    return (
+                      <button
+                        key={org.id}
+                        type="button"
+                        className={`${styles.clubChip} ${following ? styles.clubChipActive : ''}`}
+                        onClick={() => toggleClub(org.id)}
+                      >
+                        <span>{org.name}</span>
+                        <span className={styles.followState}>
+                          {following ? <Icon icon={Check} size={16} /> : null}
+                          {following ? 'Following' : 'Follow'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className={styles.stepActions}>
+                <Button variant="secondary" onClick={() => setStep(1)}>
+                  ← Back
+                </Button>
+                <Button fullWidth size="lg" onClick={() => setStep(3)}>
+                  Continue to Rhythm →
+                </Button>
+              </div>
+            </motion.section>
+          ) : null}
+
+          {step === 3 ? (
+            <motion.section
+              key="step-3"
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={styles.stepSection}
+            >
+              <h1 className={styles.stepTitle}>When do you usually go out?</h1>
+              <p className={styles.stepSubtitle}>
+                We&apos;ll time your event reminders and Tonight suggestions around your schedule.
+              </p>
+
+              <div className={styles.rhythmOptions}>
+                {(
+                  [
+                    {
+                      id: 'WEEKNIGHTS',
+                      label: 'Weeknights',
+                      desc: 'Talks, theatre & chill evenings',
+                    },
+                    {
+                      id: 'WEEKENDS',
+                      label: 'Weekends',
+                      desc: 'Friday concerts, hall nights & finals',
+                    },
+                    { id: 'BOTH', label: 'Both', desc: 'Show me everything happening on campus' },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-pressed={rhythm === item.id}
+                    className={`${styles.rhythmCard} ${rhythm === item.id ? styles.rhythmCardActive : ''}`}
+                    onClick={() => setRhythm(item.id)}
+                  >
+                    <span className={styles.rhythmLabel}>{item.label}</span>
+                    <span className={styles.rhythmDesc}>{item.desc}</span>
+                  </button>
+                ))}
+              </div>
+
+              <ToggleRow
+                label={
+                  <>
+                    <span>Prioritize free RSVP events in my feed</span>
+                  </>
+                }
+                checked={freeEventsOnly}
+                onChange={(e) => setFreeEventsOnly(e.target.checked)}
+              />
+
+              <div className={styles.stepActions}>
+                <Button variant="secondary" onClick={() => setStep(2)}>
+                  ← Back
+                </Button>
+                <Button fullWidth size="lg" onClick={() => setStep(4)}>
+                  Reveal my persona
+                </Button>
+              </div>
+            </motion.section>
+          ) : null}
+
+          {step === 4 ? (
+            <motion.section
+              key="step-4"
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={styles.stepSection}
+            >
+              <motion.div
+                className={styles.personaRevealCard}
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={springBouncy}
+              >
+                <span className={styles.personaEmoji} aria-hidden="true">
+                  {badge.emoji}
+                </span>
+
+                <h1 className={styles.personaTitle}>{badge.title}</h1>
+                <p className={styles.personaTagline}>{badge.tagline}</p>
+                <div className={styles.personaMetaRow}>
+                  <span>{hall}</span>
+                  <span>{faculty}</span>
+                  <span>{level}</span>
+                </div>
+              </motion.div>
+
+              <div className={styles.stepActions}>
+                <Button fullWidth size="lg" onClick={handleFinish}>
+                  Jump into Feed →
+                </Button>
+              </div>
+            </motion.section>
+          ) : null}
+        </AnimatePresence>
+      </div>
+    </MotionConfig>
   );
 }

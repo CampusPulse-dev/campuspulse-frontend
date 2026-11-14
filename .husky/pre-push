@@ -1,3 +1,4 @@
 #!/bin/sh
+set -e
 npm run typecheck
-npm run test -- --passWithNoTests
+npm run test -- --maxWorkers=2 --passWithNoTests

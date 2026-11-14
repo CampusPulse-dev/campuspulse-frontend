@@ -29,7 +29,7 @@ export async function offlineProxy(upstream: string) {
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   return {
-    origin: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
+    origin: `http://localhost:${(server.address() as AddressInfo).port}`,
     block: () => {
       blocked = true;
       server.closeAllConnections();

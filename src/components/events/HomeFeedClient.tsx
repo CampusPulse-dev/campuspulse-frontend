@@ -69,7 +69,7 @@ export function HomeFeedClient({
   }
 
   const pages = useInfiniteQuery({
-    queryKey: ['feed', selectedCategory],
+    queryKey: ['feed', selectedCategory, user?.id ?? 'guest'],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       fetchEventFeed({
@@ -77,7 +77,7 @@ export function HomeFeedClient({
         category: selectedCategory === 'ALL' ? undefined : selectedCategory,
       }),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    ...(selectedCategory === 'ALL' && !initialError
+    ...(!user && selectedCategory === 'ALL' && !initialError
       ? {
           initialData: {
             pages: [{ items: initialEvents, nextCursor: initialCursor }],

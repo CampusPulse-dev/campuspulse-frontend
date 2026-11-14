@@ -1,5 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { getImageProps } from 'next/image';
+import { isOptimizableImage } from '@/lib/media';
 import { Check } from 'lucide-react';
 import { Icon } from './Icon';
 import styles from './Avatar.module.css';
@@ -12,6 +14,8 @@ export interface AvatarProps {
   hasStoryRing?: boolean;
   isStoryViewed?: boolean;
 }
+
+const PIXELS = { sm: 28, md: 40, lg: 64 } as const;
 
 export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -52,8 +56,20 @@ export function Avatar({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             ref={imgRef}
-            src={src!}
+            // Our own and allowlisted photos come resized (1x/2x) instead of full size.
+            {...(isOptimizableImage(src!)
+              ? getImageProps({
+                  src: src!,
+                  alt: name,
+                  width: PIXELS[size],
+                  height: PIXELS[size],
+                  quality: 70,
+                }).props
+              : { src: src! })}
             alt={name}
+            // Avatars are never a page's largest paint; keep them off the critical path.
+            loading="lazy"
+            decoding="async"
             className={styles.image}
             onError={() => setFailedSrc(src ?? null)}
           />

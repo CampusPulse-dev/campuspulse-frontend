@@ -1,4 +1,6 @@
 'use client';
+import { useAuth } from '@/lib/auth-context';
+import { DEMO_MODE } from '@/lib/mode';
 
 import { UserMinus } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
@@ -175,7 +177,11 @@ export function TeamManagerView({
             label="Manager email"
             type="email"
             autoComplete="off"
-            hint="Managers can create events, post stories and run the door. They cannot manage the team."
+            hint={
+              DEMO_MODE
+                ? 'Managers can create events, post stories and run the door. They cannot manage the team.'
+                : 'Use the email of an existing CampusPulse account. Managers can create events, post stories and run the door. They cannot manage the team.'
+            }
             value={inviteEmail}
             error={inviteError}
             onChange={(e) => setInviteEmail(e.target.value)}
@@ -280,8 +286,12 @@ export function TeamManagerView({
 }
 
 function TeamData({ slug }: { slug: string }) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ['organizer-team', slug], queryFn: () => fetchTeam(slug) });
+  const query = useQuery({
+    queryKey: ['organizer-team', slug, user?.id],
+    queryFn: () => fetchTeam(slug),
+  });
   if (!query.data) {
     return <ResourceState pending={query.isPending} error={query.error} retry={query.refetch} />;
   }

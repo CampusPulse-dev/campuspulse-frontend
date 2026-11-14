@@ -3,16 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/Badge';
-import { useAuth } from '@/lib/auth-context';
-import { demoClubsFor } from '@/lib/organizer-data';
-import { DEMO_MODE } from '@/lib/mode';
+import { useMyClubs } from '@/lib/organizer-data';
 import { OrganizerRoleGate } from './OrganizerGate';
 import styles from './Organizer.module.css';
 
 function Clubs() {
-  const { user } = useAuth();
-  // TODO(S5-01): live mode needs a "my organizers" endpoint; until then only demo clubs exist.
-  const clubs = DEMO_MODE ? demoClubsFor(user) : [];
+  const mine = useMyClubs();
+  if (mine.status === 'loading') return <p role="status">Loading your clubs…</p>;
+  if (mine.status === 'unavailable')
+    return (
+      <p role="alert" className={styles.muted}>
+        We could not load your clubs. Check your connection and reload.
+      </p>
+    );
+  const clubs = mine.status === 'ready' ? mine.clubs : [];
   return (
     <div className={styles.page}>
       <header className={styles.headerText}>

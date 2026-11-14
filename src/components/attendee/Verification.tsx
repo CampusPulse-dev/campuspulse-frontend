@@ -32,7 +32,7 @@ export function Verification() {
             status: user?.isVerifiedStudent ? 'APPROVED' : 'NONE',
             note: null,
           })
-        : attendeeRequest('StudentVerificationState', '/verification/student/status', accessToken),
+        : attendeeRequest('StudentVerificationState', '/verification/student', accessToken),
   });
   async function run(action: () => Promise<void>) {
     setBusy(true);
@@ -59,7 +59,7 @@ export function Verification() {
       throw new Error('Use your University of Ibadan email (e.g. you@stu.ui.edu.ng).');
     if (!DEMO_MODE)
       await attendeeRequest(
-        'StudentVerificationState',
+        'StudentOtpSentResponse',
         '/verification/student/email-otp',
         accessToken,
         'POST',
@@ -78,13 +78,14 @@ export function Verification() {
       if (code !== '123456') throw new Error('Incorrect demo code. Try 123456.');
       await demoState('APPROVED');
     } else {
-      await attendeeRequest(
-        'StudentVerificationState',
+      const verified = await attendeeRequest(
+        'UserPublic',
         '/verification/student/confirm-otp',
         accessToken,
         'POST',
         { email, code },
       );
+      markStudentVerified(verified.isVerifiedStudent);
       await query.refetch();
     }
     setMessage('Student email verified.');

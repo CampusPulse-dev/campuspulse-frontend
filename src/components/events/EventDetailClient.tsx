@@ -52,6 +52,34 @@ export function EventDetailView({
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [afterPartyAdded, setAfterPartyAdded] = useState(false);
+  const [personalizedFriends, setPersonalizedFriends] = useState<{
+    forKey: string;
+    friends: EnrichedEvent['friendsGoing'];
+    count: number;
+  } | null>(null);
+  const friendsKey = user && !DEMO_MODE && !isSignedOutPreview ? `${user.id}:${event.slug}` : null;
+  const activeFriends =
+    friendsKey && personalizedFriends?.forKey === friendsKey ? personalizedFriends : null;
+
+  useEffect(() => {
+    let alive = true;
+    if (friendsKey) {
+      void fetchEventBySlug(event.slug)
+        .then((refreshed) => {
+          if (alive && refreshed) {
+            setPersonalizedFriends({
+              forKey: friendsKey,
+              friends: refreshed.friendsGoing,
+              count: refreshed.friendsGoingCount,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+    return () => {
+      alive = false;
+    };
+  }, [friendsKey, event.slug]);
 
   useEffect(() => {
     if (user)
@@ -237,7 +265,10 @@ export function EventDetailView({
           ) : null}
         </Section>
         <div className={styles.socialStrip}>
-          <FriendAvatarStack friends={event.friendsGoing} totalCount={event.friendsGoingCount} />
+          <FriendAvatarStack
+            friends={activeFriends?.friends ?? event.friendsGoing}
+            totalCount={activeFriends?.count ?? event.friendsGoingCount}
+          />
           <a
             href={whatsappShareHref}
             target="_blank"

@@ -1,6 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './auth-context';
 import {
   ApiRequestError,
+  apiFetch,
+  type Schemas,
   type EventCategory,
   type EventPublic,
   type OrganizerPublic,
@@ -18,16 +21,12 @@ import {
 } from './campus-data';
 import { DEMO_MODE } from './mode';
 import { readActiveStories } from './organizer-stories';
+import { liveDashboard, livePublish, liveSaveDraft } from './organizer-live';
 
-/*
- * TODO(S5-01): The organizer endpoints (dashboard, membership, event create/publish) and the
- * template fields on CreateEventBody do not exist in the backend contract yet. Everything in this
- * file is a demo-mode view model; replace it with generated types from `npm run codegen` once the
- * backend registers those schemas.
- */
+/** UI models for explicit demo mode; live operations delegate to generated-contract adapters. */
 
 export type OrganizerRole = 'OWNER' | 'MANAGER';
-export type OrganizerVerificationStatus = 'VERIFIED' | 'PENDING' | 'MORE_INFO';
+export type OrganizerVerificationStatus = 'VERIFIED' | 'PENDING' | 'MORE_INFO' | 'REJECTED';
 export type AfterPartyAccessRule = LinkedAfterPartyPreview['accessRule'];
 export type EventBlock =
   'lineup' | 'showtimes' | 'matchTeams' | 'dressCode' | 'doorPolicy' | 'afterParty';
@@ -72,7 +71,9 @@ export interface EventDraft {
   dressCode: string;
   doorPolicy: string;
   lineup: EventLineupSlot[];
-  showtimes: Omit<EventShowtimeOption, 'spotsLeft'>[];
+  showtimes: (Omit<EventShowtimeOption, 'spotsLeft'> &
+    Pick<Schemas['CreateEventShowtime'], 'endsAt'> & { capacity?: number | null })[];
+  linkType?: Schemas['EventLinkType'] | null;
   homeTeam: string;
   awayTeam: string;
   linkAfterParty: boolean;
@@ -145,6 +146,8 @@ export function validateStep(step: WizardStep, draft: EventDraft): string[] {
     const blocks = TEMPLATE_BLOCKS[draft.template];
     if (blocks.includes('lineup') && draft.lineup.some((slot) => !slot.performerName.trim()))
       errors.push('Every lineup slot needs a performer name.');
+    if (!DEMO_MODE && blocks.includes('lineup') && draft.lineup.some((slot) => !slot.role.trim()))
+      errors.push('Every lineup slot needs a role.');
     if (
       blocks.includes('showtimes') &&
       (draft.showtimes.length === 0 ||
@@ -168,6 +171,12 @@ export function validateDraftForPublish(draft: EventDraft): string[] {
 
 /** A draft only needs a title and category to be saved. */
 export function validateDraftForSave(draft: EventDraft): string[] {
+  if (!DEMO_MODE)
+    return [
+      ...validateStep(1, draft),
+      ...validateStep(2, draft),
+      ...(!draft.coverDataUrl ? ['Add a cover image before saving.'] : []),
+    ];
   const errors: string[] = [];
   if (draft.title.trim().length < 3) errors.push('Give the event a title before saving a draft.');
   if (!draft.category) errors.push('Choose a category before saving a draft.');
@@ -273,7 +282,7 @@ export function computeKpis(
   };
 }
 
-interface DemoClub {
+export interface DemoClub {
   organizer: OrganizerPublic;
   role: OrganizerRole;
   verification: OrganizerDashboardData['verification'];
@@ -329,7 +338,7 @@ export function resolveOrganizerAccess(
 ): OrganizerAccess {
   if (!ready) return { status: 'loading' };
   if (!user) return { status: 'signed-out' };
-  // TODO(S5-01): live mode needs a "my organizers" membership endpoint.
+  // Demo-mode resolution; live access comes from useMyClubs().
   if (!DEMO_MODE) return { status: 'unavailable' };
   const club = demoClubsFor(user).find((c) => c.organizer.slug === slug);
   return club
@@ -337,9 +346,48 @@ export function resolveOrganizerAccess(
     : { status: 'denied' };
 }
 
-export function useOrganizerAccess(slug: string): OrganizerAccess {
+function toClub(membership: Schemas['OrganizerMembership']): DemoClub {
+  const status: OrganizerVerificationStatus =
+    membership.verificationStatus === 'APPROVED'
+      ? 'VERIFIED'
+      : membership.verificationStatus === 'INFO_REQUESTED'
+        ? 'MORE_INFO'
+        : 'PENDING';
+  return {
+    organizer: membership.organizer,
+    role: membership.role,
+    verification: { status, reviewerNote: membership.reviewerNote },
+  };
+}
+
+export type MyClubs =
+  { status: 'loading' | 'signed-out' | 'unavailable' } | { status: 'ready'; clubs: DemoClub[] };
+
+/** Clubs the signed-in user owns or manages: `GET /organizers/mine` live, fixtures in demo. */
+export function useMyClubs(): MyClubs {
   const { user, ready } = useAuth();
-  return resolveOrganizerAccess(user, ready, slug);
+  const live = useQuery({
+    queryKey: ['my-organizers', user?.id],
+    enabled: !DEMO_MODE && ready && !!user,
+    staleTime: 60_000,
+    retry: false,
+    queryFn: () => apiFetch<Schemas['MyOrganizersResponse']>('/organizers/mine'),
+  });
+  if (!ready) return { status: 'loading' };
+  if (!user) return { status: 'signed-out' };
+  if (DEMO_MODE) return { status: 'ready', clubs: demoClubsFor(user) };
+  if (live.isPending) return { status: 'loading' };
+  if (live.isError) return { status: 'unavailable' };
+  return { status: 'ready', clubs: live.data.items.map(toClub) };
+}
+
+export function useOrganizerAccess(slug: string): OrganizerAccess {
+  const mine = useMyClubs();
+  if (mine.status !== 'ready') return { status: mine.status };
+  const club = mine.clubs.find((c) => c.organizer.slug === slug);
+  return club
+    ? { status: 'granted', role: club.role, organizer: club.organizer }
+    : { status: 'denied' };
 }
 
 function offsetIso(now: Date, hours: number): string {
@@ -470,7 +518,7 @@ function unavailable(): never {
 }
 
 export async function fetchOrganizerDashboard(slug: string): Promise<OrganizerDashboardData> {
-  if (!DEMO_MODE) return unavailable();
+  if (!DEMO_MODE) return liveDashboard(slug);
   const club = DEMO_CLUBS.find((c) => c.organizer.slug === slug);
   if (!club) {
     throw new ApiRequestError({
@@ -581,7 +629,7 @@ export async function saveEventDraft(
   draft: EventDraft,
   id?: string,
 ): Promise<OrganizerEventSummary> {
-  if (!DEMO_MODE) return unavailable();
+  if (!DEMO_MODE) return liveSaveDraft(slug, draft, id);
   const errors = validateDraftForSave(draft);
   if (errors.length > 0) throw new Error(errors[0]);
   if (id) requireDraft(slug, id);
@@ -596,7 +644,7 @@ export async function publishEvent(
   draft: EventDraft,
   id?: string,
 ): Promise<OrganizerEventSummary> {
-  if (!DEMO_MODE) return unavailable();
+  if (!DEMO_MODE) return livePublish(slug, draft, id);
   const club = DEMO_CLUBS.find((c) => c.organizer.slug === slug);
   if (!club?.organizer.isVerified) {
     throw new ApiRequestError({

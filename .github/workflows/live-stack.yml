@@ -1,0 +1,119 @@
+name: S6 live stack
+on:
+  pull_request:
+    branches: ['feat/S5-03-admin-portal']
+  workflow_dispatch:
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: campuspulse-frontend
+    env:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+      NEXT_PUBLIC_DEMO_MODE: 'false'
+      NEXT_PUBLIC_DEV_AUTH: 'false'
+      NEXT_PUBLIC_SITE_URL: http://localhost:3104
+      E2E_BASE_URL: http://localhost:3104
+      LIVE_API_URL: http://localhost:3001
+      LIVE_E2E: 'true'
+    steps:
+      - uses: actions/checkout@v7
+        with: { path: campuspulse-frontend }
+      - name: Read exact backend dependency
+        id: backend
+        run: node -e "console.log('sha=' + require('./release-backend.json').ref)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: CampusPulse-dev/campuspulse-backend
+          ref: ${{ steps.backend.outputs.sha }}
+          path: campuspulse-backend
+      - uses: actions/setup-node@v7
+        with:
+          {
+            node-version: '22',
+            cache: npm,
+            cache-dependency-path: campuspulse-frontend/package-lock.json,
+          }
+      - run: npm ci
+      - run: npm ci && npx prisma generate && npm run build
+        working-directory: campuspulse-backend
+      - run: npx tsx scripts/test-stack.ts up && npx tsx scripts/test-stack.ts migrate && npx tsx scripts/test-stack.ts browser-fixtures
+        working-directory: campuspulse-backend
+      - name: Record exact source, runtime and machine specifications
+        working-directory: campuspulse-backend
+        env:
+          FRONTEND_SHA: ${{ github.sha }}
+        run: npx tsx scripts/test-stack.ts evidence
+      - name: Start API without development header auth
+        id: api
+        working-directory: campuspulse-backend
+        run: |
+          npx tsx scripts/test-stack.ts serve-live > test-results/api.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:3001/api/v1/health/live; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - run: npx playwright install --with-deps chromium webkit
+      # prepare-camera.mjs encodes the QR image into the fake camera feed; runner images ship no ffmpeg.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: node scripts/prepare-camera.mjs
+      - name: Clean production build with external font access blocked
+        id: build
+        env:
+          NODE_OPTIONS: --require=./scripts/block-font-network.cjs
+        run: npm run build
+      - name: Live browser journeys (62 executions)
+        id: browsers
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/live-summary.json
+        run: npx playwright test live.spec.ts --reporter=list,html,json
+      - name: Warm QR timing in isolation
+        id: crypto
+        if: '!cancelled()'
+        env:
+          S6_TIMING_EVIDENCE: 'true'
+        run: npx vitest run src/lib/door-live.test.ts --maxWorkers=1
+      - name: Start production frontend for cold Lighthouse samples
+        id: lighthouse_server
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.api.outcome == 'success' }}
+        run: |
+          npm run start -- --port 3104 > test-results/frontend.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:3104/sign-in > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Three cold mobile samples per route
+        id: lighthouse
+        if: ${{ !cancelled() && steps.lighthouse_server.outcome == 'success' }}
+        env:
+          BACKEND_SHA: ${{ steps.backend.outputs.sha }}
+        run: node scripts/lighthouse-budget.mjs
+      - name: Assemble release report and Android handoff
+        if: always()
+        env:
+          BACKEND_SHA: ${{ steps.backend.outputs.sha }}
+          BUILD_RESULT: ${{ steps.build.outcome }}
+          BROWSER_RESULT: ${{ steps.browsers.outcome }}
+          QR_RESULT: ${{ steps.crypto.outcome }}
+          LIGHTHOUSE_RESULT: ${{ steps.lighthouse.outcome }}
+        run: node scripts/release-report.mjs
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: s6-browser-performance-evidence
+          path: |
+            campuspulse-frontend/playwright-report/
+            campuspulse-frontend/test-results/**/trace.zip
+            campuspulse-frontend/test-results/**/error-context.md
+            campuspulse-frontend/test-results/lighthouse/
+            campuspulse-frontend/test-results/live-summary.json
+            campuspulse-frontend/test-results/qr-timing.json
+            campuspulse-frontend/test-results/*-report.md
+            campuspulse-frontend/test-results/android-acceptance.md
+            campuspulse-frontend/test-results/backend-engineering-controls.md
+            campuspulse-backend/test-results/runtime-evidence.json

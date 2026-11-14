@@ -8,6 +8,7 @@ import { DEMO_MODE } from '@/lib/mode';
 import { Button } from '@/components/ui/Button';
 import { TextArea, TextField } from '@/components/ui/Field';
 import styles from './Organizer.module.css';
+import { LiveClubApplication } from './LiveClubApplication';
 
 type Application = { name: string; description: string; evidence: string };
 
@@ -93,12 +94,6 @@ export function ClubApplication() {
         <Link href="/sign-in?next=%2Forganizer%2Fapply">Sign in</Link>
       </div>
     );
-  if (!DEMO_MODE)
-    return (
-      <div className={styles.page}>
-        <h1>Applications are not live yet</h1>
-        <p>The organizer application service is still being built.</p>
-      </div>
-    );
+  if (!DEMO_MODE) return <LiveClubApplication />;
   return <ApplicationForm key={user.id} userId={user.id} />;
 }

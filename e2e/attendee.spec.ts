@@ -56,7 +56,11 @@ test('demo RSVP produces a labelled QR pass that survives a full offline reload'
     await page.goto(origin + '/settings');
     await page.getByRole('button', { name: 'Sign out and clear cached tickets' }).click();
     await expect(page.getByRole('link', { name: 'Sign in →', exact: true })).toBeVisible();
-    await signIn(page, origin);
+    await page.getByRole('link', { name: 'Sign in →', exact: true }).click();
+    await page.getByLabel('Student or Personal Email').fill('tobi@stu.ui.edu.ng');
+    await page.getByLabel('Password', { exact: true }).fill('CampusPulse2026!');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await expect(page).toHaveURL(/\/$/);
     await page.goto(origin + '/tickets');
     await expect(page.getByText('Your next night starts here')).toBeVisible();
   } finally {

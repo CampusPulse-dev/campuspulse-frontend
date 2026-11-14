@@ -1,27 +1,29 @@
 import localFont from 'next/font/local';
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
 import { AppProviders } from '@/components/layout/AppProviders';
 import './globals.css';
 
-// Inter is the UI/UX face on the brand board. Self-hosted by next/font,
-// so there is no render-blocking request to Google on a Nigerian mobile
-// connection — which matters against the 2.5s cold-load budget.
-const inter = Inter({
-  subsets: ['latin'],
+// Checked-in fonts keep builds independent of Google Fonts availability.
+const inter = localFont({
+  // Latin + Yoruba diacritics subset of Inter (352 KB -> 89 KB); see fonts/PROVENANCE.md.
+  src: './fonts/InterLatin.woff2',
+  weight: '100 900',
   display: 'swap',
   variable: '--font-inter',
 });
 
 // JetBrains Mono carries timestamps, live RSVP/check-in counters, and QR pass IDs.
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
+const jetbrainsMono = localFont({
+  src: './fonts/JetBrainsMonoLatin.woff2',
+  weight: '100 800',
   display: 'swap',
+  // Never in the first paint of a public page; don't let it compete with the hero.
+  preload: false,
   variable: '--font-jetbrains-mono',
 });
 
 const goodly = localFont({
-  src: './fonts/GoodlyRegular.woff2',
+  src: './fonts/GoodlyLatin.woff2',
   weight: '400',
   display: 'swap',
   variable: '--font-goodly',

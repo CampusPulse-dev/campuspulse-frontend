@@ -1,4 +1,5 @@
 'use client';
+import { useAuth } from '@/lib/auth-context';
 
 import React from 'react';
 import Link from 'next/link';
@@ -107,7 +108,13 @@ export function OrganizerDashboardView({
 
       {!verified ? (
         <section className={styles.banner} role="status" aria-label="Club verification status">
-          <h2>{verification.status === 'MORE_INFO' ? 'More info requested' : 'Pending review'}</h2>
+          <h2>
+            {verification.status === 'MORE_INFO'
+              ? 'More info requested'
+              : verification.status === 'REJECTED'
+                ? 'Application rejected'
+                : 'Pending review'}
+          </h2>
           {verification.reviewerNote ? <p>{verification.reviewerNote}</p> : null}
           <p>You can save drafts now. Publishing unlocks once your club is verified.</p>
         </section>
@@ -166,8 +173,9 @@ export function OrganizerDashboardView({
 }
 
 function DashboardData({ slug, eventsOnly }: { slug: string; eventsOnly?: boolean }) {
+  const { user } = useAuth();
   const query = useQuery({
-    queryKey: ['organizer-dashboard', slug],
+    queryKey: ['organizer-dashboard', slug, user?.id],
     queryFn: () => fetchOrganizerDashboard(slug),
   });
   if (!query.data) {
