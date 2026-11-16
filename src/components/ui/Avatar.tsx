@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { getImageProps } from 'next/image';
-import { isOptimizableImage } from '@/lib/media';
+import { imageSource } from '@/lib/media';
 import { Check } from 'lucide-react';
 import { Icon } from './Icon';
 import styles from './Avatar.module.css';
@@ -35,6 +35,7 @@ export function Avatar({
   // Falls back to initials when the photo is missing or fails to load.
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const showImage = Boolean(src) && failedSrc !== src;
+  const source = src ? imageSource(src) : null;
   const imgRef = useRef<HTMLImageElement>(null);
   // A server-rendered <img> can fail before hydration, when onError is not attached yet.
   useEffect(() => {
@@ -57,9 +58,9 @@ export function Avatar({
           <img
             ref={imgRef}
             // Our own and allowlisted photos come resized (1x/2x) instead of full size.
-            {...(isOptimizableImage(src!)
+            {...(source && !source.unoptimized
               ? getImageProps({
-                  src: src!,
+                  src: source.src,
                   alt: name,
                   width: PIXELS[size],
                   height: PIXELS[size],

@@ -83,8 +83,14 @@
 
   /* ---- Typography ---- */
   /* Goodly is supplied locally. Inter remains the safe display fallback. */
-  --font-display: var(--font-goodly, var(--font-inter)), system-ui, sans-serif;
-  --font-body: var(--font-inter, system-ui), -apple-system, sans-serif;
+  --font-display:
+    var(--font-goodly, var(--font-inter)), var(--font-inter-ext, var(--font-inter, system-ui)),
+    system-ui, sans-serif;
+  /* Ext first: its unicode-range means it only claims (and downloads for) characters
+     the core file lacks, such as Yoruba letters. */
+  --font-body:
+    var(--font-inter-ext, var(--font-inter, system-ui)), var(--font-inter, system-ui),
+    -apple-system, sans-serif;
   --font-mono: var(--font-jetbrains-mono, ui-monospace), SFMono-Regular, Menlo, monospace;
 
   --text-xs: 0.75rem;
@@ -95,7 +101,7 @@
   --text-2xl: 1.75rem;
   --text-3xl: 2.25rem;
 
-  /* Goodly ships as Regular only (subset to src/app/fonts/GoodlyLatin.woff2); hierarchy
+  /* Goodly ships as Regular only (subset to src/app/fonts/GoodlyCore.woff2); hierarchy
      comes from size. If GoodlyBold.woff2 is added, register it in layout.tsx
      and raise these weights. */
   --type-display: 400 2.25rem / 1.12 var(--font-display);
