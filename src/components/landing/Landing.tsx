@@ -18,7 +18,7 @@ import { PulseLine } from '@/components/ui/PulseLine';
 import { ListRow } from '@/components/ui/ListRow';
 import { EventCard } from '@/components/events/EventCard';
 import { isTonight, type EnrichedEvent } from '@/lib/campus-data';
-import { isOptimizableImage } from '@/lib/media';
+import { imageSource } from '@/lib/media';
 import { SiteFooter } from './SiteFooter';
 import styles from './Landing.module.css';
 
@@ -61,7 +61,7 @@ export function Landing({
               {posters.map((event, index) => (
                 <Image
                   key={event.id}
-                  src={event.coverImageUrl!}
+                  {...imageSource(event.coverImageUrl!)}
                   alt=""
                   width={360}
                   height={480}
@@ -70,7 +70,6 @@ export function Landing({
                   {...(index === 0
                     ? { preload: true, fetchPriority: 'high' as const }
                     : { loading: 'lazy' as const })}
-                  unoptimized={!isOptimizableImage(event.coverImageUrl!)}
                 />
               ))}
             </div>
