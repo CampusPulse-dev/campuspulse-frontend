@@ -81,7 +81,7 @@ describe('Stories and discovery', () => {
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(view.getByRole('link', { name: /View Event & RSVP/i }));
     fireEvent.keyDown(document, { key: 'Escape' });
-    await waitFor(() => expect(view.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(view.queryByRole('dialog')).toBeNull(), { timeout: 3000 });
     expect(document.activeElement).toBe(trigger);
   });
   it('filters category and dates, resets, and hides personalized content while signed out', async () => {

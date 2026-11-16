@@ -21,7 +21,8 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Same options as the offline savers, so their register() calls never change the registration.
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {
         // Ignore service worker registration errors in dev/test
       });
     }

@@ -419,9 +419,14 @@ function Door({
         <strong>
           {!pack || stale
             ? 'Sync required before doors open'
-            : demo
-              ? 'Demo roster ready on this device'
-              : 'Roster ready on this device'}
+            : busy
+              ? // The roster is in, but the page itself is still being saved for offline
+                // reloads. Saying "ready" now sends staff off Wi-Fi with a page that cannot
+                // reopen without a connection.
+                'Saving the door page for offline use…'
+              : demo
+                ? 'Demo roster ready on this device'
+                : 'Roster ready on this device'}
         </strong>
         <p>
           {pack
