@@ -1,5 +1,6 @@
 'use client';
-import { TextField } from '@/components/ui/Field';
+import { PasswordField, TextField } from '@/components/ui/Field';
+import { emailProblem, normalizeEmail, useFieldErrors } from '@/lib/use-field-errors';
 
 import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
@@ -20,17 +21,27 @@ function SignUpForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fields = useFieldErrors(
+    { displayName, email, password },
+    {
+      displayName: (value) => (value.trim() ? null : 'Enter the name friends know you by.'),
+      email: (value) => emailProblem(value),
+      password: (value) =>
+        value.length >= 10
+          ? null
+          : value
+            ? `Add ${10 - value.length} more character${10 - value.length === 1 ? '' : 's'}.`
+            : 'Choose a password of at least 10 characters.',
+    },
+  );
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    if (!displayName.trim() || !email.trim() || password.length < 10) {
-      setError('Please enter your name, email, and a password of at least 10 characters.');
-      return;
-    }
+    if (!fields.validateAll(e.currentTarget)) return;
     setIsLoading(true);
     try {
-      await signUp({ displayName, email, password });
+      await signUp({ displayName: displayName.trim(), email: normalizeEmail(email), password });
       router.push('/onboarding?' + searchParams.toString());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to create account');
@@ -56,9 +67,13 @@ function SignUpForm() {
           : 'Sign up with any email. Verify your student status separately to access student-only events.'}
       </p>
 
-      {error ? <div className={styles.errorBanner}>{error}</div> : null}
+      {error ? (
+        <div role="alert" className={styles.errorBanner}>
+          {error}
+        </div>
+      ) : null}
 
-      <form className={styles.form} onSubmit={handleSubmit}>
+      <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <TextField
           label={
             <>
@@ -66,10 +81,13 @@ function SignUpForm() {
             </>
           }
           type="text"
+          autoComplete="name"
           required
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="e.g. Tobi Adeyemi"
+          error={fields.errors.displayName}
+          {...fields.blurProps('displayName')}
         />
 
         <TextField
@@ -79,23 +97,32 @@ function SignUpForm() {
             </>
           }
           type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@stu.ui.edu.ng"
+          error={fields.errors.email}
+          {...fields.blurProps('email')}
         />
 
-        <TextField
+        <PasswordField
           label={
             <>
-              <span>Password (min. 10 characters)</span>
+              <span>Password</span>
             </>
           }
-          type="password"
+          hint="At least 10 characters."
+          autoComplete="new-password"
           required
           minLength={10}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          error={fields.errors.password}
+          {...fields.blurProps('password')}
         />
 
         <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={!ready}>

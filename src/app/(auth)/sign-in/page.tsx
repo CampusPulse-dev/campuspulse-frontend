@@ -1,5 +1,6 @@
 'use client';
-import { TextField } from '@/components/ui/Field';
+import { PasswordField, TextField } from '@/components/ui/Field';
+import { emailProblem, normalizeEmail, useFieldErrors } from '@/lib/use-field-errors';
 
 import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
@@ -20,17 +21,21 @@ function SignInForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fields = useFieldErrors(
+    { email, password },
+    {
+      email: (value) => emailProblem(value),
+      password: (value) => (value ? null : 'Enter your password.'),
+    },
+  );
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    if (!email.trim() || !password) {
-      setError('Please enter your email and password.');
-      return;
-    }
+    if (!fields.validateAll(e.currentTarget)) return;
     setIsLoading(true);
     try {
-      await signIn({ email, password });
+      await signIn({ email: normalizeEmail(email), password });
       const target = autoRsvp
         ? `${nextUrl}${nextUrl.includes('?') ? '&' : '?'}autoRsvp=1`
         : nextUrl;
@@ -60,9 +65,13 @@ function SignInForm() {
           : 'Sign in to access your offline QR tickets and campus feed.'}
       </p>
 
-      {error ? <div className={styles.errorBanner}>{error}</div> : null}
+      {error ? (
+        <div role="alert" className={styles.errorBanner}>
+          {error}
+        </div>
+      ) : null}
 
-      <form className={styles.form} onSubmit={handleSubmit}>
+      <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <TextField
           label={
             <>
@@ -70,22 +79,30 @@ function SignInForm() {
             </>
           }
           type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@stu.ui.edu.ng"
+          error={fields.errors.email}
+          {...fields.blurProps('email')}
         />
 
-        <TextField
+        <PasswordField
           label={
             <>
               <span>Password</span>
             </>
           }
-          type="password"
+          autoComplete="current-password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          error={fields.errors.password}
+          {...fields.blurProps('password')}
         />
 
         <Button type="submit" fullWidth size="lg" isLoading={isLoading} disabled={!ready}>

@@ -7,40 +7,49 @@ import { Section } from '@/components/ui/Section';
 import { useAuth } from '@/lib/auth-context';
 import { CATEGORY_LABELS } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AccountGate, PageFrame, styles } from './Shared';
+import feedback from '@/components/ui/Feedback.module.css';
 function SettingsForm() {
   const { user, privacy, updatePrivacy, updateProfile, signOut } = useAuth();
   const [name, setName] = useState(user?.displayName ?? '');
-  const [message, setMessage] = useState('');
+  // The status shows beside the control that changed, not at the page bottom.
+  const [status, setStatus] = useState<{ key: string; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  async function perform(action: () => Promise<void>) {
-    setMessage('');
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  // Every control stays disabled while one saves: preferences are written as
+  // one object, so two overlapping saves could undo each other.
+  async function perform(key: string, action: () => Promise<void>) {
+    setStatus({ key, text: 'Saving…' });
     setBusy(true);
     try {
       await action();
-      setMessage('Changes saved.');
+      setStatus({ key, text: 'Saved' });
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : 'Changes could not be saved.');
+      setStatus({ key, text: e instanceof Error ? e.message : 'Could not save. Try again.' });
     } finally {
       setBusy(false);
     }
   }
+  const hintFor = (key: string) => (status?.key === key ? status.text : undefined);
   return (
     <>
       <Section title="Your profile">
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            void perform(() => updateProfile(name.trim()));
+            void perform('profile', () => updateProfile(name.trim()));
           }}
           className={styles.list}
         >
           <TextField
             label="Display name"
+            autoComplete="name"
             required
             maxLength={80}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            hint={hintFor('profile')}
           />
           <div className={styles.actions}>
             <Button type="submit" isLoading={busy}>
@@ -66,8 +75,9 @@ function SettingsForm() {
           aria-label="Theme"
           disabled={busy}
           value={privacy.theme}
+          hint={hintFor('theme')}
           onChange={(e) =>
-            perform(() => updatePrivacy({ theme: e.target.value as typeof privacy.theme }))
+            perform('theme', () => updatePrivacy({ theme: e.target.value as typeof privacy.theme }))
           }
         >
           <option value="system">Use device setting</option>
@@ -78,13 +88,19 @@ function SettingsForm() {
           label="Keep my RSVPs private"
           disabled={busy}
           checked={privacy.stealthRsvp}
-          onChange={(e) => perform(() => updatePrivacy({ stealthRsvp: e.target.checked }))}
+          hint={hintFor('stealth')}
+          onChange={(e) =>
+            perform('stealth', () => updatePrivacy({ stealthRsvp: e.target.checked }))
+          }
         />
         <ToggleRow
           label="Hide my activity from friends"
           disabled={busy}
           checked={privacy.hideFromFriends}
-          onChange={(e) => perform(() => updatePrivacy({ hideFromFriends: e.target.checked }))}
+          hint={hintFor('hide')}
+          onChange={(e) =>
+            perform('hide', () => updatePrivacy({ hideFromFriends: e.target.checked }))
+          }
         />
       </Section>
       <Section
@@ -97,8 +113,9 @@ function SettingsForm() {
             label={`Mute ${label}`}
             disabled={busy}
             checked={privacy.mutedCategories.includes(id)}
+            hint={hintFor(`mute-${id}`)}
             onChange={(e) =>
-              perform(() =>
+              perform(`mute-${id}`, () =>
                 updatePrivacy({
                   mutedCategories: e.target.checked
                     ? [...privacy.mutedCategories, id]
@@ -110,10 +127,20 @@ function SettingsForm() {
         ))}
         <ListRow title="This device’s push notifications" href="/notifications" />
       </Section>
-      {message ? <p role="status">{message}</p> : null}
-      <Button variant="ghostDanger" disabled={busy} onClick={() => perform(signOut)}>
+      <p role="status" className={feedback.visuallyHidden}>
+        {status?.text ?? ''}
+      </p>
+      <Button variant="ghostDanger" disabled={busy} onClick={() => setConfirmingSignOut(true)}>
         Sign out and clear cached tickets
       </Button>
+      <ConfirmDialog
+        open={confirmingSignOut}
+        title="Sign out?"
+        subtitle="Your saved QR passes are removed from this device. You'll need a connection to get them back before the door."
+        confirmLabel="Sign out"
+        onConfirm={signOut}
+        onClose={() => setConfirmingSignOut(false)}
+      />
     </>
   );
 }
