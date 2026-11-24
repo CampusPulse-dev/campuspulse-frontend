@@ -27,7 +27,7 @@ type Detection = { rawValue: string };
 type Detector = { detect(source: HTMLVideoElement): Promise<Detection[]> };
 type DetectorConstructor = new (options: { formats: string[] }) => Detector;
 
-function Camera({ onCode }: { onCode: (code: string) => void }) {
+function Camera({ onCode, enabled }: { onCode: (code: string) => void; enabled: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   const onCodeRef = useRef(onCode);
   const [active, setActive] = useState(false);
@@ -36,11 +36,13 @@ function Camera({ onCode }: { onCode: (code: string) => void }) {
     onCodeRef.current = onCode;
   }, [onCode]);
   useEffect(() => {
-    if (!active) return;
+    if (!active || !enabled) return;
     let stopped = false;
     let stream: MediaStream | null = null;
     let frame = 0;
     let lastRead = 0;
+    let lastFrame = -Infinity;
+    let lastCode: string | undefined;
     const canvas = document.createElement('canvas');
     const ctor = (globalThis as unknown as { BarcodeDetector?: DetectorConstructor })
       .BarcodeDetector;
@@ -53,7 +55,8 @@ function Camera({ onCode }: { onCode: (code: string) => void }) {
     async function scan() {
       const element = video.current;
       if (stopped || !element) return;
-      if (element.readyState >= 2 && Date.now() - lastRead > 2000) {
+      if (element.readyState >= 2 && performance.now() - lastFrame >= 100) {
+        lastFrame = performance.now();
         let code: string | undefined;
         try {
           if (detector) code = (await detector.detect(element))[0]?.rawValue;
@@ -70,7 +73,8 @@ function Camera({ onCode }: { onCode: (code: string) => void }) {
             code = jsQR(pixels.data, pixels.width, pixels.height)?.data;
           }
         }
-        if (code && !stopped) {
+        if (code && !stopped && (code !== lastCode || Date.now() - lastRead > 2000)) {
+          lastCode = code;
           lastRead = Date.now();
           onCodeRef.current(code);
         }
@@ -98,13 +102,15 @@ function Camera({ onCode }: { onCode: (code: string) => void }) {
         }
       }
     }
+    const element = video.current;
     void start();
     return () => {
       stopped = true;
       cancelAnimationFrame(frame);
       stream?.getTracks().forEach((track) => track.stop());
+      if (element?.srcObject === stream) element.srcObject = null;
     };
-  }, [active]);
+  }, [active, enabled]);
   return (
     <div className={styles.camera}>
       <video ref={video} playsInline muted aria-label="Camera preview" />
@@ -480,86 +486,94 @@ function Door({
               ? 'Sync the demo roster while online to use either check-in tab.'
               : 'Download the roster while online to use either check-in tab.'}
           </p>
-        ) : tab === 'qr' ? (
-          <section className={styles.panel} aria-label="QR scanner">
-            <Camera onCode={(code) => void scan(code)} />
-            {pack.sampleToken ? (
-              <details>
-                <summary>Try a demo pass</summary>
-                <p>Sample pass for Demo Attendee 01. This is not a real ticket.</p>
-                {sampleQr ? (
-                  // The locally generated data URL is not an optimizable remote image.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={sampleQr} alt="Sample demo QR code" />
-                ) : null}
-                <Button onClick={() => void scan(pack.sampleToken ?? '')}>Scan sample pass</Button>
-              </details>
-            ) : null}
-          </section>
         ) : (
-          <section className={styles.panel} aria-label="Manual check-in">
-            <label htmlFor="door-search">Find an attendee</label>
-            <input
-              id="door-search"
-              type="search"
-              inputMode="search"
-              autoComplete="off"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by name"
-            />
-            {matches.length === 0 ? (
-              <p className={styles.muted}>
-                No one on this roster matches. Check the spelling, or refresh the roster.
-              </p>
-            ) : null}
-            <ul className={styles.list}>
-              {matches.slice(0, MANUAL_LIST_LIMIT).map((person) => (
-                <li key={person.id}>
-                  <span className={styles.person}>
-                    <span className={styles.personName}>
-                      {person.name}
-                      {demo && person.checkedInAt ? ' · Checked in' : ''}
-                    </span>
-                    {!demo ? (
-                      <span className={styles.personMeta}>
-                        {person.verified ? 'Verified student' : 'Guest'}
-                        {person.checkedInAt ? ` · Checked in ${clock(person.checkedInAt)}` : ''}
-                      </span>
-                    ) : null}
-                  </span>
-                  <Button
-                    className={styles.checkInButton}
-                    variant={person.checkedInAt ? 'secondary' : 'primary'}
-                    disabled={!demo && Boolean(person.checkedInAt)}
-                    aria-label={`Check in ${person.name}`}
-                    onClick={() => void accept(person.id, 'MANUAL', null)}
-                  >
-                    {!demo && person.checkedInAt ? 'Done' : 'Check in'}
+          <>
+            <section className={styles.panel} aria-label="QR scanner" hidden={tab !== 'qr'}>
+              <Camera enabled={tab === 'qr'} onCode={(code) => void scan(code)} />
+              {pack.sampleToken ? (
+                <details>
+                  <summary>Try a demo pass</summary>
+                  <p>Sample pass for Demo Attendee 01. This is not a real ticket.</p>
+                  {sampleQr ? (
+                    // The locally generated data URL is not an optimizable remote image.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={sampleQr} alt="Sample demo QR code" />
+                  ) : null}
+                  <Button onClick={() => void scan(pack.sampleToken ?? '')}>
+                    Scan sample pass
                   </Button>
-                </li>
-              ))}
-            </ul>
-            {matches.length > MANUAL_LIST_LIMIT ? (
-              <p className={styles.muted}>
-                Showing {MANUAL_LIST_LIMIT} of {matches.length}. Keep typing to narrow it down.
-              </p>
+                </details>
+              ) : null}
+            </section>
+            {tab === 'manual' ? (
+              <section className={styles.panel} aria-label="Manual check-in">
+                <label htmlFor="door-search">Find an attendee</label>
+                <input
+                  id="door-search"
+                  type="search"
+                  inputMode="search"
+                  autoComplete="off"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search by name"
+                />
+                {matches.length === 0 ? (
+                  <p className={styles.muted}>
+                    No one on this roster matches. Check the spelling, or refresh the roster.
+                  </p>
+                ) : null}
+                <ul className={styles.list}>
+                  {matches.slice(0, MANUAL_LIST_LIMIT).map((person) => (
+                    <li key={person.id}>
+                      <span className={styles.person}>
+                        <span className={styles.personName}>
+                          {person.name}
+                          {demo && person.checkedInAt ? ' · Checked in' : ''}
+                        </span>
+                        {!demo ? (
+                          <span className={styles.personMeta}>
+                            {person.verified ? 'Verified student' : 'Guest'}
+                            {person.checkedInAt ? ` · Checked in ${clock(person.checkedInAt)}` : ''}
+                          </span>
+                        ) : null}
+                      </span>
+                      <Button
+                        className={styles.checkInButton}
+                        variant={person.checkedInAt ? 'secondary' : 'primary'}
+                        disabled={!demo && Boolean(person.checkedInAt)}
+                        aria-label={`Check in ${person.name}`}
+                        onClick={() => void accept(person.id, 'MANUAL', null)}
+                      >
+                        {!demo && person.checkedInAt ? 'Done' : 'Check in'}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+                {matches.length > MANUAL_LIST_LIMIT ? (
+                  <p className={styles.muted}>
+                    Showing {MANUAL_LIST_LIMIT} of {matches.length}. Keep typing to narrow it down.
+                  </p>
+                ) : null}
+              </section>
             ) : null}
-          </section>
+          </>
         )}
       </Tabs>
 
       {flash ? (
-        <div
-          key={flash.id}
-          role="status"
-          className={`${styles.flash} ${styles[`flash_${flash.kind}`]}`}
-          onClick={() => setFlash(null)}
-        >
-          <Icon icon={RESULT_ICON[flash.kind]} size={96} strokeWidth={1.5} />
-          <strong>{resultLabel(flash.kind, demo)}</strong>
-          <p>{flash.message}</p>
-          <span className={styles.flashHint}>Tap to continue</span>
+        // A new scan replaces this at once (show() swaps the result), and the
+        // whole surface is one button, so a tap, Enter or Space clears it.
+        <div key={flash.id} role="status">
+          <button
+            type="button"
+            className={`${styles.flash} ${styles[`flash_${flash.kind}`]}`}
+            onClick={() => setFlash(null)}
+          >
+            <Icon icon={RESULT_ICON[flash.kind]} size={96} strokeWidth={1.5} />
+            <strong>{resultLabel(flash.kind, demo)}</strong>
+            <span className={styles.flashMessage}>{flash.message}</span>
+            <span className={styles.flashHint}>Tap to continue</span>
+          </button>
         </div>
       ) : null}
     </div>
