@@ -177,6 +177,7 @@
 /* Wizard */
 
 .wizard {
+  position: relative;
   display: grid;
   gap: var(--space-4);
   max-width: 40rem;
@@ -284,6 +285,13 @@
   border-radius: var(--radius-md);
   background: var(--status-warning-bg);
   font-size: var(--text-sm);
+}
+div.notice {
+  display: grid;
+  gap: var(--space-3);
+}
+.restoredText {
+  margin: 0;
 }
 
 .actions {
@@ -397,4 +405,10 @@
   .wizardSteps {
     gap: var(--space-4);
   }
+}
+
+.fieldError {
+  margin: 0;
+  color: var(--status-danger);
+  font-size: var(--text-sm);
 }

@@ -17,7 +17,13 @@ export function useDialog(open: boolean, ref: RefObject<HTMLElement | null>, onC
           'a[href],button:not(:disabled),input,select,textarea,[tabindex="0"]',
         ),
       );
-    (focusables()[0] ?? element).focus();
+    // A dialog may name its default target (Cancel in a confirmation);
+    // otherwise focus the first control.
+    (
+      element.querySelector<HTMLElement>('[data-autofocus]:not(:disabled)') ??
+      focusables()[0] ??
+      element
+    ).focus();
     function keyboard(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         event.preventDefault();

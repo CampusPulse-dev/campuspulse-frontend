@@ -68,6 +68,29 @@ function renderHub(data = hubData(), handlers: Partial<Parameters<typeof EventHu
 }
 
 describe('EventHubView (S5-01)', () => {
+  it('shows the cancellation reason and requires explicit confirmation', async () => {
+    const onCancel = vi.fn().mockResolvedValue(undefined);
+    renderHub(hubData(), { onCancel });
+    fireEvent.change(screen.getByLabelText('Cancellation reason'), {
+      target: { value: 'Weather check' },
+    });
+    const open = screen.getByRole('button', { name: 'Cancel event and notify attendees' });
+    fireEvent.click(open);
+    const dialog = screen.getByRole('dialog', { name: 'Cancel Havana Night?' });
+    expect(within(dialog).getByText(/Weather check/)).toBeDefined();
+    const subtitle = within(dialog).getByText(/All 482 people/);
+    expect(dialog.getAttribute('aria-describedby')).toBe(subtitle.id);
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Cancel' }));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(onCancel).not.toHaveBeenCalled();
+    fireEvent.click(open);
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel event' }),
+    );
+    await waitFor(() => expect(onCancel).toHaveBeenCalledWith('Weather check'));
+  });
+
   it('shows live attendance stats and the ambassador breakdown', () => {
     renderHub();
     const stats = screen.getByLabelText('Event stats');
