@@ -28,6 +28,8 @@
   font: var(--type-meta);
   margin-top: var(--space-1);
 }
-a.row:hover {
-  background: var(--color-surface);
+@media (hover: hover) and (pointer: fine) {
+  a.row:hover {
+    background: var(--color-surface);
+  }
 }

@@ -82,13 +82,15 @@
   color: var(--color-text);
 }
 
-/* Sheet motion in CSS: enter on mount, `.closing` for the 160 ms exit. */
+/* Sheet motion in CSS: enter on mount, `.closing` for the exit. */
 .backdrop {
-  animation: modal-fade-in 180ms ease both;
+  animation: modal-fade-in var(--dur-modal-in) var(--ease-out) both;
 }
 
 .sheet {
-  animation: modal-sheet-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
+  --sheet-offset: 100%;
+  --sheet-scale: 1;
+  animation: modal-sheet-in var(--dur-modal-in) var(--ease-out) both;
 }
 
 .closing {
@@ -96,11 +98,18 @@
 }
 
 .closing .backdrop {
-  animation: modal-fade-out 150ms ease forwards;
+  animation: modal-fade-out var(--dur-modal-out) var(--ease-in) forwards;
 }
 
 .closing .sheet {
-  animation: modal-sheet-out 160ms cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation: modal-sheet-out var(--dur-modal-out) var(--ease-in) forwards;
+}
+
+@media (min-width: 640px) {
+  .sheet {
+    --sheet-offset: 12px;
+    --sheet-scale: 0.98;
+  }
 }
 
 @keyframes modal-fade-in {
@@ -118,14 +127,14 @@
 @keyframes modal-sheet-in {
   from {
     opacity: 0;
-    transform: translateY(36px) scale(0.98);
+    transform: translateY(var(--sheet-offset)) scale(var(--sheet-scale));
   }
 }
 
 @keyframes modal-sheet-out {
   to {
     opacity: 0;
-    transform: translateY(28px) scale(0.98);
+    transform: translateY(var(--sheet-offset)) scale(var(--sheet-scale));
   }
 }
 
@@ -134,6 +143,6 @@
   .sheet,
   .closing .backdrop,
   .closing .sheet {
-    animation-duration: 1ms;
+    animation: none;
   }
 }

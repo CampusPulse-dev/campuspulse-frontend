@@ -1,4 +1,19 @@
 import { expect, test } from '@playwright/test';
+
+test('the landing pulse loops and becomes static with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  const pulse = page.locator('svg[viewBox="0 0 320 72"]').first();
+  const trace = pulse.locator('path').nth(1);
+  await expect(trace).toHaveCSS('animation-iteration-count', 'infinite');
+  await expect(trace).toHaveCSS('animation-duration', '2.4s');
+  await expect(pulse).toHaveAttribute('data-paused', 'false');
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect(trace).toHaveCSS('animation-play-state', 'paused');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(trace).toHaveCSS('display', 'none');
+});
+
 test('signed-out home introduces CampusPulse and discovery stays public', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: /If it’s happening/ })).toBeVisible();

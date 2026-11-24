@@ -2,11 +2,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { EventCardsSkeleton } from '@/components/ui/Skeleton';
 import { CATEGORY_LABELS } from '@/components/ui/Badge';
 import { StoriesTray } from '@/components/stories/StoriesTray';
 import { EventCard } from './EventCard';
-import { fetchEventFeed, type EventCategory } from '@/lib/api';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { fetchActiveStories, fetchEventFeed, type EventCategory } from '@/lib/api';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Coffee, PartyPopper, Lightbulb, Trophy, type LucideIcon } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
 import {
@@ -55,6 +56,12 @@ export function HomeFeedClient({
   storiesError,
 }: HomeFeedClientProps) {
   const { user, followedOrganizerIds } = useAuth();
+  const storyQuery = useQuery({
+    queryKey: ['active-stories'],
+    queryFn: fetchActiveStories,
+    enabled: false,
+    retry: false,
+  });
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 60_000);
@@ -161,12 +168,15 @@ export function HomeFeedClient({
         <h1>Find your next plan.</h1>
         <p>What’s happening at the University of Ibadan.</p>
       </header>
-      {storiesError ? (
+      {storiesError && !storyQuery.data ? (
         <p role="alert">
-          Stories unavailable. <Button onClick={() => window.location.reload()}>Retry</Button>
+          Stories unavailable.{' '}
+          <Button isLoading={storyQuery.isFetching} onClick={() => void storyQuery.refetch()}>
+            Retry
+          </Button>
         </p>
       ) : (
-        <StoriesTray stories={stories} />
+        <StoriesTray stories={storiesError ? (storyQuery.data ?? []) : stories} />
       )}
 
       <div className={styles.filterBar}>
@@ -247,14 +257,14 @@ export function HomeFeedClient({
         </div>
 
         {pages.isPending ? (
-          <p role="status">Loading events…</p>
+          <EventCardsSkeleton className={styles.feedStack} />
         ) : pages.isError ? (
           <div role="alert">
             <p>Could not load events. Please retry.</p>
             <Button onClick={() => void pages.refetch()}>Retry</Button>
           </div>
         ) : listEvents.length === 0 && (seekingMatches || isFetchingNextPage) ? (
-          <p role="status">Loading more events…</p>
+          <EventCardsSkeleton count={2} label="Loading more events…" className={styles.feedStack} />
         ) : listEvents.length === 0 && !showRecommendations ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>

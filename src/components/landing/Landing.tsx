@@ -95,7 +95,7 @@ export function Landing({
                 Sign up with your @stu.ui.edu.ng
               </Link>
             </div>
-            <PulseLine animated className={styles.heroPulse} />
+            <PulseLine animated beating className={styles.heroPulse} />
             <div className={styles.heroFootnote}>
               <span>Find your people.</span>
               <span>Make a plan.</span>
