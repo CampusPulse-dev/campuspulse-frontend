@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { TextLink } from '@/components/ui/TextLink';
 import { useAuth } from '@/lib/auth-context';
 import { DEMO_MODE } from '@/lib/mode';
 import { useOrganizerAccess, type OrganizerAccess } from '@/lib/organizer-data';
@@ -24,7 +24,7 @@ export function OrganizerAccessMessage({
       <section className={styles.panel}>
         <h2>Sign in to manage your club</h2>
         <p>Organizer tools are only available to club owners and managers.</p>
-        <Link href={signInHref(slug)}>Sign in →</Link>
+        <TextLink href={signInHref(slug)}>Sign in →</TextLink>
       </section>
     );
   if (access.status === 'unavailable')
@@ -39,7 +39,7 @@ export function OrganizerAccessMessage({
       <section className={styles.panel} role="alert">
         <h2>You do not have access to this club</h2>
         <p>Ask the club owner to add you as a manager.</p>
-        <Link href="/organizer">Back to my clubs</Link>
+        <TextLink href="/organizer">Back to my clubs</TextLink>
       </section>
     );
   return null;
