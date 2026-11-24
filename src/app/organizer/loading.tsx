@@ -1,3 +1,5 @@
+import { RowsSkeleton } from '@/components/ui/Skeleton';
+
 export default function Loading() {
-  return <p role="status">Loading organizer tools…</p>;
+  return <RowsSkeleton label="Loading organizer tools…" />;
 }

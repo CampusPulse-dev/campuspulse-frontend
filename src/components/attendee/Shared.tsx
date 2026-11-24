@@ -1,7 +1,8 @@
 'use client';
-import Link from 'next/link';
+import { TextLink } from '@/components/ui/TextLink';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/Button';
+import { RowsSkeleton } from '@/components/ui/Skeleton';
 import styles from './Portal.module.css';
 export { styles };
 export function PageFrame({
@@ -35,7 +36,7 @@ export function AccountGate({ children }: { children: React.ReactNode }) {
       <section className={styles.panel}>
         <h2>Your campus, connected</h2>
         <p>Sign in to save plans and keep your tickets on this device.</p>
-        <Link href="/sign-in">Sign in →</Link>
+        <TextLink href="/sign-in">Sign in →</TextLink>
       </section>
     );
   return children;
@@ -44,12 +45,15 @@ export function ResourceState({
   pending,
   error,
   retry,
+  skeleton,
 }: {
   pending: boolean;
   error: Error | null;
   retry: () => unknown;
+  /** Shaped like the content that will land here; shown while pending. */
+  skeleton?: React.ReactNode;
 }) {
-  if (pending) return <p role="status">Loading…</p>;
+  if (pending) return skeleton ?? <RowsSkeleton />;
   if (error)
     return (
       <div role="alert" className={styles.error}>

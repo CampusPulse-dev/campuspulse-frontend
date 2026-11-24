@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/Badge';
 import { TextLink } from '@/components/ui/TextLink';
 import { Tabs } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
+import { EventCardsSkeleton } from '@/components/ui/Skeleton';
 import { EventCard } from '@/components/events/EventCard';
 import { AccountGate, PageFrame, ResourceState, styles } from './Shared';
 export function Wallet({ rsvpId }: { rsvpId?: string }) {
@@ -221,6 +222,7 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
               {tab === 'Saved' ? (
                 <>
                   <ResourceState
+                    skeleton={<EventCardsSkeleton count={2} label="Loading saved events…" />}
                     pending={interests.isPending}
                     error={interests.error}
                     retry={interests.refetch}

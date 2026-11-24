@@ -140,7 +140,7 @@
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  animation: flashIn 120ms var(--ease-ui) both;
+  animation: flashIn var(--dur-press) var(--ease-out) both;
 }
 .flash strong {
   font: 700 clamp(2.5rem, 12vw, 4.5rem) / 1 var(--font-mono);

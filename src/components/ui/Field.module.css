@@ -132,7 +132,7 @@
   height: 20px;
   border-radius: 50%;
   background: var(--color-bg);
-  transition: transform 160ms var(--ease-ui);
+  transition: transform var(--dur-move) var(--ease-in-out);
 }
 .switchInput:checked + .switchTrack {
   background: var(--color-text);
