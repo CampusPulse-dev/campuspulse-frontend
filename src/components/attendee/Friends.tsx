@@ -1,6 +1,6 @@
 'use client';
 import { TextField, SelectField } from '@/components/ui/Field';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { DEMO_MODE } from '@/lib/mode';
@@ -8,6 +8,7 @@ import {
   attendeeRequest,
   demoFriends,
   readLocal,
+  sendFriendAction,
   writeLocal,
   type FriendEntry,
 } from '@/lib/attendee-data';
@@ -15,6 +16,8 @@ import { ListRow } from '@/components/ui/ListRow';
 import { Section } from '@/components/ui/Section';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import buttonStyles from '@/components/ui/Button.module.css';
+import { useFriendIntents } from './FriendIntentProvider';
 import { AccountGate, PageFrame, ResourceState, styles } from './Shared';
 export function Friends() {
   const { user, accessToken, persona } = useAuth();
@@ -22,7 +25,9 @@ export function Friends() {
   const [search, setSearch] = useState('');
   const [cohort, setCohort] = useState('ALL');
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+  const active = useRef(new Set<string>());
+  const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
+  const { pending, queue } = useFriendIntents();
   const key = `friends:${user?.id}`;
   const query = useQuery({
     queryKey: ['friends', user?.id],
@@ -34,45 +39,47 @@ export function Friends() {
         : (await attendeeRequest('FriendsResponse', '/friends', accessToken)).items,
   });
   async function action(friend: FriendEntry, kind: 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'BLOCK') {
+    const peer = friend.user.id;
+    const guard = JSON.stringify([user?.id, peer]);
+    if (!user || active.current.has(guard) || pending.has(peer)) return;
+    active.current.add(guard);
+    setBusy(new Set(active.current));
     setError('');
-    setBusy(true);
     try {
+      if (kind === 'BLOCK' || kind === 'DECLINE') {
+        await queue(friend, kind);
+        return;
+      }
       if (DEMO_MODE) {
-        const next = (query.data ?? []).flatMap((f) =>
-          f.id !== friend.id
-            ? [f]
-            : kind === 'DECLINE'
-              ? []
-              : [
-                  {
-                    ...f,
-                    status: (kind === 'ACCEPT'
-                      ? 'ACCEPTED'
-                      : kind === 'BLOCK'
-                        ? 'BLOCKED'
-                        : 'OUTGOING') as FriendEntry['status'],
-                  },
-                ],
+        const entries = readLocal(key, demoFriends);
+        writeLocal(
+          key,
+          entries.map((entry) =>
+            entry.user.id === peer
+              ? { ...entry, status: kind === 'ACCEPT' ? 'ACCEPTED' : 'OUTGOING' }
+              : entry,
+          ),
         );
-        writeLocal(key, next);
-      } else
-        await attendeeRequest(
-          'FriendEntry',
+      } else {
+        await sendFriendAction(
+          user.id,
           kind === 'REQUEST' ? '/friends/request' : `/friends/${friend.id}/respond`,
           accessToken,
-          'POST',
-          { ...(kind === 'REQUEST' ? { userId: friend.user.id } : {}), action: kind },
+          kind === 'REQUEST' ? { userId: peer } : { action: kind },
         );
-      await client.invalidateQueries({ queryKey: ['friends', user?.id] });
+      }
+      await client.invalidateQueries({ queryKey: ['friends', user.id] });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not update friendship.');
     } finally {
-      setBusy(false);
+      active.current.delete(guard);
+      setBusy(new Set(active.current));
     }
   }
   const visible = (query.data ?? []).filter(
     (f) =>
       f.status !== 'BLOCKED' &&
+      !pending.has(f.user.id) &&
       f.user.displayName.toLowerCase().includes(search.toLowerCase()) &&
       (cohort === 'ALL' ||
         (cohort === 'HALL'
@@ -131,11 +138,14 @@ export function Friends() {
                 <div className={styles.actions}>
                   {f.status === 'INCOMING' ? (
                     <>
-                      <Button disabled={busy} onClick={() => action(f, 'ACCEPT')}>
+                      <Button
+                        disabled={busy.has(JSON.stringify([user?.id, f.user.id]))}
+                        onClick={() => action(f, 'ACCEPT')}
+                      >
                         Accept
                       </Button>
                       <Button
-                        disabled={busy}
+                        disabled={busy.has(JSON.stringify([user?.id, f.user.id]))}
                         variant="secondary"
                         onClick={() => action(f, 'DECLINE')}
                       >
@@ -143,11 +153,18 @@ export function Friends() {
                       </Button>
                     </>
                   ) : f.status === 'SUGGESTED' ? (
-                    <Button disabled={busy} onClick={() => action(f, 'REQUEST')}>
+                    <Button
+                      disabled={busy.has(JSON.stringify([user?.id, f.user.id]))}
+                      onClick={() => action(f, 'REQUEST')}
+                    >
                       Add friend
                     </Button>
                   ) : null}
-                  <Button disabled={busy} variant="ghost" onClick={() => action(f, 'BLOCK')}>
+                  <Button
+                    disabled={busy.has(JSON.stringify([user?.id, f.user.id]))}
+                    variant="ghost"
+                    onClick={() => action(f, 'BLOCK')}
+                  >
                     Block
                   </Button>
                 </div>
@@ -162,6 +179,7 @@ export function Friends() {
           href={`https://wa.me/?text=${encodeURIComponent('Join me on CampusPulse — discover what is happening at UI: https://campuspulse.ng/sign-up')}`}
           target="_blank"
           rel="noreferrer"
+          className={buttonStyles.textLink}
         >
           Invite a friend on WhatsApp →
         </a>

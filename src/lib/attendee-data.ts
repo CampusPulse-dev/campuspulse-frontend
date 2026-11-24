@@ -47,6 +47,38 @@ export async function attendeeRequest<K extends keyof Schemas>(
     cache: 'no-store',
   });
 }
+export function isCurrentFriendAccount(account: string) {
+  return readLocal<{ id: string } | null>('user', null)?.id === account;
+}
+
+export async function sendFriendAction(
+  account: string,
+  path: string,
+  token: string | null,
+  body: Schemas['FriendActionBody'] | Schemas['FriendRequestBody'],
+  signal?: AbortSignal,
+) {
+  const headers = authHeaders(token);
+  const scope = { userId: account, isCurrent: () => isCurrentFriendAccount(account) };
+  // The dev sign-in form can change the email header before it installs a user.
+  // Verify the exact captured header before using it for a write.
+  if (DEV_AUTH_MODE) {
+    const owner = await apiFetch<Schemas['UserPublic']>('/users/me', { headers, signal }, scope);
+    if (owner.id !== account) throw new DOMException('Account changed', 'AbortError');
+  }
+  return apiFetch<FriendEntry>(
+    path,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      signal,
+    },
+    scope,
+  );
+}
+
 export const demoFriends: FriendEntry[] = [
   {
     id: '55555555-5555-4555-8555-555555555501',
