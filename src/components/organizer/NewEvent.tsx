@@ -119,6 +119,7 @@ function NewEventData({ slug, draftId }: { slug: string; draftId?: string }) {
       <EventWizard
         key={round}
         initialDraft={initialDraft ?? undefined}
+        autosaveKey={draftId ? undefined : `event-wizard:${user?.id ?? 'guest'}:${slug}`}
         canPublish={data.verification.status === 'VERIFIED'}
         parentOptions={data.events
           .filter((event) => event.status === 'PUBLISHED')

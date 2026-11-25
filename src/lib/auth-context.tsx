@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ApiRequestError,
@@ -42,8 +42,9 @@ interface AuthContextValue {
   savePersona: (next: PersonaProfile) => Promise<void>;
   updatePrivacy: (patch: Partial<PrivacyPreferences>) => Promise<void>;
   updateProfile: (displayName: string) => Promise<void>;
-  toggleInterested: (id: string) => Promise<boolean>;
-  toggleFollowOrganizer: (id: string) => Promise<boolean>;
+  /** Resolves to the new state, or null when a request for this id is already in flight. */
+  toggleInterested: (id: string) => Promise<boolean | null>;
+  toggleFollowOrganizer: (id: string) => Promise<boolean | null>;
 }
 /** Fired when the cp_signed_in cookie flips; ServerViewSync refreshes the route. */
 export const SIGNED_IN_CHANGE_EVENT = 'cp-signed-in-change';
@@ -67,6 +68,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [privacy, setPrivacy] = useState(DEFAULT_PRIVACY);
   const [interestedEventIds, setInterested] = useState<string[]>([]);
   const [followedOrganizerIds, setFollows] = useState<string[]>([]);
+  // Latest lists for optimistic toggles (render closures can be a tap behind),
+  // and the ids with a request in flight, so a repeat tap can't double-send.
+  const interestedRef = useRef(interestedEventIds);
+  const followsRef = useRef(followedOrganizerIds);
+  const togglesInFlight = useRef(new Set<string>());
+  useEffect(() => {
+    interestedRef.current = interestedEventIds;
+  }, [interestedEventIds]);
+  useEffect(() => {
+    followsRef.current = followedOrganizerIds;
+  }, [followedOrganizerIds]);
   const installUser = useCallback(
     async (next: UserPublic | null, token: string | null) => {
       const previous = readLocal<UserPublic | null>('user', null);
@@ -291,33 +303,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     writeLocal('user', next);
     setUser(next);
   }
+  /**
+   * Optimistic membership toggle: the list flips on this frame, the request
+   * follows, and a failure rolls the flip back and rethrows for the caller's
+   * message. While one id has a request in flight, further taps on it are
+   * ignored and resolve to null.
+   */
+  async function optimisticToggle(
+    id: string,
+    list: React.RefObject<string[]>,
+    setList: (next: string[]) => void,
+    storageKey: string,
+    path: string,
+  ) {
+    const lock = `${storageKey}:${id}`;
+    const current = list.current;
+    if (togglesInFlight.current.has(lock)) return null;
+    const added = !current.includes(id);
+    const apply = (next: string[]) => {
+      list.current = next;
+      writeLocal(storageKey, next);
+      setList(next);
+    };
+    apply(added ? [...current, id] : current.filter((v) => v !== id));
+    togglesInFlight.current.add(lock);
+    try {
+      if (!DEMO_MODE)
+        await apiFetch(path, {
+          method: added ? 'POST' : 'DELETE',
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+    } catch (error) {
+      const latest = list.current;
+      apply(added ? latest.filter((v) => v !== id) : [...latest, id]);
+      throw error;
+    } finally {
+      togglesInFlight.current.delete(lock);
+    }
+    return added;
+  }
   async function toggleInterested(id: string) {
     const u = requireUser();
-    const added = !interestedEventIds.includes(id);
-    if (!DEMO_MODE)
-      await apiFetch(`/attendance/interested/${id}`, {
-        method: added ? 'POST' : 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    const next = added ? [...interestedEventIds, id] : interestedEventIds.filter((v) => v !== id);
-    writeLocal(`interested:${u.id}`, next);
-    setInterested(next);
-    return added;
+    return optimisticToggle(
+      id,
+      interestedRef,
+      setInterested,
+      `interested:${u.id}`,
+      `/attendance/interested/${id}`,
+    );
   }
   async function toggleFollowOrganizer(id: string) {
     const u = requireUser();
-    const added = !followedOrganizerIds.includes(id);
-    if (!DEMO_MODE)
-      await apiFetch(`/organizers/${id}/follow`, {
-        method: added ? 'POST' : 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    const next = added
-      ? [...followedOrganizerIds, id]
-      : followedOrganizerIds.filter((v) => v !== id);
-    writeLocal(`follows:${u.id}`, next);
-    setFollows(next);
-    return added;
+    return optimisticToggle(
+      id,
+      followsRef,
+      setFollows,
+      `follows:${u.id}`,
+      `/organizers/${id}/follow`,
+    );
   }
   function markStudentVerified(verified = true) {
     // Presentation only: in live mode the server already holds the real flag.
@@ -370,8 +413,8 @@ const signedOut: AuthContextValue = {
   savePersona: async () => {},
   updatePrivacy: async () => {},
   updateProfile: async () => {},
-  toggleInterested: async () => false,
-  toggleFollowOrganizer: async () => false,
+  toggleInterested: async () => null,
+  toggleFollowOrganizer: async () => null,
 };
 export function useAuth(): AuthContextValue {
   return useContext(AuthContext) ?? signedOut;

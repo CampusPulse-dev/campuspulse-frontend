@@ -35,7 +35,7 @@ function feed() {
   );
 }
 describe('Stories and discovery', () => {
-  it('does not auto-advance with reduced motion and retains manual navigation', () => {
+  it('keeps the five-second story timer and manual navigation with reduced motion', () => {
     vi.useFakeTimers();
     motionPreference.reduced = true;
     const select = vi.fn();
@@ -43,11 +43,13 @@ describe('Stories and discovery', () => {
     const view = render(
       <StoryViewer stories={SEED_STORIES} activeIndex={0} onSelectIndex={select} onClose={close} />,
     );
-    act(() => vi.advanceTimersByTime(10000));
+    act(() => vi.advanceTimersByTime(4999));
     expect(select).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1));
+    expect(select).toHaveBeenCalledWith(1);
     expect(close).not.toHaveBeenCalled();
     fireEvent.click(view.getByRole('button', { name: 'Next story' }));
-    expect(select).toHaveBeenCalledWith(1);
+    expect(select).toHaveBeenCalledTimes(2);
   });
   it('hides an empty story tray', () => {
     expect(render(<StoriesTray stories={[]} />).container.firstChild).toBeNull();

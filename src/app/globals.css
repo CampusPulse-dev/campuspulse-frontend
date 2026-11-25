@@ -71,17 +71,6 @@ main {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  ::view-transition-group(.poster-morph),
-  ::view-transition-old(.poster-morph),
-  ::view-transition-new(.poster-morph) {
-    animation-duration: 0s !important;
-  }
-}
-
-/* Feed card → event hero poster morph, within the 150–220ms motion budget. */
-::view-transition-group(.poster-morph) {
-  animation-duration: 220ms;
-  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 button,

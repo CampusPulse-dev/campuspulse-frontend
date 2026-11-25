@@ -149,6 +149,29 @@ function fillStepTwo() {
 }
 
 describe('EventWizard (S5-01)', () => {
+  it('restores the last edit when navigating away before the autosave debounce', () => {
+    const autosaveKey = 'wizard:departure-test';
+    const wizard = () => (
+      <EventWizard
+        autosaveKey={autosaveKey}
+        canPublish
+        parentOptions={[]}
+        onSaveDraft={vi.fn()}
+        onPublish={vi.fn()}
+      />
+    );
+    localStorage.removeItem(autosaveKey);
+    const original = render(wizard());
+    fillStepOne();
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Last edit' } });
+    original.unmount();
+    const restored = render(wizard());
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Last edit');
+    fireEvent.click(screen.getByRole('button', { name: 'Start over' }));
+    restored.unmount();
+    expect(localStorage.getItem(autosaveKey)).toBeNull();
+  });
+
   it('blocks step 1 until a category is chosen', async () => {
     renderWizard();
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));

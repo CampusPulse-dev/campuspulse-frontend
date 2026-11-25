@@ -192,6 +192,7 @@ test('L15 event cancellation persists and updates public state', async ({
   await session(page, s, hub(s));
   await page.getByLabel('Cancellation reason').fill('Synthetic acceptance cancellation');
   await page.getByRole('button', { name: 'Cancel event and notify attendees' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel event', exact: true }).click();
   await expect(page.getByText('Cancelled', { exact: true }).first()).toBeVisible();
   const event = await request.get(`${API}/api/v1/events/${s.eventSlug}`);
   expect((await event.json()).status).toBe('CANCELLED');
@@ -438,6 +439,7 @@ test('L29 sign out removes private offline ticket and scanner caches', async ({
   await page.goto('/settings');
   expect(await privateStorageCounts(page)).toEqual({ passes: 1, packs: 1, scans: 1 });
   await page.getByRole('button', { name: 'Sign out and clear cached tickets' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect
     .poll(async () => (await page.context().cookies()).some((c) => c.name === 'cp_refresh'))
     .toBe(false);

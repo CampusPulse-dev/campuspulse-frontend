@@ -52,6 +52,8 @@ export function EventDetailView({
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [afterPartyAdded, setAfterPartyAdded] = useState(false);
+  const [afterPartyBusy, setAfterPartyBusy] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
   const [personalizedFriends, setPersonalizedFriends] = useState<{
     forKey: string;
     friends: EnrichedEvent['friendsGoing'];
@@ -159,7 +161,8 @@ export function EventDetailView({
   }, [user, isSignedOutPreview]);
 
   async function handleAddAfterParty() {
-    if (!event.linkedAfterParty) return;
+    if (!event.linkedAfterParty || afterPartyBusy) return;
+    setAfterPartyBusy(true);
     try {
       const target = await fetchEventBySlug(event.linkedAfterParty.slug);
       if (!target) throw new Error('After-party unavailable.');
@@ -168,6 +171,8 @@ export function EventDetailView({
       pushToast('After-party added to Your Night.', 'success');
     } catch (error) {
       setActionError(error instanceof Error ? error.message : 'Please retry.');
+    } finally {
+      setAfterPartyBusy(false);
     }
   }
 
@@ -186,6 +191,7 @@ export function EventDetailView({
   async function handleToggleInterested() {
     try {
       const added = await toggleInterested(event.id);
+      if (added === null) return;
       pushToast(added ? 'Saved. Find it under Tickets → Saved.' : 'Removed from Saved.', 'info');
     } catch (e) {
       setActionError(e instanceof Error ? e.message : 'Unable to save event.');
@@ -194,11 +200,12 @@ export function EventDetailView({
 
   async function handleReportSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!reportReason.trim()) return;
+    if (!reportReason.trim() || reportBusy) return;
     if (!user) {
       setActionError('Sign in to submit a report.');
       return;
     }
+    setReportBusy(true);
     try {
       if (!DEMO_MODE)
         await apiFetch('/reports', {
@@ -209,6 +216,8 @@ export function EventDetailView({
     } catch {
       setActionError('Report could not be submitted. Please retry.');
       return;
+    } finally {
+      setReportBusy(false);
     }
     setShowReportModal(false);
     setReportReason('');
@@ -384,7 +393,12 @@ export function EventDetailView({
                   : 'Checked-in guests only'}
             </p>
             {!afterPartyAdded ? (
-              <Button variant="secondary" size="sm" onClick={handleAddAfterParty}>
+              <Button
+                variant="secondary"
+                size="sm"
+                isLoading={afterPartyBusy}
+                onClick={handleAddAfterParty}
+              >
                 Add to Your Night
               </Button>
             ) : (
@@ -482,7 +496,12 @@ export function EventDetailView({
               Add to calendar
             </Button>
             {event.linkedAfterParty && !afterPartyAdded ? (
-              <Button variant="secondary" fullWidth onClick={handleAddAfterParty}>
+              <Button
+                variant="secondary"
+                fullWidth
+                isLoading={afterPartyBusy}
+                onClick={handleAddAfterParty}
+              >
                 Add the after-party
               </Button>
             ) : null}
@@ -506,7 +525,7 @@ export function EventDetailView({
             onChange={(e) => setReportReason(e.target.value)}
             placeholder="Tell us what needs attention."
           />
-          <Button type="submit" variant="danger" fullWidth>
+          <Button type="submit" variant="danger" fullWidth isLoading={reportBusy}>
             Submit Report
           </Button>
         </form>

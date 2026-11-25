@@ -84,20 +84,6 @@
   width: 100%;
 }
 
-.progressActive {
-  width: 100%;
-  animation: storyProgress 5s linear forwards;
-}
-
-@keyframes storyProgress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
 .viewerHeader {
   display: flex;
   align-items: center;
@@ -236,6 +222,7 @@
 .progressActive {
   width: 100%;
   transform-origin: left;
+  transform: scaleX(0);
 }
 
 .viewerStage video[controls] {

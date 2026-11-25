@@ -21,9 +21,15 @@ export function OrganizerFollowButton({
   const [delta, setDelta] = useState(0);
 
   async function handleClick() {
+    // The button and count flip on this frame; a failure puts both back.
+    const step = isFollowing ? -1 : 1;
     try {
+      setDelta((prev) => prev + step);
       const nowFollowing = await toggleFollowOrganizer(organizerId);
-      setDelta((prev) => (nowFollowing ? prev + 1 : prev - 1));
+      if (nowFollowing === null) {
+        setDelta((prev) => prev - step);
+        return;
+      }
       pushToast(
         nowFollowing
           ? 'Following club — new stories & events will appear first in your feed.'
@@ -31,6 +37,7 @@ export function OrganizerFollowButton({
         'info',
       );
     } catch (e) {
+      setDelta((prev) => prev - step);
       pushToast(e instanceof Error ? e.message : 'Unable to follow', 'warning');
     }
   }

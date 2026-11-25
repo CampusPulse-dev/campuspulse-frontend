@@ -2,7 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  AnimatePresence,
+  motion,
+  useIsPresent,
+  useReducedMotion,
+  type HTMLMotionProps,
+} from 'framer-motion';
 import { Avatar } from '@/components/ui/Avatar';
 import { Pause, Play, X } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
@@ -10,6 +16,23 @@ import type { EnrichedStory } from '@/lib/campus-data';
 import Image from 'next/image';
 import { useDialog } from '@/lib/use-dialog';
 import styles from './Stories.module.css';
+import { motionDuration, motionEase } from '@/lib/motion';
+
+const STORY_MS = 5000;
+
+const StoryOverlay = React.forwardRef<HTMLDivElement, HTMLMotionProps<'div'>>(
+  function StoryOverlay(props, ref) {
+    const present = useIsPresent();
+    return (
+      <motion.div
+        {...props}
+        ref={ref}
+        inert={!present || undefined}
+        aria-hidden={!present || undefined}
+      />
+    );
+  },
+);
 
 export interface StoryViewerProps {
   stories: EnrichedStory[];
@@ -24,10 +47,15 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
   const [paused, setPaused] = useState(false);
   const [holding, setHolding] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const remaining = useRef(5000);
+  const progress = useRef<HTMLDivElement>(null);
+  const elapsed = useRef(0);
+  const callbacks = useRef({ onSelectIndex, onClose });
+  useEffect(() => {
+    callbacks.current = { onSelectIndex, onClose };
+  }, [onSelectIndex, onClose]);
   const pressedAt = useRef(0);
   const video = useRef<HTMLVideoElement>(null);
-  const stopped = Boolean(reduced || paused || holding || hidden);
+  const stopped = paused || holding || hidden;
   useDialog(activeIndex !== null, ref, onClose);
   const activeStory = activeIndex !== null ? (stories[activeIndex] ?? null) : null;
 
@@ -52,25 +80,38 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, stories.length, onSelectIndex, onClose]);
   useEffect(() => {
-    remaining.current = 5000;
+    elapsed.current = 0;
+    if (progress.current) progress.current.style.transform = 'scaleX(0)';
   }, [activeStory?.id]);
   useEffect(() => {
     const visibility = () => setHidden(document.hidden);
+    visibility();
     document.addEventListener('visibilitychange', visibility);
     return () => document.removeEventListener('visibilitychange', visibility);
   }, []);
   useEffect(() => {
     if (activeIndex === null || stopped) return;
-    const started = performance.now();
+    const started = performance.now() - elapsed.current;
+    const elapsedSinceStart = () => Math.min(STORY_MS, performance.now() - started);
+    let frame = 0;
+    function draw() {
+      const time = elapsedSinceStart();
+      if (progress.current) progress.current.style.transform = `scaleX(${time / STORY_MS})`;
+      if (time < STORY_MS) frame = requestAnimationFrame(draw);
+    }
+    frame = requestAnimationFrame(draw);
     const timer = window.setTimeout(() => {
-      if (activeIndex < stories.length - 1) onSelectIndex(activeIndex + 1);
-      else onClose();
-    }, remaining.current);
+      cancelAnimationFrame(frame);
+      if (progress.current) progress.current.style.transform = 'scaleX(1)';
+      if (activeIndex < stories.length - 1) callbacks.current.onSelectIndex(activeIndex + 1);
+      else callbacks.current.onClose();
+    }, STORY_MS - elapsed.current);
     return () => {
       window.clearTimeout(timer);
-      remaining.current = Math.max(0, remaining.current - (performance.now() - started));
+      cancelAnimationFrame(frame);
+      elapsed.current = elapsedSinceStart();
     };
-  }, [activeIndex, activeStory?.id, stories.length, stopped, onSelectIndex, onClose]);
+  }, [activeIndex, activeStory?.id, stories.length, stopped]);
   useEffect(() => {
     if (!video.current) return;
     if (stopped) video.current.pause();
@@ -80,7 +121,7 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
   return (
     <AnimatePresence>
       {activeStory && activeIndex !== null ? (
-        <motion.div
+        <StoryOverlay
           ref={ref}
           tabIndex={-1}
           role="dialog"
@@ -89,12 +130,18 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
           className={styles.viewerOverlay}
           initial={reduced ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: reduced ? 0 : 0.15 }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 160 }}
+          exit={{
+            opacity: 0,
+            transition: { duration: reduced ? 0 : motionDuration.popover, ease: motionEase.in },
+          }}
+          transition={{ duration: reduced ? 0 : motionDuration.popover, ease: motionEase.out }}
+          drag={reduced ? false : 'y'}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.8 }}
+          dragMomentum={false}
+          dragTransition={{ bounceStiffness: 350, bounceDamping: 38 }}
           onDragEnd={(_, info) => {
-            if (info.offset.y > 90) {
+            if (info.offset.y > 90 || (info.offset.y >= 0 && info.velocity.y > 500)) {
               onClose();
             }
           }}
@@ -106,7 +153,7 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
                 <div key={story.id} className={styles.progressSegment}>
                   <div
                     key={activeStory.id}
-                    style={{ animationPlayState: stopped ? 'paused' : 'running' }}
+                    ref={idx === activeIndex ? progress : undefined}
                     className={`${styles.progressFill} ${
                       idx < activeIndex
                         ? styles.progressDone
@@ -233,7 +280,7 @@ export function StoryViewer({ stories, activeIndex, onSelectIndex, onClose }: St
               </div>
             ) : null}
           </div>
-        </motion.div>
+        </StoryOverlay>
       ) : null}
     </AnimatePresence>
   );

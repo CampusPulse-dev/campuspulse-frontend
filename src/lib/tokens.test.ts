@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { springGentle, springSnappy, fadeInUp } from './motion';
+import { personaReveal, fadeInUp, motionDuration } from './motion';
 
 const tokens = readFileSync(join(process.cwd(), 'src/styles/tokens.css'), 'utf8');
 const manifest = JSON.parse(
@@ -56,8 +56,8 @@ describe('design tokens', () => {
   });
 
   it('exports Framer Motion spring and fade presets using GPU-safe transforms', () => {
-    expect(springSnappy.type).toBe('spring');
-    expect(springGentle.type).toBe('spring');
+    expect(personaReveal).toMatchObject({ type: 'spring', bounce: 0.16 });
+    expect(tokens).toContain(`--dur-modal-out: ${motionDuration.exit * 1000}ms`);
     expect(fadeInUp.hidden).toMatchObject({ opacity: 0, y: 12 });
     expect(fadeInUp.visible).toMatchObject({ opacity: 1, y: 0 });
   });

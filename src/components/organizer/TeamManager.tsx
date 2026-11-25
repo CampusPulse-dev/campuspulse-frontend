@@ -265,7 +265,9 @@ export function TeamManagerView({
         isOpen={removing !== null}
         title={removing ? `Remove ${removing.displayName}?` : 'Remove manager'}
         subtitle="They lose access to this club straight away."
-        onClose={() => setRemoving(null)}
+        onClose={() => {
+          if (!removeBusy) setRemoving(null);
+        }}
       >
         {removeError ? (
           <p role="alert" className={styles.errorList}>
@@ -273,7 +275,12 @@ export function TeamManagerView({
           </p>
         ) : null}
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={() => setRemoving(null)}>
+          <Button
+            variant="secondary"
+            onClick={() => setRemoving(null)}
+            disabled={removeBusy}
+            data-autofocus
+          >
             Cancel
           </Button>
           <Button variant="danger" isLoading={removeBusy} onClick={confirmRemove}>

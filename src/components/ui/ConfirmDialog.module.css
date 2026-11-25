@@ -1,0 +1,14 @@
+.body {
+  display: grid;
+  gap: var(--space-4);
+}
+.error {
+  margin: 0;
+  color: var(--status-danger);
+}
+/* Cancel and the verb sit side by side at equal size; the verb on the right. */
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}

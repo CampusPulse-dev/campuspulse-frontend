@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Icon } from './Icon';
 import styles from './Field.module.css';
 
 interface FieldShellProps {
@@ -55,6 +57,36 @@ export function TextField({ label, hint, error, className = '', ...props }: Text
         aria-describedby={describedBy(id, hint, error)}
         {...props}
       />
+    </Shell>
+  );
+}
+
+/** A password input with a show/hide toggle, so people can check what they typed. */
+export function PasswordField({ label, hint, error, className = '', ...props }: TextFieldProps) {
+  const id = useId();
+  const [visible, setVisible] = useState(false);
+  return (
+    <Shell id={id} label={label} hint={hint} error={error}>
+      <div className={styles.passwordWrap}>
+        <input
+          id={id}
+          className={`${styles.control} ${styles.passwordControl} ${className}`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy(id, hint, error)}
+          {...props}
+          type={visible ? 'text' : 'password'}
+        />
+        <button
+          type="button"
+          className={styles.reveal}
+          aria-label={visible ? 'Hide password' : 'Show password'}
+          aria-pressed={visible}
+          aria-controls={id}
+          onClick={() => setVisible((value) => !value)}
+        >
+          <Icon icon={visible ? EyeOff : Eye} size={20} />
+        </button>
+      </div>
     </Shell>
   );
 }

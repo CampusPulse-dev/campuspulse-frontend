@@ -95,6 +95,31 @@ describe('session refresh in apiFetch (S1-02)', () => {
     expect(calls.filter((c) => c.url === '/auth/refresh')).toHaveLength(1);
   });
 
+  it('does not publish or replay a scoped write when refresh returns another account', async () => {
+    const api = await loadApi();
+    api.setSessionToken('other-active');
+    const changed = vi.fn();
+    api.onSessionChange(changed);
+    respond = (call) =>
+      call.url === '/auth/refresh' ? json(200, SESSION('different-owner')) : unauthorized();
+    await expect(
+      api.apiFetch(
+        '/friends/peer/respond',
+        {
+          method: 'POST',
+          headers: { Authorization: 'Bearer original' },
+        },
+        { userId: 'original-owner', isCurrent: () => true },
+      ),
+    ).rejects.toBeDefined();
+    expect(calls.map((call) => call.url)).toEqual(['/friends/peer/respond', '/auth/refresh']);
+    expect(calls[0]?.auth).toBe('Bearer original');
+    expect(changed).not.toHaveBeenCalled();
+    respond = () => json(200, {});
+    await api.apiFetch('/users/me');
+    expect(calls.at(-1)?.auth).toBe('Bearer other-active');
+  });
+
   it('ends the session when the refresh cookie is rejected', async () => {
     const api = await loadApi();
     api.setSessionToken('expired');

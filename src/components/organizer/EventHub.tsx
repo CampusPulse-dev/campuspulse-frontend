@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { TextLink } from '@/components/ui/TextLink';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import { Badge, CategoryPill } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { TextField, ToggleRow } from '@/components/ui/Field';
 import { ResourceState } from '@/components/attendee/Shared';
 import { downloadCsv } from '@/lib/csv';
@@ -145,7 +146,7 @@ export function EventHubView({
   const [exportError, setExportError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [reason, setReason] = useState('');
-  const [cancelling, setCancelling] = useState(false);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const group = (['live', 'upcoming', 'drafts', 'past'] as const).find(
     (key) => groupEvents([event], now)[key].length > 0,
   );
@@ -167,14 +168,16 @@ export function EventHubView({
 
   return (
     <div className={styles.page}>
-      <Link href={`/organizer/${data.organizerSlug}`} className={styles.muted}>
+      <TextLink href={`/organizer/${data.organizerSlug}`} className={styles.muted}>
         ← Back to dashboard
-      </Link>
+      </TextLink>
       <header className={styles.headerText}>
         <div className={styles.eyebrow}>{data.organizerName}</div>
         <h1>{event.title}</h1>
         {!DEMO_MODE && event.status !== 'CANCELLED' ? (
-          <Link href={`/organizer/${data.organizerSlug}/events/${event.id}/edit`}>Edit event</Link>
+          <TextLink href={`/organizer/${data.organizerSlug}/events/${event.id}/edit`}>
+            Edit event
+          </TextLink>
         ) : null}
         <div className={styles.eventMeta}>
           <CategoryPill category={event.category} />
@@ -289,21 +292,24 @@ export function EventHubView({
           <Button
             variant="danger"
             disabled={!reason.trim()}
-            isLoading={cancelling}
-            onClick={async () => {
-              setCancelling(true);
-              setExportError(null);
-              try {
-                await onCancel(reason.trim());
-              } catch (error) {
-                setExportError(error instanceof Error ? error.message : 'Cancellation failed.');
-              } finally {
-                setCancelling(false);
-              }
-            }}
+            onClick={() => setConfirmingCancel(true)}
           >
             Cancel event and notify attendees
           </Button>
+          <ConfirmDialog
+            open={confirmingCancel}
+            title={`Cancel ${event.title}?`}
+            subtitle={
+              event.rsvpCount > 0
+                ? `All ${event.rsvpCount} people who RSVP'd get your reason in a notification. This can't be undone.`
+                : "The event comes off the feed. This can't be undone."
+            }
+            confirmLabel="Cancel event"
+            onConfirm={() => onCancel(reason.trim())}
+            onClose={() => setConfirmingCancel(false)}
+          >
+            <p className={styles.stepSubtitle}>Reason: “{reason.trim()}”</p>
+          </ConfirmDialog>
         </section>
       ) : null}
     </div>

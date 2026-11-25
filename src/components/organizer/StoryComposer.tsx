@@ -2,7 +2,7 @@
 
 import { Trash2 } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
-import { Modal } from '@/components/ui/Modal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/Badge';
@@ -45,7 +45,6 @@ export function StoryComposerView({
   onDelete: (id: string) => Promise<void>;
 }) {
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [deleteBusy, setDeleteBusy] = useState(false);
   const [caption, setCaption] = useState('');
   const [eventId, setEventId] = useState('');
   const [mediaType, setMediaType] = useState<StoryMediaType | null>(null);
@@ -107,18 +106,6 @@ export function StoryComposerView({
       ]);
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function remove(id: string) {
-    try {
-      setDeleteBusy(true);
-      await onDelete(id);
-      setDeleting(null);
-    } catch (error) {
-      setErrors([error instanceof Error ? error.message : 'Could not delete the story.']);
-    } finally {
-      setDeleteBusy(false);
     }
   }
 
@@ -238,20 +225,14 @@ export function StoryComposerView({
           </ul>
         )}
       </section>
-      <Modal
-        isOpen={!!deleting}
+      <ConfirmDialog
+        open={!!deleting}
         title="Delete story?"
-        subtitle="This removes it from your active stories."
+        subtitle="It comes off your active stories for everyone. This can't be undone."
+        confirmLabel="Delete story"
+        onConfirm={() => (deleting ? onDelete(deleting) : undefined)}
         onClose={() => setDeleting(null)}
-      >
-        <Button
-          variant="danger"
-          isLoading={deleteBusy}
-          onClick={() => deleting && void remove(deleting)}
-        >
-          Delete story
-        </Button>
-      </Modal>
+      />
     </div>
   );
 }

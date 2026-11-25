@@ -21,3 +21,27 @@ export function isOptimizableImage(url: string, hosts = mediaHosts()): boolean {
     return false;
   }
 }
+
+/**
+ * Seeds and the API store our own static covers as absolute URLs on the site
+ * (`https://campuspulse.ng/demo/…`). As paths they go through the optimizer
+ * instead of shipping the full-size original.
+ */
+export function sameSiteImage(
+  url: string,
+  site = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://campuspulse.ng',
+): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.origin === new URL(site).origin) return parsed.pathname + parsed.search;
+  } catch {
+    // Relative paths and junk fall through unchanged.
+  }
+  return url;
+}
+
+/** `src` and `unoptimized` for next/image: own-site paths and allowlisted hosts are optimized. */
+export function imageSource(url: string, hosts = mediaHosts()) {
+  const src = sameSiteImage(url);
+  return { src, unoptimized: !isOptimizableImage(src, hosts) };
+}
