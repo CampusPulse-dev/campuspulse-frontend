@@ -28,6 +28,28 @@
   border-color: var(--status-danger);
 }
 
+.passwordWrap {
+  position: relative;
+}
+.passwordControl {
+  padding-right: 3rem;
+}
+.reveal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 100%;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
 .textarea {
   padding: var(--space-3);
   min-height: 7rem;
@@ -110,7 +132,7 @@
   height: 20px;
   border-radius: 50%;
   background: var(--color-bg);
-  transition: transform 160ms var(--ease-ui);
+  transition: transform var(--dur-move) var(--ease-in-out);
 }
 .switchInput:checked + .switchTrack {
   background: var(--color-text);

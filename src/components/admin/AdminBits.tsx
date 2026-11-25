@@ -122,6 +122,7 @@ export function ConfirmDialog({
             value={note}
             maxLength={NOTE_MAX}
             error={problem}
+            data-autofocus
             onChange={(event) => setNote(event.target.value)}
           />
         ) : problem ? (
@@ -130,7 +131,12 @@ export function ConfirmDialog({
           </p>
         ) : null}
         <div className={`${styles.actions} ${styles.actionsEnd}`}>
-          <Button variant="secondary" onClick={close} disabled={busy}>
+          <Button
+            variant="secondary"
+            onClick={close}
+            disabled={busy}
+            data-autofocus={request?.note === 'none' ? true : undefined}
+          >
             Cancel
           </Button>
           <Button type="submit" variant={request?.danger ? 'danger' : 'primary'} isLoading={busy}>

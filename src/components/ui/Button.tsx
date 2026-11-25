@@ -1,4 +1,5 @@
-import React from 'react';
+'use client';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './Button.module.css';
 
 export type ButtonVariant =
@@ -17,6 +18,36 @@ export interface ButtonProps extends Omit<
   ref?: React.Ref<HTMLButtonElement>;
 }
 
+/** A spinner shows only once a request has taken this long… */
+const SPINNER_DELAY_MS = 300;
+/** …and, once shown, stays at least this long, so it never flickers. */
+const SPINNER_MIN_MS = 500;
+
+/**
+ * The trigger disables on the same frame as `isLoading` (no double submits),
+ * but the spinner waits 300 ms and then holds 500 ms: fast requests never
+ * flash one, slow ones don't flicker.
+ */
+function useDelayedSpinner(isLoading: boolean) {
+  const [visible, setVisible] = useState(false);
+  const shownAt = useRef(0);
+  useEffect(() => {
+    if (isLoading) {
+      if (visible) return;
+      const timer = window.setTimeout(() => {
+        shownAt.current = Date.now();
+        setVisible(true);
+      }, SPINNER_DELAY_MS);
+      return () => window.clearTimeout(timer);
+    }
+    if (!visible) return;
+    const left = SPINNER_MIN_MS - (Date.now() - shownAt.current);
+    const timer = window.setTimeout(() => setVisible(false), Math.max(0, left));
+    return () => window.clearTimeout(timer);
+  }, [isLoading, visible]);
+  return visible;
+}
+
 /**
  * Press feedback is a CSS transform (see Button.module.css), not a motion
  * component: the button ships on every public page, and an animation library
@@ -33,7 +64,8 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const isDisabled = Boolean(disabled || isLoading);
+  const spinning = useDelayedSpinner(isLoading);
+  const isDisabled = Boolean(disabled || isLoading || spinning);
 
   const classes = [
     styles.button,
@@ -50,10 +82,10 @@ export function Button({
       type={type}
       className={classes}
       disabled={isDisabled}
-      aria-busy={isLoading ? 'true' : undefined}
+      aria-busy={isLoading || spinning ? 'true' : undefined}
       {...props}
     >
-      {isLoading ? <span className={styles.spinner} aria-hidden="true" /> : null}
+      {spinning ? <span className={styles.spinner} aria-hidden="true" /> : null}
       <span className={styles.label}>{children}</span>
     </button>
   );

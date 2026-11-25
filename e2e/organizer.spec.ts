@@ -99,6 +99,9 @@ test('a verified club owner can create a draft and publish an event', async ({ p
   await expect(page.getByLabel('Club verification status')).toHaveCount(0);
 
   await page.getByRole('main').getByRole('link', { name: 'New event' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByLabel('Category')).toBeFocused();
+  await expect(page.getByText('Choose a category.')).toBeVisible();
   await fillEventBasics(page, 'Playwright Draft Night');
   await page.getByRole('button', { name: 'Save Draft' }).click();
   await expect(page.getByRole('heading', { name: 'Draft saved' })).toBeVisible();
@@ -119,6 +122,13 @@ test('a verified club owner can create a draft and publish an event', async ({ p
     path: test.info().outputPath('organizer-dashboard.png'),
     fullPage: true,
   });
+  const campusFeed = page
+    .getByRole('link', { name: 'Campus feed', exact: true })
+    .filter({ visible: true });
+  if (test.info().project.name === 'mobile-safari') {
+    await campusFeed.click();
+    await expect(page).toHaveURL(/\/explore$/);
+  }
 });
 
 test('an unverified club sees its review status and cannot publish', async ({ page }) => {

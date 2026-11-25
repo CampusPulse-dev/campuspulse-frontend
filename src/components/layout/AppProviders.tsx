@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/lib/auth-context';
 import { ToastProvider } from '@/components/ui/Toast';
+import { FriendIntentProvider } from '@/components/attendee/FriendIntentProvider';
 import { ServerViewSync } from './ServerViewSync';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
@@ -31,7 +32,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ServerViewSync />
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          <FriendIntentProvider>{children}</FriendIntentProvider>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

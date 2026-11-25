@@ -9,6 +9,7 @@ import {
   ChartNoAxesCombined,
   CalendarDays,
   Camera,
+  House,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -96,6 +97,10 @@ export function OrganizerShell({ children, slug, userDisplayName }: OrganizerShe
         <header className={styles.mobileHeader}>
           <Link href="/organizer" className={styles.mobileBrand}>
             <BrandLockup />
+          </Link>
+          <Link href="/explore" className={styles.feedLink}>
+            <Icon icon={House} size={18} />
+            Campus feed
           </Link>
         </header>
 

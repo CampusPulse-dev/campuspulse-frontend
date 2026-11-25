@@ -11,6 +11,50 @@ async function signIn(page: Page, origin = '') {
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/$/, { timeout: 20000 });
 }
+
+test('friend Undo restores the row and a queued block survives a reload', async ({ page }) => {
+  await signIn(page);
+  await page.goto('/friends');
+  const search = page.getByRole('searchbox', { name: 'Search people' });
+  await search.fill('Adaeze Obi');
+  await page.getByRole('button', { name: 'Block', exact: true }).click();
+  await expect(page.getByText('Block queued.')).toBeVisible();
+  await expect(page.getByText('Adaeze Obi', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(page.getByText('Adaeze Obi', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Block', exact: true }).click();
+  await expect(page.getByText('Block queued.')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Kunle Bello', { exact: true })).toBeVisible();
+  await expect(page.getByText('Adaeze Obi', { exact: true })).toHaveCount(0);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const user = JSON.parse(localStorage.getItem('demo:user') ?? '{}');
+          const friends: { status: string; user: { displayName: string } }[] = JSON.parse(
+            localStorage.getItem(`demo:friends:${user.id}`) ?? '[]',
+          );
+          return friends.find((entry) => entry.user.displayName === 'Adaeze Obi')?.status;
+        }),
+      { timeout: 45_000 },
+    )
+    .toBe('BLOCKED');
+});
+
+test('onboarding keeps one accessible step and can go back with reduced motion', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/onboarding');
+  await expect(page.getByRole('heading', { name: 'What are you into?' })).toBeVisible();
+  await page.getByRole('button', { name: /Continue to Cohort/ }).click();
+  await expect(page.getByText('Step 2 of 4', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'What are you into?' })).toHaveCount(0);
+  await page.getByRole('button', { name: /Back/ }).click();
+  await expect(page.getByRole('heading', { name: 'What are you into?' })).toBeVisible();
+});
 test('signed-out public event is rendered in HTML and requires sign-in for RSVP', async ({
   page,
   request,
@@ -55,6 +99,7 @@ test('demo RSVP produces a labelled QR pass that survives a full offline reload'
     else await context.setOffline(false);
     await page.goto(origin + '/settings');
     await page.getByRole('button', { name: 'Sign out and clear cached tickets' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Sign out', exact: true }).click();
     await expect(page.getByRole('link', { name: 'Sign in →', exact: true })).toBeVisible();
     await page.getByRole('link', { name: 'Sign in →', exact: true }).click();
     await page.getByLabel('Student or Personal Email').fill('tobi@stu.ui.edu.ng');

@@ -12,18 +12,26 @@ Retain the adjacent SIL Open Font License files.
 
 ## Shipped subsets
 
-The full files total 430 KB. On a throttled mobile connection, that alone held the public pages' largest paint past the PRD's 2.5 s budget. `next/font/local` serves these subsets instead, built from the sources above with `scripts/subset-fonts.py` (fontTools + brotli):
+The full files total 430 KB. On a throttled mobile connection, that alone held the public pages' largest paint well past the PRD's 2.5 s budget. `next/font/local` serves these subsets instead, built from the sources above by `scripts/subset-fonts.py` (fontTools + brotli).
 
-| Shipped file             | Size  | SHA256                                                           |
-| ------------------------ | ----- | ---------------------------------------------------------------- |
-| InterLatin.woff2         | 88 KB | 0cfbed2f386534eb386aac709c400ddd572045fc3754f2ab9911e933c4b84701 |
-| GoodlyLatin.woff2        | 26 KB | 4f580c7899d5707b5b2bfdf56485d318e8d5a19df7783a64951af36e4b33cef5 |
-| JetBrainsMonoLatin.woff2 | 20 KB | 4954c1f2c583b3cdd4df474de749609f62279107b058778e092e49df47c4078f |
+Every page downloads only the three **core** files: 58 KB in total.
 
-All three cover Basic Latin, Latin-1, Latin Extended-A, general punctuation, currency (₦), arrows, and ™ − ∕ ✓.
+| Shipped file            | Size  | Loaded                      | SHA256                                                           |
+| ----------------------- | ----- | --------------------------- | ---------------------------------------------------------------- |
+| InterCore.woff2         | 26 KB | every page (preloaded)      | 2f914f8758ccf7a7915904e79e5b6a40719f76a30c9da12e153489903b96ca09 |
+| GoodlyCore.woff2        | 18 KB | every page (preloaded)      | b76c991776604b0f65228bd58886d1ccaa68673d1cc671858ee93bb88a27a845 |
+| JetBrainsMonoCore.woff2 | 14 KB | when mono text renders      | 2ddd9d2b6d3e38e7acf0dc2c57615ac5b7c7e109f3da8ef11a377fde6bf1a0e9 |
+| InterExt.woff2          | 33 KB | only when the page needs it | bbade0c55038f4a07713beb35777f164fc5ca1e9d342730915eeb65599802853 |
 
-- **Inter** (body and UI) also keeps the combining diacritics and Latin Extended Additional for Yoruba (ẹ ọ ṣ, tone marks). Weight stays variable (100–900); optical size is pinned at 14.
-- **Goodly** (headings) keeps `kern` and `liga`. Yoruba letters in a heading fall back to Inter.
-- **JetBrains Mono** (counters, timestamps, pass IDs) drops the programming ligatures (`calt`). Weight stays variable (100–800).
+- **Core** covers Basic Latin, Latin-1 and the symbols the UI uses: dashes, quotes, ellipsis, ₦, €, ™, ← →, −, ✓.
+- **InterExt** covers everything else the old subset had:
+  - Yoruba letters and tone marks (ẹ ọ ṣ, combining accents).
+  - Latin Extended-A.
+  - Wider punctuation, currency and arrows.
 
-Characters outside a subset, such as emoji or other scripts, fall back to the next font in the stack.
+  Its `@font-face` carries a `unicode-range` generated from the file, so a page downloads it only when it uses one of those characters. It comes first in the body font stack and claims only those characters.
+
+- **Weights:** Inter and JetBrains Mono keep a variable weight axis, trimmed to 400–700 because the CSS uses only normal, 500, 600 and 700. Inter's optical size is pinned at 14.
+- **Features:** Goodly keeps `kern` and `liga`. JetBrains Mono drops its programming ligatures (`calt`).
+
+Characters outside every subset, such as emoji or other scripts, fall back to the system font.

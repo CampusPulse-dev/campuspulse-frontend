@@ -2,9 +2,10 @@
 import { SelectField, ToggleRow } from '@/components/ui/Field';
 
 import React, { useState } from 'react';
-import { MotionConfig, AnimatePresence, motion } from 'framer-motion';
+import { MotionConfig, AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { fadeInUp, springBouncy } from '@/lib/motion';
+import { personaReveal } from '@/lib/motion';
+import { WizardStep } from '@/components/ui/WizardStep';
 import { SEED_ORGANIZERS, UI_FACULTIES, UI_HALLS, VIBE_OPTIONS } from '@/lib/campus-data';
 import type { OutingRhythm, PersonaProfile } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
@@ -54,11 +55,14 @@ export function derivePersonaBadge(input: {
 }
 
 export interface OnboardingWizardProps {
-  onComplete: (profile: PersonaProfile) => void;
+  /** May return a promise; the finish and skip buttons stay pending until it settles. */
+  onComplete: (profile: PersonaProfile) => void | Promise<void>;
 }
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+  const reduced = useReducedMotion();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [finishing, setFinishing] = useState<'skip' | 'finish' | null>(null);
   const [vibes, setVibes] = useState<string[]>(['Concerts & live music']);
   const [hall, setHall] = useState<string>(UI_HALLS[0]);
   const [faculty, setFaculty] = useState<string>(UI_FACULTIES[0]);
@@ -86,8 +90,15 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     );
   }
 
+  /** Hand off the persona and hold the trigger until the save settles. */
+  function complete(kind: 'skip' | 'finish', profile: PersonaProfile) {
+    if (finishing) return;
+    setFinishing(kind);
+    void Promise.resolve(onComplete(profile)).finally(() => setFinishing(null));
+  }
+
   function handleSkip() {
-    onComplete({
+    complete('skip', {
       skipped: true,
       vibes,
       hall,
@@ -101,7 +112,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   }
 
   function handleFinish() {
-    onComplete({
+    complete('finish', {
       skipped: false,
       vibes,
       hall,
@@ -118,29 +129,32 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     <MotionConfig reducedMotion="user">
       <div className={styles.onboardingCard}>
         <div className={styles.onboardingTopBar}>
-          <div className={styles.stepDots} aria-label={`Step ${step} of 4`}>
-            {[1, 2, 3, 4].map((idx) => (
-              <span
-                key={idx}
-                className={`${styles.stepDot} ${idx <= step ? styles.stepDotActive : ''}`}
-              />
-            ))}
+          <div className={styles.progress}>
+            <div className={styles.stepDots} aria-hidden="true">
+              {[1, 2, 3, 4].map((idx) => (
+                <span
+                  key={idx}
+                  className={`${styles.stepDot} ${idx <= step ? styles.stepDotActive : ''}`}
+                />
+              ))}
+            </div>
+            <span className={styles.stepCount} aria-live="polite">
+              Step {step} of 4
+            </span>
           </div>
-          <button type="button" className={styles.skipButton} onClick={handleSkip}>
+          <button
+            type="button"
+            className={styles.skipButton}
+            onClick={handleSkip}
+            disabled={finishing !== null}
+          >
             Skip →
           </button>
         </div>
 
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout" initial={false}>
           {step === 1 ? (
-            <motion.section
-              key="step-1"
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className={styles.stepSection}
-            >
+            <WizardStep key="step-1" className={styles.stepSection}>
               <h1 className={styles.stepTitle}>What are you into?</h1>
               <p className={styles.stepSubtitle}>
                 Pick up to 5 vibes so your &ldquo;For You&rdquo; row and Tonight chips match your
@@ -169,18 +183,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   Continue to Cohort →
                 </Button>
               </div>
-            </motion.section>
+            </WizardStep>
           ) : null}
 
           {step === 2 ? (
-            <motion.section
-              key="step-2"
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className={styles.stepSection}
-            >
+            <WizardStep key="step-2" className={styles.stepSection}>
               <h1 className={styles.stepTitle}>Your Campus Cohort</h1>
               <p className={styles.stepSubtitle}>
                 Used for Hall inter-match alerts and mutual friend suggestions—never shared
@@ -268,18 +275,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   Continue to Rhythm →
                 </Button>
               </div>
-            </motion.section>
+            </WizardStep>
           ) : null}
 
           {step === 3 ? (
-            <motion.section
-              key="step-3"
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className={styles.stepSection}
-            >
+            <WizardStep key="step-3" className={styles.stepSection}>
               <h1 className={styles.stepTitle}>When do you usually go out?</h1>
               <p className={styles.stepSubtitle}>
                 We&apos;ll time your event reminders and Tonight suggestions around your schedule.
@@ -332,23 +332,16 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   Reveal my persona
                 </Button>
               </div>
-            </motion.section>
+            </WizardStep>
           ) : null}
 
           {step === 4 ? (
-            <motion.section
-              key="step-4"
-              variants={fadeInUp}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className={styles.stepSection}
-            >
+            <WizardStep key="step-4" className={styles.stepSection}>
               <motion.div
                 className={styles.personaRevealCard}
-                initial={{ scale: 0.85, opacity: 0 }}
+                initial={reduced ? false : { scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={springBouncy}
+                transition={reduced ? { duration: 0 } : personaReveal}
               >
                 <span className={styles.personaEmoji} aria-hidden="true">
                   {badge.emoji}
@@ -364,11 +357,24 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               </motion.div>
 
               <div className={styles.stepActions}>
-                <Button fullWidth size="lg" onClick={handleFinish}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setStep(3)}
+                  disabled={finishing !== null}
+                >
+                  ← Back
+                </Button>
+                <Button
+                  fullWidth
+                  size="lg"
+                  onClick={handleFinish}
+                  isLoading={finishing === 'finish'}
+                  disabled={finishing === 'skip'}
+                >
                   Jump into Feed →
                 </Button>
               </div>
-            </motion.section>
+            </WizardStep>
           ) : null}
         </AnimatePresence>
       </div>

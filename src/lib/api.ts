@@ -114,13 +114,11 @@ let refreshInFlight: Promise<SessionResponse> | null = null;
  */
 export function refreshSession(): Promise<SessionResponse> {
   refreshInFlight ??= (async () => {
-    const run = () => send<SessionResponse>('/auth/refresh', { method: 'POST' });
-    const session =
-      typeof navigator !== 'undefined' && navigator.locks
-        ? await navigator.locks.request('cp-auth-refresh', run)
-        : await run();
-    sessionToken = session.accessToken;
-    return session;
+    const signal = AbortSignal.timeout(15_000);
+    const run = () => send<SessionResponse>('/auth/refresh', { method: 'POST', signal });
+    return typeof navigator !== 'undefined' && navigator.locks
+      ? await navigator.locks.request('cp-auth-refresh', { signal }, run)
+      : await run();
   })().finally(() => {
     refreshInFlight = null;
   });
@@ -142,9 +140,14 @@ function isUnauthorized(error: unknown): boolean {
  * the OpenAPI spec, so a mismatch is caught when the frontend regenerates
  * and typechecks in CI, not here at request time. See ADR 0001.
  */
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+  scope?: { userId: string; isCurrent: () => boolean },
+): Promise<T> {
+  if (scope && !scope.isCurrent()) throw new DOMException('Account changed', 'AbortError');
   try {
-    return await send<T>(path, init);
+    return await send<T>(path, init, !scope);
   } catch (error) {
     const hadCredentials =
       sessionToken !== null ||
@@ -156,6 +159,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
       typeof window === 'undefined' ||
       !isUnauthorized(error) ||
       !hadCredentials ||
+      init?.signal?.aborted ||
+      (scope && !scope.isCurrent()) ||
       path.startsWith('/auth/')
     ) {
       throw error;
@@ -165,26 +170,36 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     try {
       session = await refreshSession();
     } catch (refreshError) {
-      if (isUnauthorized(refreshError)) {
+      if (
+        isUnauthorized(refreshError) &&
+        (!scope || (scope.isCurrent() && !init?.signal?.aborted))
+      ) {
         sessionToken = null;
         for (const listener of sessionListeners) listener(null);
       }
       throw error;
     }
+    if (scope && (session.user.id !== scope.userId || !scope.isCurrent() || init?.signal?.aborted))
+      throw error;
+    sessionToken = session.accessToken;
     for (const listener of sessionListeners) listener(session);
-    return send<T>(path, init);
+    if (!scope) return send<T>(path, init);
+    const headers = new Headers(init?.headers);
+    headers.set('authorization', `Bearer ${session.accessToken}`);
+    return send<T>(path, { ...init, headers }, false);
   }
 }
 
-async function send<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers({ 'content-type': 'application/json', ...init?.headers });
-  if (DEV_AUTH_MODE) {
+async function send<T>(path: string, init?: RequestInit, useCurrentSession = true): Promise<T> {
+  const headers = new Headers(init?.headers);
+  if (!headers.has('content-type')) headers.set('content-type', 'application/json');
+  if (useCurrentSession && DEV_AUTH_MODE) {
     // Explicit local-development mode (NEXT_PUBLIC_DEV_AUTH): the backend must
     // also run with DEV_AUTH_ENABLED=true, which it refuses to do in production.
     headers.delete('authorization');
     const devEmail = getDevAuthEmail();
     if (devEmail) headers.set('X-Dev-User', devEmail);
-  } else if (LIVE_SESSIONS && sessionToken && !path.startsWith('/auth/')) {
+  } else if (useCurrentSession && LIVE_SESSIONS && sessionToken && !path.startsWith('/auth/')) {
     // Always the current token: callers may still hold one from before a refresh.
     headers.set('authorization', `Bearer ${sessionToken}`);
   }
@@ -256,6 +271,7 @@ export async function apiFetchBlob(path: string): Promise<Blob> {
     } catch {
       throw error;
     }
+    sessionToken = session.accessToken;
     for (const listener of sessionListeners) listener(session);
     return attempt();
   }
