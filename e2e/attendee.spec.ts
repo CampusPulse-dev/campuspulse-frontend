@@ -99,6 +99,7 @@ test('demo RSVP produces a labelled QR pass that survives a full offline reload'
     else await context.setOffline(false);
     await page.goto(origin + '/settings');
     await page.getByRole('button', { name: 'Sign out and clear cached tickets' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Sign out', exact: true }).click();
     await expect(page.getByRole('link', { name: 'Sign in →', exact: true })).toBeVisible();
     await page.getByRole('link', { name: 'Sign in →', exact: true }).click();
     await page.getByLabel('Student or Personal Email').fill('tobi@stu.ui.edu.ng');
