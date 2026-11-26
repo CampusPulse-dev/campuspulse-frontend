@@ -50,6 +50,8 @@ export function EventDetailView({
   const [showDirections, setShowDirections] = useState(false);
   const [showConfirmSheet, setShowConfirmSheet] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  // Pops only on a tap that saves; reloading an already-saved event stays still.
+  const [justSaved, setJustSaved] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [afterPartyAdded, setAfterPartyAdded] = useState(false);
   const [afterPartyBusy, setAfterPartyBusy] = useState(false);
@@ -189,6 +191,7 @@ export function EventDetailView({
   }
 
   async function handleToggleInterested() {
+    if (!isInterested) setJustSaved(true);
     try {
       const added = await toggleInterested(event.id);
       if (added === null) return;
@@ -434,8 +437,9 @@ export function EventDetailView({
               type="button"
               aria-label="Save event"
               aria-pressed={isInterested}
-              className={styles.interestedBtn}
+              className={[styles.interestedBtn, justSaved ? styles.savePop : ''].join(' ')}
               onClick={handleToggleInterested}
+              onAnimationEnd={() => setJustSaved(false)}
             >
               <Icon icon={Bookmark} fill={isInterested ? 'currentColor' : 'none'} />
             </button>
@@ -479,11 +483,20 @@ export function EventDetailView({
       >
         <div className={styles.confirmSheetBody}>
           <div className={styles.confirmPassSummary}>
+            {savedTicket?.status === 'CONFIRMED' ? (
+              // Rare, high-stakes moment: the tick draws once the sheet has landed.
+              <svg className={styles.confirmMark} viewBox="0 0 48 48" aria-hidden="true">
+                <circle cx="24" cy="24" r="21" pathLength={1} />
+                <path d="M15 24.5l6 6 12-13" pathLength={1} />
+              </svg>
+            ) : null}
             <strong>{event.title}</strong>
             <span>
               {wat.compactLabel} · {event.venueName}
             </span>
-            <Badge variant="success">Saved on this device</Badge>
+            <span className={styles.confirmSaved}>
+              <Badge variant="success">Saved on this device</Badge>
+            </span>
           </div>
 
           <div className={styles.confirmSheetActions}>

@@ -27,6 +27,8 @@ export function EventCard({ event, compact = false }: EventCardProps) {
   const { pushToast } = useToast();
   const [justLockedIn, setJustLockedIn] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Pops only on a tap that saves; already-saved cards stay still on load.
+  const [justSaved, setJustSaved] = useState(false);
 
   const isInterested = interestedEventIds.includes(event.id);
   const existingTicket = getOfflineTicketForEvent(event.id);
@@ -73,6 +75,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     }
   }
   async function interest() {
+    if (!isInterested) setJustSaved(true);
     try {
       await toggleInterested(event.id);
     } catch (e) {
@@ -112,10 +115,11 @@ export function EventCard({ event, compact = false }: EventCardProps) {
         </div>
         <button
           type="button"
-          className={styles.starBtn}
+          className={[styles.starBtn, justSaved ? styles.savePop : ''].join(' ')}
           aria-pressed={isInterested}
           aria-label="Save event"
           onClick={interest}
+          onAnimationEnd={() => setJustSaved(false)}
         >
           <Icon icon={Bookmark} fill={isInterested ? 'currentColor' : 'none'} />
         </button>

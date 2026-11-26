@@ -18,7 +18,8 @@ import { Badge } from '@/components/ui/Badge';
 import { TextLink } from '@/components/ui/TextLink';
 import { Tabs } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
-import { EventCardsSkeleton } from '@/components/ui/Skeleton';
+import { EventCardsSkeleton, Skeleton } from '@/components/ui/Skeleton';
+import feedback from '@/components/ui/Feedback.module.css';
 import { EventCard } from '@/components/events/EventCard';
 import { AccountGate, PageFrame, ResourceState, styles } from './Shared';
 export function Wallet({ rsvpId }: { rsvpId?: string }) {
@@ -180,11 +181,17 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
               </Badge>
               {pass.status === 'CONFIRMED' && svg ? (
                 <div
-                  className={styles.qr}
+                  className={`${styles.qr} ${styles.qrReveal}`}
                   role="img"
                   aria-label="Event entry QR code"
                   dangerouslySetInnerHTML={{ __html: svg }}
                 />
+              ) : pass.status === 'CONFIRMED' ? (
+                // Same frame as the code, so nothing jumps when it lands.
+                <div className={styles.qr} role="status">
+                  <Skeleton aspectRatio="1 / 1" rounded="sm" />
+                  <span className={feedback.visuallyHidden}>Preparing QR…</span>
+                </div>
               ) : (
                 <p>
                   {pass.status === 'WAITLISTED'

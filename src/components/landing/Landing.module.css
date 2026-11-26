@@ -472,3 +472,46 @@
 .scannerStates strong {
   color: var(--color-text);
 }
+
+/*
+ * Feature sections settle in as they scroll into view. Scroll-driven and CSS-only:
+ * where view timelines are unsupported (or JS is off) everything simply shows.
+ */
+@supports (animation-timeline: view()) {
+  .steps > li,
+  .productComposition > *,
+  .proofLines > li,
+  .scannerStates > div {
+    animation: landingSettle linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+  .steps > li:nth-child(2),
+  .productComposition > :nth-child(2),
+  .proofLines > li:nth-child(2),
+  .scannerStates > div:nth-child(2) {
+    animation-range: entry 8% entry 48%;
+  }
+  .steps > li:nth-child(3),
+  .productComposition > :nth-child(3),
+  .proofLines > li:nth-child(3),
+  .scannerStates > div:nth-child(3) {
+    animation-range: entry 16% entry 56%;
+  }
+  .steps > li:nth-child(4) {
+    animation-range: entry 24% entry 64%;
+  }
+}
+@keyframes landingSettle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes landingSettle {
+    from {
+      opacity: 0;
+    }
+  }
+}
