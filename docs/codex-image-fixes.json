@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "title": "CampusPulse demo imagery and hero badge contrast",
+    "repo": "CampusPulse-dev/campuspulse-frontend",
+    "base_branch": "main",
+    "work_branch": "feat/S4-02-demo-imagery",
+    "ticket": "S4-02",
+    "commit_scope": "events",
+    "pr_title": "feat(events): give demo clubs, friends and empty states real imagery [S4-02]",
+    "live_demo": "https://campuspulse-frontend-lac.vercel.app",
+    "stack": "Next.js 16 App Router, React 19, TypeScript, CSS Modules + src/styles/tokens.css, next/image via imageSource() in src/lib/media.ts, sharp 0.35 available in node_modules",
+    "read_first": [
+      "AGENTS.md (repo root of campuspulse-frontend)",
+      "public/demo/README.md",
+      "node_modules/next/dist/docs/ (this Next.js has breaking changes; check before using next/image APIs)"
+    ]
+  },
+  "hard_rules": [
+    "Use CSS variables from src/styles/tokens.css only. No hex literals in components or CSS Modules.",
+    "Render images through next/image (or getImageProps) with imageSource(url) from src/lib/media.ts, as Landing.tsx:62 does. Always set width, height and sizes, and lazy-load anything below the first screen.",
+    "Decorative images get alt=\"\" and aria-hidden. Informative images get a short, specific alt.",
+    "Generated identity marks only. Never fetch, copy or imitate a real organisation's official logo or a real person's photo.",
+    "Do not edit these files, which Claude is changing at the same time: src/components/events/EventDetailClient.tsx (except line 238, see I7), src/components/events/EventCard.tsx, src/components/events/HomeFeed.module.css, src/components/attendee/Wallet.tsx (except the empty-state block, see I6), src/components/attendee/Portal.module.css, src/components/landing/Landing.module.css (only touch the posterWall rules for I4), src/styles/tokens.css.",
+    "Commit scopes from commitlint.config.cjs only. Never use --no-verify. Every TODO cites a ticket, e.g. // TODO(S4-02): ...",
+    "Keep the S6-02 performance budget: no new eager images above the fold on /, and keep /e/[slug] server-rendered."
+  ],
+  "tasks": [
+    {
+      "id": "I1",
+      "priority": 1,
+      "title": "Friends show initials although demo photos exist",
+      "evidence": [
+        "src/components/attendee/Friends.tsx:122 renders <Avatar name={f.user.displayName} /> with no src.",
+        "src/lib/attendee-data.ts:81-110 (demoFriends): each entry spreads ...DEFAULT_DEMO_USER, so every friend inherits Tobi Adeyemi's avatarUrl (/demo/avatars/tobi-adeyemi.webp). Passing src alone would show Tobi's face on every row."
+      ],
+      "change": [
+        "In demoFriends, set avatarUrl explicitly per entry: Adaeze Obi -> /demo/avatars/adaeze-obi.webp, Kunle Bello -> /demo/avatars/kunle-bello.webp, Fisayo Ajayi -> /demo/avatars/fisayo-ajayi.webp. Any other entry without its own photo gets avatarUrl: null, so it falls back to initials.",
+        "Friends.tsx:122: pass src={f.user.avatarUrl}. Do the same for any other <Avatar> in Friends.tsx that renders a person (search results, suggestions, incoming requests).",
+        "Grep for other spreads of DEFAULT_DEMO_USER that create other people (e.g. src/lib/organizer-team-data.ts, src/lib/admin-data.ts) and apply the same explicit avatarUrl rule."
+      ],
+      "acceptance": [
+        "/friends in demo mode shows Adaeze, Kunle and Fisayo with their own photos, and nobody shows Tobi's photo except Tobi.",
+        "Live mode is unchanged: null avatarUrl still renders initials (Avatar handles the fallback)."
+      ]
+    },
+    {
+      "id": "I2",
+      "priority": 1,
+      "title": "Every club logo is the same CampusPulse pulse mark",
+      "evidence": [
+        "public/demo/orgs/*.webp (sigma-club-ui, wole-soyinka-theatre, ui-sports-council, gdg-on-campus-ui, jci-ibadan-varsity, ui-film-society) are all a purple rounded square with the CampusPulse ECG-in-a-circle glyph and one letter. Clubs look identical and look like the app itself.",
+        "Shown in src/components/stories/StoriesTray.tsx:56-58 (story ring), src/app/(attendee)/o/[slug]/page.tsx:40 (club header) and src/components/stories/StoryViewer.tsx:172-174."
+      ],
+      "change": [
+        "Add scripts/generate-demo-org-marks.mjs: builds one SVG per club and converts it with sharp to 512x512 WebP (quality 85, <= 40 KB) at the SAME filenames in public/demo/orgs/, so no data change is needed.",
+        "Each mark is a distinct generated monogram, NOT the pulse glyph. The colour comes from the club's category token value (read the hex from src/styles/tokens.css inside the script; the script may use hex, components may not). Use a full-bleed square, because Avatar crops to a circle.",
+        "Mapping: sigma-club-ui = 'ΣC' on --cat-social with a starburst motif; wole-soyinka-theatre = 'WS' on --cat-performance with a curtain arc; ui-sports-council = 'SC' on --cat-sports with a pitch-line motif; gdg-on-campus-ui = 'GDG' on --cat-academic with a bracket motif; jci-ibadan-varsity = 'JCI' on --cat-club with a laurel arc; ui-film-society = 'FS' on --cat-performance (darker shade) with a film-strip edge.",
+        "Text in white (#fff in the script), Inter Bold. Contrast against the background must be at least 4.5:1. Keep the monogram inside the central 70% so the circle crop never cuts it.",
+        "Update public/demo/README.md: the orgs/ section now says the marks are generated monograms from scripts/generate-demo-org-marks.mjs, and must be replaced by permission-cleared logos for production."
+      ],
+      "acceptance": [
+        "The story tray on /explore shows six visibly different club marks.",
+        "Each file is <= 40 KB, and the club header on /o/sigma-club-ui shows the new mark."
+      ]
+    },
+    {
+      "id": "I3",
+      "priority": 2,
+      "title": "Club page event rows have no pictures",
+      "evidence": [
+        "src/app/(attendee)/o/[slug]/page.tsx:59-75: each <Link className={styles.eventRowCard}> shows category, date, title and venue only.",
+        "Styles: src/app/(attendee)/o/[slug]/OrganizerProfile.module.css:77 (.eventRowCard is a flex column)."
+      ],
+      "change": [
+        "Change .eventRowCard to a two-column grid: a 72x72 cover thumbnail (64x64 under 480px wide) on the left, the existing text stack on the right.",
+        "Thumbnail: next/image with imageSource(ev.coverImageUrl), width 144 and height 144 (2x), sizes=\"72px\", loading lazy, alt=\"\" (the title sits beside it), border-radius var(--radius-md), object-fit cover.",
+        "When coverImageUrl is null, show a 72x72 tile in the event's category colour (the same token CategoryPill uses) with the category icon centred. No broken-image boxes."
+      ],
+      "acceptance": [
+        "/o/sigma-club-ui shows a cover beside each event, and nothing shifts while the images load.",
+        "Tapping anywhere on the row still opens /e/[slug]."
+      ]
+    },
+    {
+      "id": "I4",
+      "priority": 2,
+      "title": "The landing hero has no imagery on phones",
+      "evidence": [
+        "src/components/landing/Landing.tsx:58-76 renders a .posterWall of event covers, but src/components/landing/Landing.module.css:395-397 sets .posterWall { display: none } under 900px. Phones see only purple text."
+      ],
+      "change": [
+        "Under 900px, show the posters as one horizontal row of the first 3 covers below the hero buttons (after line 97, before the PulseLine): 96x128 each, radius var(--radius-md), gap var(--space-2), full opacity, not the 0.35 desktop wash.",
+        "Keep a single <Image> list. Do not render a second copy for mobile; change only CSS layout and the sizes attribute (sizes=\"(max-width: 900px) 96px, 180px\").",
+        "On mobile no poster gets preload or fetchPriority=high, so the hero heading stays the largest paint. Gate the existing index===0 preload behind desktop, e.g. through the sizes and media hints next/image supports in this version; check node_modules/next/dist/docs."
+      ],
+      "acceptance": [
+        "At 390x844, three event posters show under the hero buttons.",
+        "Lighthouse mobile LCP on / does not regress against main (record both numbers in the PR)."
+      ]
+    },
+    {
+      "id": "I5",
+      "priority": 3,
+      "title": "Landing feature sections are text-only",
+      "evidence": [
+        "src/components/landing/Landing.tsx:132-175 (steps: 'From what's the plan to I'm here'), 176-228 (organizer: 'You bring the night'), 229-275 (door: 'A good night doesn't need a good signal') have no product imagery."
+      ],
+      "change": [
+        "Add scripts/capture-demo-screens.mjs (Playwright, already a devDependency): against a demo build (NEXT_PUBLIC_DEMO_MODE=true, npm run build && npm run start), sign in with the demo flow used in e2e/attendee.spec.ts and capture at 390x844, deviceScaleFactor 2: (1) /explore feed, (2) a confirmed /tickets/[rsvpId] pass, (3) organizer /organizer/sigma-club-ui dashboard, (4) the door console Manual Check-In tab. Export WebP, quality 80, <= 120 KB each, to public/demo/screens/{feed,pass,organizer,door}.webp.",
+        "Place them in a phone frame (CSS only: border var(--radius-xl), 8px border in var(--cp-ink), shadow token), max-width 260px. steps section: feed.webp. organizer section: organizer.webp. door section: door.webp beside .doorTabs on desktop and below it on mobile. pass.webp goes in the steps section's 'Show up. Even offline.' step if the layout allows; otherwise skip it.",
+        "All screenshots: loading lazy, sizes=\"260px\", descriptive alt (e.g. 'CampusPulse feed showing tonight's events at UI').",
+        "The screenshots show demo data only. The capture script must use the demo user, never real student emails."
+      ],
+      "acceptance": [
+        "Each of the three sections shows a phone screenshot on desktop and mobile.",
+        "There are no new layout shifts, and the images are not requested until scrolled near."
+      ]
+    },
+    {
+      "id": "I6",
+      "priority": 3,
+      "title": "Empty states are text-only",
+      "evidence": [
+        "src/components/attendee/Wallet.tsx:262-270 ('Your next night starts here' / 'No past plans yet')",
+        "src/components/events/HomeFeedClient.tsx:271 ('No events in this view')",
+        "src/components/organizer/OrganizerDashboard.tsx:146 ('No events yet')"
+      ],
+      "change": [
+        "Add src/components/ui/EmptyArt.tsx: inline SVG illustrations (each <= 3 KB, aria-hidden, 96px tall). They use currentColor plus var(--cp-lavender) and var(--cp-purple) through CSS, with no hex. Three variants: 'ticket' (a ticket stub with a short pulse line through it) for Wallet, 'calendar' (an empty calendar page with the pulse) for HomeFeedClient, 'stage' (a small empty stage with a spotlight) for OrganizerDashboard.",
+        "Place each above the heading in its empty state, centred, with var(--space-3) below.",
+        "Static: no animation (Claude owns motion)."
+      ],
+      "acceptance": [
+        "All three empty states show their illustration in light and dark themes.",
+        "Screen readers announce only the existing text."
+      ]
+    },
+    {
+      "id": "I7",
+      "priority": 1,
+      "title": "'Students only' badge is unreadable on event headers",
+      "evidence": [
+        "src/components/events/EventDetailClient.tsx:238 renders <Badge>Students only</Badge> inside .heroOverlayTop.",
+        "src/components/events/EventDetail.module.css:39-41: '.heroOverlayTop span { color: inherit }' forces the hero text colour (white) onto the Badge, whose default variant has a white background (var(--color-surface-raised)) in src/components/ui/Badge.module.css:13-17. Result: white on white."
+      ],
+      "change": [
+        "Add an 'onMedia' variant to src/components/ui/Badge.tsx and Badge.module.css. Background: a translucent dark scrim token; add --color-badge-on-media-bg to tokens.css ONLY IF no suitable token exists, and coordinate, because Claude may also touch tokens.css. Text: var(--color-hero-text). Border: 1px solid a translucent white token.",
+        "Use <Badge variant=\"onMedia\"> at EventDetailClient.tsx:238 (this is the only line of that file Codex may change).",
+        "Narrow the EventDetail.module.css:39 rule so it no longer reaches Badge, e.g. target the CategoryPill's own class instead of every span."
+      ],
+      "acceptance": [
+        "On /e/ui-ai-and-systems-summit, 'Students only' reads at >= 4.5:1 contrast over the cover photo, in light and dark themes."
+      ]
+    }
+  ],
+  "also_verify": [
+    "In a full-page screenshot of /, the 'Coming up at UI' cards for 'The Lion & The Jewel' and 'Building Offline-First Products' showed no cover, yet the event pages show them. Check on a real phone whether this is only lazy loading in the screenshot or a real bug in src/components/events/EventPoster.tsx. Fix only if it's real."
+  ],
+  "verification": [
+    "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "NEXT_PUBLIC_DEMO_MODE=true NEXT_PUBLIC_API_BASE_URL=http://localhost:3001 npm run build, then CI=true NEXT_PUBLIC_DEMO_MODE=true npx playwright test (all demo e2e must pass)",
+    "Screenshots at 390x844 and 1280x800 of /, /explore, /friends, /o/sigma-club-ui, /tickets (empty) and /e/ui-ai-and-systems-summit, attached to the PR",
+    "Record Lighthouse mobile LCP for / on main vs the branch in the PR description"
+  ],
+  "deliverable": "One PR from feat/S4-02-demo-imagery into main with separate commits per task (I1...I7), each passing hooks. Do not merge; leave it for review."
+}
