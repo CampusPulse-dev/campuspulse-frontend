@@ -64,3 +64,28 @@ describe('save pop (S4-02)', () => {
     expect(saveButton().className).toMatch(/savePop/);
   });
 });
+
+describe('card press (S4-02)', () => {
+  const article = () => screen.getByRole('article');
+  const title = () => screen.getByRole('link', { name: event.title });
+
+  it('dips while a finger or pointer is on the card link, and releases on scroll', () => {
+    render(<EventCard event={event} />);
+    expect(article().hasAttribute('data-pressed')).toBe(false);
+    fireEvent.pointerDown(title());
+    expect(article().hasAttribute('data-pressed')).toBe(true);
+    // Starting a scroll cancels the pointer, so the card never stays pressed.
+    fireEvent.pointerCancel(title());
+    expect(article().hasAttribute('data-pressed')).toBe(false);
+    fireEvent.pointerDown(screen.getByRole('link', { name: 'View ' + event.title }));
+    expect(article().hasAttribute('data-pressed')).toBe(true);
+    fireEvent.pointerUp(screen.getByRole('link', { name: 'View ' + event.title }));
+    expect(article().hasAttribute('data-pressed')).toBe(false);
+  });
+
+  it('stays still when the bookmark is pressed', () => {
+    render(<EventCard event={event} />);
+    fireEvent.pointerDown(saveButton());
+    expect(article().hasAttribute('data-pressed')).toBe(false);
+  });
+});

@@ -29,6 +29,17 @@ export function EventCard({ event, compact = false }: EventCardProps) {
   const [busy, setBusy] = useState(false);
   // Pops only on a tap that saves; already-saved cards stay still on load.
   const [justSaved, setJustSaved] = useState(false);
+  // Press feedback from pointer events, not :active: touch browsers (iOS Safari
+  // above all) hold :active back until they know a touch isn't a scroll, so the
+  // card would never dip under a finger. A scroll fires pointercancel and releases it.
+  const [pressed, setPressed] = useState(false);
+  const release = () => setPressed(false);
+  const pressHandlers = {
+    onPointerDown: () => setPressed(true),
+    onPointerUp: release,
+    onPointerCancel: release,
+    onPointerLeave: release,
+  };
 
   const isInterested = interestedEventIds.includes(event.id);
   const existingTicket = getOfflineTicketForEvent(event.id);
@@ -101,12 +112,16 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     : (event.lineup?.map((item) => item.performerName).join(' · ') ??
       (event.showtimes?.length ? event.showtimes.length + ' showtimes' : null));
   return (
-    <article className={[styles.eventCard, compact ? styles.compactCard : ''].join(' ')}>
+    <article
+      className={[styles.eventCard, compact ? styles.compactCard : ''].join(' ')}
+      data-pressed={pressed || undefined}
+    >
       <div className={styles.poster}>
         <Link
           href={'/e/' + event.slug}
           className={styles.posterLink}
           aria-label={'View ' + event.title}
+          {...pressHandlers}
         >
           <EventPoster event={event} />
         </Link>
@@ -126,7 +141,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
       </div>
       <div className={styles.cardBody}>
         <div className={styles.cardHeading}>
-          <Link href={'/e/' + event.slug} className={styles.titleLink}>
+          <Link href={'/e/' + event.slug} className={styles.titleLink} {...pressHandlers}>
             <h3 className={styles.cardTitle}>{event.title}</h3>
           </Link>
           {status === 'live' ? (

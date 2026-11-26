@@ -289,10 +289,17 @@
   }
 }
 
-/* Press feedback only for the card's own links, never its buttons. */
+/*
+ * Press feedback only for the card's own links, never its buttons. EventCard sets
+ * data-pressed from pointer events, so it works under a finger on iOS too.
+ */
 .eventCard {
   transition: transform var(--dur-press) var(--ease-out);
 }
-.eventCard:has(.posterLink:active, .titleLink:active) {
+.eventCard[data-pressed] {
   transform: scale(0.98);
+}
+.posterLink,
+.titleLink {
+  -webkit-tap-highlight-color: transparent;
 }
