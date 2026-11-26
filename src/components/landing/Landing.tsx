@@ -7,7 +7,6 @@ import {
   WifiOff,
   Search,
   Ticket,
-  ShieldCheck,
   Users,
   CircleAlert,
   X,
@@ -15,12 +14,27 @@ import {
 import { Icon } from '@/components/ui/Icon';
 import { BrandLockup } from '@/components/ui/BrandLockup';
 import { PulseLine } from '@/components/ui/PulseLine';
-import { ListRow } from '@/components/ui/ListRow';
 import { EventCard } from '@/components/events/EventCard';
 import { isTonight, type EnrichedEvent } from '@/lib/campus-data';
 import { imageSource } from '@/lib/media';
 import { SiteFooter } from './SiteFooter';
 import styles from './Landing.module.css';
+import previewStyles from './PhonePreview.module.css';
+
+function PhonePreview({ screen, alt }: { screen: 'feed' | 'organizer' | 'door'; alt: string }) {
+  return (
+    <div className={previewStyles.frame}>
+      <Image
+        {...imageSource('/demo/screens/' + screen + '.webp')}
+        width={780}
+        height={1688}
+        sizes="260px"
+        loading="lazy"
+        alt={alt}
+      />
+    </div>
+  );
+}
 
 export function Landing({
   events,
@@ -164,57 +178,50 @@ export function Landing({
             </h2>
           </div>
         </div>
-        <ol className={styles.steps}>
-          {[
-            {
-              icon: Search,
-              title: 'Find your thing.',
-              copy: 'The party. The play. The match. All the plans on campus, together.',
-            },
-            {
-              icon: Ticket,
-              title: 'Make it a plan.',
-              copy: 'RSVP for free. See which friends are going and keep your pass close.',
-            },
-            {
-              icon: WifiOff,
-              title: 'Show up. Even offline.',
-              copy: 'Open your QR pass online once. Then take it to the door, signal or no signal.',
-            },
-          ].map((step, index) => (
-            <li key={step.title}>
-              <div className={styles.stepTop}>
-                <span>0{index + 1}</span>
-                <Icon icon={step.icon} size={24} />
-              </div>
-              <h3>{step.title}</h3>
-              <p>{step.copy}</p>
-            </li>
-          ))}
-        </ol>
+        <div className={previewStyles.stepsLayout}>
+          <ol className={styles.steps}>
+            {[
+              {
+                icon: Search,
+                title: 'Find your thing.',
+                copy: 'The party. The play. The match. All the plans on campus, together.',
+              },
+              {
+                icon: Ticket,
+                title: 'Make it a plan.',
+                copy: 'RSVP for free. See which friends are going and keep your pass close.',
+              },
+              {
+                icon: WifiOff,
+                title: 'Show up. Even offline.',
+                copy: 'Open your QR pass online once. Then take it to the door, signal or no signal.',
+              },
+            ].map((step, index) => (
+              <li key={step.title}>
+                <div className={styles.stepTop}>
+                  <span>0{index + 1}</span>
+                  <Icon icon={step.icon} size={24} />
+                </div>
+                <h3>{step.title}</h3>
+                <p>{step.copy}</p>
+              </li>
+            ))}
+          </ol>
+          <PhonePreview
+            screen="feed"
+            alt="CampusPulse feed showing campus stories and upcoming events at UI"
+          />
+        </div>
       </section>
       <section
         id="organizers"
         className={`${styles.section} ${styles.organizerSection}`}
         aria-labelledby="organizer-heading"
       >
-        <div className={styles.productComposition}>
-          <div className={styles.productTitle}>
-            <Icon icon={Users} />
-            <span>Your next event</span>
-            <span>Organizer view</span>
-          </div>
-          <ListRow title="Before the doors open" meta="Publish your event. Know who’s coming." />
-          <ListRow
-            title="When the crowd arrives"
-            meta="Scan QR passes or check people in by name."
-          />
-          <ListRow title="After a good night" meta="See the RSVPs that became real check-ins." />
-          <div className={styles.productStatus}>
-            <Icon icon={ShieldCheck} />
-            <span>Verified clubs. Clear headcounts.</span>
-          </div>
-        </div>
+        <PhonePreview
+          screen="organizer"
+          alt="CampusPulse organizer dashboard showing Sigma Club UI’s event activity"
+        />
         <div>
           <p className={styles.kicker}>For the people who make it happen.</p>
           <h2 id="organizer-heading">
@@ -269,26 +276,32 @@ export function Landing({
             </span>
           </div>
         </div>
-        <div className={styles.scannerStates} aria-label="Scanner result examples">
-          <div className={styles.valid}>
-            <Icon icon={Check} size={28} />
-            <div>
-              <strong>Valid</strong>
-              <span>You’re in. Enjoy the night.</span>
+        <div className={previewStyles.doorMedia}>
+          <PhonePreview
+            screen="door"
+            alt="CampusPulse Manual Check-In tab with the demo attendee search and roster"
+          />
+          <div className={styles.scannerStates} aria-label="Scanner result examples">
+            <div className={styles.valid}>
+              <Icon icon={Check} size={28} />
+              <div>
+                <strong>Valid</strong>
+                <span>You’re in. Enjoy the night.</span>
+              </div>
             </div>
-          </div>
-          <div className={styles.duplicate}>
-            <Icon icon={CircleAlert} size={28} />
-            <div>
-              <strong>Already scanned</strong>
-              <span>Check the first entry with your team.</span>
+            <div className={styles.duplicate}>
+              <Icon icon={CircleAlert} size={28} />
+              <div>
+                <strong>Already scanned</strong>
+                <span>Check the first entry with your team.</span>
+              </div>
             </div>
-          </div>
-          <div className={styles.invalid}>
-            <Icon icon={X} size={28} />
-            <div>
-              <strong>Invalid ticket</strong>
-              <span>Check the event and pass details.</span>
+            <div className={styles.invalid}>
+              <Icon icon={X} size={28} />
+              <div>
+                <strong>Invalid ticket</strong>
+                <span>Check the event and pass details.</span>
+              </div>
             </div>
           </div>
         </div>

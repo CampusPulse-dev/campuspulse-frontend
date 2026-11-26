@@ -1,0 +1,32 @@
+.frame {
+  width: min(100%, 260px);
+  margin-inline: auto;
+  overflow: hidden;
+  border: 8px solid var(--cp-ink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-surface);
+}
+
+.frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.stepsLayout,
+.doorMedia {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.stepsLayout > ol {
+  grid-template-columns: 1fr;
+}
+
+@media (width > 600px) {
+  .stepsLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 260px);
+    align-items: center;
+  }
+}
