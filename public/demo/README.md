@@ -8,8 +8,7 @@ To use a real photo, save it here under the **same filename** (WebP, ideally 200
 these with commissioned or permission-cleared photography before using real people or live
 organization identities in production.
 
-`orgs/` contains generated demo identity marks, not official organization logos. Replace them
-with official, permission-cleared logos when those assets are available.
+`orgs/` contains generated demo monograms. Use official, permission-cleared logos in production.
 
 ## events/ — event covers
 
@@ -30,10 +29,12 @@ with official, permission-cleared logos when those assets are available.
 | `theatre-backstage.webp`  | Backstage or curtain at the theatre                 |
 | `gdg-speaker-lineup.webp` | Packed GDG workshop or speaker lineup               |
 
-## orgs/ — square club logos, 512×512 or larger
+## orgs/ — 512×512 club monograms
 
 `sigma-club-ui.webp`, `wole-soyinka-theatre.webp`, `ui-sports-council.webp`, `gdg-on-campus-ui.webp`,
-`jci-ibadan-varsity.webp`, `ui-film-society.webp`. Use each club's official logo, with permission.
+`jci-ibadan-varsity.webp`, `ui-film-society.webp`. Regenerate them with
+`node scripts/generate-demo-org-marks.mjs` after installing Playwright Chromium. The script uses
+the vendored Inter font and category colors from the app's tokens.
 
 ## avatars/ — square face photos, 256×256 or larger
 

@@ -12,6 +12,7 @@ import {
 import { readLocal, writeLocal } from './attendee-data';
 import {
   SEED_ORGANIZERS,
+  DEMO_FILM_SOCIETY,
   SEED_STORIES,
   type EventLineupSlot,
   type EventMatchFixture,
@@ -288,16 +289,6 @@ export interface DemoClub {
   verification: OrganizerDashboardData['verification'];
 }
 
-const FILM_SOCIETY: OrganizerPublic = {
-  id: '11111111-1111-4111-8111-111111111106',
-  slug: 'ui-film-society',
-  name: 'UI Film Society',
-  bio: 'Screenings, shorts nights and filmmaker Q&As on campus.',
-  logoUrl: '/demo/orgs/ui-film-society.webp',
-  isVerified: false,
-  followerCount: 312,
-};
-
 /**
  * Two verified clubs (a concert/party club and a sports council with a live match) to exercise
  * publishing and the score updater, plus one waiting on review to exercise the gates.
@@ -314,7 +305,7 @@ const DEMO_CLUBS: DemoClub[] = [
     verification: { status: 'VERIFIED', reviewerNote: null },
   },
   {
-    organizer: FILM_SOCIETY,
+    organizer: DEMO_FILM_SOCIETY,
     role: 'OWNER',
     verification: {
       status: 'MORE_INFO',
