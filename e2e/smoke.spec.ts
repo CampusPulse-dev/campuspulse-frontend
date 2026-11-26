@@ -7,7 +7,6 @@ test('the landing pulse loops and becomes static with reduced motion', async ({ 
   const trace = pulse.locator('path').nth(1);
   await expect(trace).toHaveCSS('animation-iteration-count', 'infinite');
   await expect(trace).toHaveCSS('animation-duration', '2.4s');
-  await pulse.scrollIntoViewIfNeeded();
   await expect(pulse).toHaveAttribute('data-paused', 'false');
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await expect(trace).toHaveCSS('animation-play-state', 'paused');

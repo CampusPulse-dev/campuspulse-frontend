@@ -5,7 +5,6 @@ import React from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { VerifiedMark } from '@/components/ui/VerifiedMark';
-import { EmptyArt } from '@/components/ui/EmptyArt';
 import { Badge } from '@/components/ui/Badge';
 import { ResourceState } from '@/components/attendee/Shared';
 import { formatWatDateTime } from '@/lib/campus-data';
@@ -144,7 +143,6 @@ export function OrganizerDashboardView({
 
       {data.events.length === 0 ? (
         <div className={styles.emptyState}>
-          <EmptyArt variant="stage" />
           <h2>No events yet</h2>
           <p className={styles.muted}>Create your first event to start collecting RSVPs.</p>
           <Link href={`/organizer/${organizer.slug}/events/new`} className={styles.linkButton}>

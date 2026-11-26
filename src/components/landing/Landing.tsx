@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image, { getImageProps } from 'next/image';
+import Image from 'next/image';
 import {
   ArrowUpRight,
   Check,
@@ -7,6 +7,7 @@ import {
   WifiOff,
   Search,
   Ticket,
+  ShieldCheck,
   Users,
   CircleAlert,
   X,
@@ -14,27 +15,12 @@ import {
 import { Icon } from '@/components/ui/Icon';
 import { BrandLockup } from '@/components/ui/BrandLockup';
 import { PulseLine } from '@/components/ui/PulseLine';
+import { ListRow } from '@/components/ui/ListRow';
 import { EventCard } from '@/components/events/EventCard';
 import { isTonight, type EnrichedEvent } from '@/lib/campus-data';
 import { imageSource } from '@/lib/media';
 import { SiteFooter } from './SiteFooter';
 import styles from './Landing.module.css';
-import previewStyles from './PhonePreview.module.css';
-
-function PhonePreview({ screen, alt }: { screen: 'feed' | 'organizer' | 'door'; alt: string }) {
-  return (
-    <div className={previewStyles.frame}>
-      <Image
-        {...imageSource('/demo/screens/' + screen + '.webp')}
-        width={780}
-        height={1688}
-        sizes="260px"
-        loading="lazy"
-        alt={alt}
-      />
-    </div>
-  );
-}
 
 export function Landing({
   events,
@@ -45,20 +31,7 @@ export function Landing({
   error?: boolean;
   now?: Date;
 }) {
-  const posters = events
-    .flatMap(({ id, coverImageUrl }) => (coverImageUrl ? [{ id, coverImageUrl }] : []))
-    .slice(0, 6);
-  const firstPoster = posters[0];
-  const posterSizes = '(max-width: 900px) 96px, 180px';
-  const desktopPreload = firstPoster
-    ? getImageProps({
-        ...imageSource(firstPoster.coverImageUrl),
-        alt: '',
-        width: 360,
-        height: 480,
-        sizes: posterSizes,
-      }).props
-    : null;
+  const posters = events.filter((event) => event.coverImageUrl).slice(0, 6);
   const tonight = events.filter((event) => isTonight(event, now.getTime()));
   const featured = (tonight.length ? tonight : events).slice(0, 4);
   return (
@@ -83,6 +56,24 @@ export function Landing({
           </div>
         </nav>
         <section className={styles.hero} aria-labelledby="hero-title">
+          {posters.length ? (
+            <div className={styles.posterWall} aria-hidden="true">
+              {posters.map((event, index) => (
+                <Image
+                  key={event.id}
+                  {...imageSource(event.coverImageUrl!)}
+                  alt=""
+                  width={360}
+                  height={480}
+                  sizes="180px"
+                  // The first poster is the page's largest paint; the rest can wait.
+                  {...(index === 0
+                    ? { preload: true, fetchPriority: 'high' as const }
+                    : { loading: 'lazy' as const })}
+                />
+              ))}
+            </div>
+          ) : null}
           <div className={styles.heroContent}>
             <p className={styles.heroKicker}>University of Ibadan. Your kind of night.</p>
             <h1 id="hero-title">
@@ -111,31 +102,6 @@ export function Landing({
               <span>Be there.</span>
             </div>
           </div>
-          {desktopPreload ? (
-            <link
-              rel="preload"
-              as="image"
-              media="(width > 900px)"
-              href={desktopPreload.srcSet ? undefined : desktopPreload.src}
-              imageSrcSet={desktopPreload.srcSet}
-              imageSizes={desktopPreload.srcSet ? desktopPreload.sizes : undefined}
-            />
-          ) : null}
-          {posters.length ? (
-            <div className={styles.posterWall} aria-hidden="true">
-              {posters.map(({ id, coverImageUrl }) => (
-                <Image
-                  key={id}
-                  {...imageSource(coverImageUrl)}
-                  alt=""
-                  width={360}
-                  height={480}
-                  sizes={posterSizes}
-                  loading="lazy"
-                />
-              ))}
-            </div>
-          ) : null}
         </section>
       </div>
       <section className={styles.section} aria-labelledby="events-heading">
@@ -178,50 +144,57 @@ export function Landing({
             </h2>
           </div>
         </div>
-        <div className={previewStyles.stepsLayout}>
-          <ol className={styles.steps}>
-            {[
-              {
-                icon: Search,
-                title: 'Find your thing.',
-                copy: 'The party. The play. The match. All the plans on campus, together.',
-              },
-              {
-                icon: Ticket,
-                title: 'Make it a plan.',
-                copy: 'RSVP for free. See which friends are going and keep your pass close.',
-              },
-              {
-                icon: WifiOff,
-                title: 'Show up. Even offline.',
-                copy: 'Open your QR pass online once. Then take it to the door, signal or no signal.',
-              },
-            ].map((step, index) => (
-              <li key={step.title}>
-                <div className={styles.stepTop}>
-                  <span>0{index + 1}</span>
-                  <Icon icon={step.icon} size={24} />
-                </div>
-                <h3>{step.title}</h3>
-                <p>{step.copy}</p>
-              </li>
-            ))}
-          </ol>
-          <PhonePreview
-            screen="feed"
-            alt="CampusPulse feed showing campus stories and upcoming events at UI"
-          />
-        </div>
+        <ol className={styles.steps}>
+          {[
+            {
+              icon: Search,
+              title: 'Find your thing.',
+              copy: 'The party. The play. The match. All the plans on campus, together.',
+            },
+            {
+              icon: Ticket,
+              title: 'Make it a plan.',
+              copy: 'RSVP for free. See which friends are going and keep your pass close.',
+            },
+            {
+              icon: WifiOff,
+              title: 'Show up. Even offline.',
+              copy: 'Open your QR pass online once. Then take it to the door, signal or no signal.',
+            },
+          ].map((step, index) => (
+            <li key={step.title}>
+              <div className={styles.stepTop}>
+                <span>0{index + 1}</span>
+                <Icon icon={step.icon} size={24} />
+              </div>
+              <h3>{step.title}</h3>
+              <p>{step.copy}</p>
+            </li>
+          ))}
+        </ol>
       </section>
       <section
         id="organizers"
         className={`${styles.section} ${styles.organizerSection}`}
         aria-labelledby="organizer-heading"
       >
-        <PhonePreview
-          screen="organizer"
-          alt="CampusPulse organizer dashboard showing Sigma Club UI’s event activity"
-        />
+        <div className={styles.productComposition}>
+          <div className={styles.productTitle}>
+            <Icon icon={Users} />
+            <span>Your next event</span>
+            <span>Organizer view</span>
+          </div>
+          <ListRow title="Before the doors open" meta="Publish your event. Know who’s coming." />
+          <ListRow
+            title="When the crowd arrives"
+            meta="Scan QR passes or check people in by name."
+          />
+          <ListRow title="After a good night" meta="See the RSVPs that became real check-ins." />
+          <div className={styles.productStatus}>
+            <Icon icon={ShieldCheck} />
+            <span>Verified clubs. Clear headcounts.</span>
+          </div>
+        </div>
         <div>
           <p className={styles.kicker}>For the people who make it happen.</p>
           <h2 id="organizer-heading">
@@ -276,32 +249,26 @@ export function Landing({
             </span>
           </div>
         </div>
-        <div className={previewStyles.doorMedia}>
-          <PhonePreview
-            screen="door"
-            alt="CampusPulse Manual Check-In tab with the demo attendee search and roster"
-          />
-          <div className={styles.scannerStates} aria-label="Scanner result examples">
-            <div className={styles.valid}>
-              <Icon icon={Check} size={28} />
-              <div>
-                <strong>Valid</strong>
-                <span>You’re in. Enjoy the night.</span>
-              </div>
+        <div className={styles.scannerStates} aria-label="Scanner result examples">
+          <div className={styles.valid}>
+            <Icon icon={Check} size={28} />
+            <div>
+              <strong>Valid</strong>
+              <span>You’re in. Enjoy the night.</span>
             </div>
-            <div className={styles.duplicate}>
-              <Icon icon={CircleAlert} size={28} />
-              <div>
-                <strong>Already scanned</strong>
-                <span>Check the first entry with your team.</span>
-              </div>
+          </div>
+          <div className={styles.duplicate}>
+            <Icon icon={CircleAlert} size={28} />
+            <div>
+              <strong>Already scanned</strong>
+              <span>Check the first entry with your team.</span>
             </div>
-            <div className={styles.invalid}>
-              <Icon icon={X} size={28} />
-              <div>
-                <strong>Invalid ticket</strong>
-                <span>Check the event and pass details.</span>
-              </div>
+          </div>
+          <div className={styles.invalid}>
+            <Icon icon={X} size={28} />
+            <div>
+              <strong>Invalid ticket</strong>
+              <span>Check the event and pass details.</span>
             </div>
           </div>
         </div>

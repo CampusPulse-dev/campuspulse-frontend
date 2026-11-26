@@ -73,16 +73,6 @@ export const VIBE_OPTIONS = [
   'Creators & content',
 ] as const;
 
-export const DEMO_FILM_SOCIETY: OrganizerPublic = {
-  id: '11111111-1111-4111-8111-111111111106',
-  slug: 'ui-film-society',
-  name: 'UI Film Society',
-  bio: 'Screenings, shorts nights and filmmaker Q&As on campus.',
-  logoUrl: '/demo/orgs/ui-film-society.webp',
-  isVerified: false,
-  followerCount: 312,
-};
-
 export const SEED_ORGANIZERS: OrganizerPublic[] = [
   {
     id: '11111111-1111-4111-8111-111111111101',
@@ -129,7 +119,15 @@ export const SEED_ORGANIZERS: OrganizerPublic[] = [
     isVerified: true,
     followerCount: 1870,
   },
-  DEMO_FILM_SOCIETY,
+  {
+    id: '11111111-1111-4111-8111-111111111106',
+    slug: 'ui-film-society',
+    name: 'UI Film Society',
+    bio: 'Student film screenings and discussions at the University of Ibadan.',
+    logoUrl: '/demo/orgs/ui-film-society.webp',
+    isVerified: true,
+    followerCount: 620,
+  },
 ];
 
 const MUTUAL_FRIENDS_SAMPLE: MutualFriend[] = [
@@ -393,7 +391,7 @@ export const SEED_STORIES: EnrichedStory[] = [
   },
   {
     id: '33333333-3333-4333-8333-333333333306',
-    organizer: DEMO_FILM_SOCIETY,
+    organizer: SEED_ORGANIZERS[5]!,
     eventId: null,
     mediaUrl: '/demo/orgs/ui-film-society.webp',
     mediaType: 'IMAGE',

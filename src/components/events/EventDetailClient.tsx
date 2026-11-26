@@ -235,7 +235,7 @@ export function EventDetailView({
           <EventPoster event={event} detail />
           <div className={styles.heroOverlayTop}>
             <CategoryPill category={event.category} />
-            {event.studentsOnly ? <Badge variant="onMedia">Students only</Badge> : null}
+            {event.studentsOnly ? <Badge>Students only</Badge> : null}
           </div>
           <div className={styles.heroScrim}>
             <Link href={'/o/' + event.organizer.slug} className={styles.organizerChip}>

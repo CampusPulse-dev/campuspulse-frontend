@@ -393,39 +393,6 @@
   }
 }
 @media (max-width: 900px) {
-  .hero:has(.posterWall) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .heroContent:has(~ .posterWall) {
-    display: contents;
-  }
-  .hero:has(.posterWall)::before {
-    content: none;
-  }
-  .hero:has(.posterWall) :is(.heroPulse, .heroFootnote) {
-    order: 2;
-  }
-  .posterWall {
-    position: static;
-    z-index: auto;
-    order: 1;
-    gap: var(--space-2);
-    margin-top: var(--space-5);
-    transform: none;
-    opacity: 1;
-    overflow-x: auto;
-    animation: none;
-  }
-  .posterWall img {
-    flex: 0 0 96px;
-    width: 96px;
-    height: 128px;
-    border-radius: var(--radius-md);
-  }
-  .posterWall img:nth-child(n + 4) {
-    display: none;
-  }
   .navAnchors {
     display: none;
   }

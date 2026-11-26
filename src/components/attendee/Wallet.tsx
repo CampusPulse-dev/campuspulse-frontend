@@ -12,7 +12,6 @@ import { formatWatDateTime } from '@/lib/campus-data';
 import { prepareWalletRoute } from '@/lib/wallet-cache';
 import { Ticket, CalendarDays, MapPin, UserRound, Check } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
-import { EmptyArt } from '@/components/ui/EmptyArt';
 import { PulseLine } from '@/components/ui/PulseLine';
 import { ListRow } from '@/components/ui/ListRow';
 import { Badge } from '@/components/ui/Badge';
@@ -262,7 +261,6 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
                   ))}
                   {selected.length === 0 && !query.isPending && !query.error ? (
                     <section className={styles.panel}>
-                      <EmptyArt variant="ticket" />
                       <h2>
                         {tab === 'Past' ? 'No past plans yet' : 'Your next night starts here'}
                       </h2>

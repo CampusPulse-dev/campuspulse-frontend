@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { EmptyArt } from '@/components/ui/EmptyArt';
 import { EventCardsSkeleton } from '@/components/ui/Skeleton';
 import { CATEGORY_LABELS } from '@/components/ui/Badge';
 import { StoriesTray } from '@/components/stories/StoriesTray';
@@ -268,7 +267,6 @@ export function HomeFeedClient({
           <EventCardsSkeleton count={2} label="Loading more events…" className={styles.feedStack} />
         ) : listEvents.length === 0 && !showRecommendations ? (
           <div className={styles.emptyState}>
-            <EmptyArt variant="calendar" />
             <p className={styles.emptyTitle}>
               No events in this view. Try another date or category.
             </p>

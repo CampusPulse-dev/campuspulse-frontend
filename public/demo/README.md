@@ -41,10 +41,3 @@ the vendored Inter font and category colors from the app's tokens.
 `adaeze-obi.webp`, `kunle-bello.webp`, `fisayo-ajayi.webp`, `tobi-adeyemi.webp` (the demo user) and
 `bisola.webp` (the creator profile). Use photos of people who have agreed to it, or clearly fictional faces.
 Never use real students' photos without consent (NDPA 2023).
-
-## screens/ — captured demo product screens
-
-The 780×1688 WebP files show the attendee feed, a confirmed demo pass, the organizer dashboard,
-and the Manual Check-In tab. Start a local production build with `NEXT_PUBLIC_DEMO_MODE=true`
-and run `node scripts/capture-demo-screens.mjs` with that variable set. The script uses
-`http://localhost:3104` by default. Set `E2E_BASE_URL` to use another local port.
