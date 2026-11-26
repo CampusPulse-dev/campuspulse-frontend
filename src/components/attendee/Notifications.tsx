@@ -65,7 +65,7 @@ export function Notifications() {
         setMessage('Notifications were not enabled. You can try again later.');
         return;
       }
-      await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
       const reg = await navigator.serviceWorker.ready;
       const decoded = atob(key.replace(/-/g, '+').replace(/_/g, '/'));
       const bytes = Uint8Array.from(decoded, (c) => c.charCodeAt(0));
