@@ -6,8 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { DEMO_MODE } from '@/lib/mode';
 import {
   attendeeRequest,
-  demoFriends,
-  readLocal,
+  readDemoFriends,
   sendFriendAction,
   writeLocal,
   type FriendEntry,
@@ -35,7 +34,7 @@ export function Friends() {
     retry: false,
     queryFn: async () =>
       DEMO_MODE
-        ? readLocal<FriendEntry[]>(key, demoFriends)
+        ? readDemoFriends(key)
         : (await attendeeRequest('FriendsResponse', '/friends', accessToken)).items,
   });
   async function action(friend: FriendEntry, kind: 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'BLOCK') {
@@ -51,7 +50,7 @@ export function Friends() {
         return;
       }
       if (DEMO_MODE) {
-        const entries = readLocal(key, demoFriends);
+        const entries = readDemoFriends(key);
         writeLocal(
           key,
           entries.map((entry) =>
@@ -119,7 +118,7 @@ export function Friends() {
           {visible.map((f) => (
             <ListRow
               key={f.id}
-              leading={<Avatar name={f.user.displayName} />}
+              leading={<Avatar name={f.user.displayName} src={f.user.avatarUrl} />}
               title={f.user.displayName}
               meta={
                 <>

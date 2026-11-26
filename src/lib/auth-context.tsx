@@ -258,6 +258,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: demoId,
             role: demoRoleForEmail(body.email),
             isVerifiedStudent: false,
+            avatarUrl:
+              body.email.trim().toLowerCase() === 'tobi@stu.ui.edu.ng' && !('displayName' in body)
+                ? DEFAULT_DEMO_USER.avatarUrl
+                : null,
             displayName: 'displayName' in body ? body.displayName : 'Tobi Adeyemi',
           },
           accessToken: 'demo',

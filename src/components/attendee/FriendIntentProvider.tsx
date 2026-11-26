@@ -14,8 +14,7 @@ import { ApiRequestError } from '@/lib/api';
 import {
   isCurrentFriendAccount,
   sendFriendAction,
-  demoFriends,
-  readLocal,
+  readDemoFriends,
   writeLocal,
   type FriendEntry,
 } from '@/lib/attendee-data';
@@ -46,7 +45,7 @@ export function useFriendIntents() {
 async function deliver(intent: FriendIntent, token: string | null, signal: AbortSignal) {
   if (DEMO_MODE) {
     const key = `friends:${intent.account}`;
-    const entries = readLocal(key, demoFriends);
+    const entries = readDemoFriends(key);
     writeLocal(
       key,
       entries.flatMap((entry) => {

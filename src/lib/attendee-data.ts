@@ -86,6 +86,7 @@ export const demoFriends: FriendEntry[] = [
       ...DEFAULT_DEMO_USER,
       id: '55555555-5555-4555-8555-555555555511',
       displayName: 'Adaeze Obi',
+      avatarUrl: '/demo/avatars/adaeze-obi.webp',
     },
     hall: 'Idia Hall',
     faculty: 'Science',
@@ -97,6 +98,7 @@ export const demoFriends: FriendEntry[] = [
       ...DEFAULT_DEMO_USER,
       id: '55555555-5555-4555-8555-555555555512',
       displayName: 'Kunle Bello',
+      avatarUrl: '/demo/avatars/kunle-bello.webp',
     },
     hall: 'Mellanby Hall',
     faculty: 'Technology',
@@ -108,12 +110,27 @@ export const demoFriends: FriendEntry[] = [
       ...DEFAULT_DEMO_USER,
       id: '55555555-5555-4555-8555-555555555513',
       displayName: 'Fisayo Ajayi',
+      avatarUrl: '/demo/avatars/fisayo-ajayi.webp',
     },
     hall: 'Tedder Hall',
     faculty: 'Arts',
     status: 'SUGGESTED',
   },
 ];
+export function readDemoFriends(key: string): FriendEntry[] {
+  return readLocal(key, demoFriends).map((entry) => {
+    const seed = demoFriends.find(({ user }) => user.id === entry.user.id);
+    const avatarUrl = seed
+      ? seed.user.avatarUrl
+      : entry.user.avatarUrl === DEFAULT_DEMO_USER.avatarUrl
+        ? null
+        : entry.user.avatarUrl;
+    return avatarUrl === entry.user.avatarUrl
+      ? entry
+      : { ...entry, user: { ...entry.user, avatarUrl } };
+  });
+}
+
 export const demoNotices: Notice[] = [
   {
     id: '66666666-6666-4666-8666-666666666601',
