@@ -1,5 +1,27 @@
 import type { EventCategory, EventPublic, OrganizerPublic, Story, UserPublic } from './api';
 import type { MutualFriend } from '@/components/ui/Avatar';
+import { DEMO_MODE } from './mode';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WAT_MS = 60 * 60 * 1000;
+/** The WAT calendar day the sample data was written for. */
+const SEED_DAY = Math.floor((Date.UTC(2026, 10, 1) + WAT_MS) / DAY_MS);
+/**
+ * Whole days to move the sample data so its "tonight" is today in WAT, keeping
+ * every time of day as written. Only the deployed demo moves; tests and live
+ * fallbacks keep the fixed dates.
+ */
+const SEED_SHIFT_DAYS =
+  DEMO_MODE && process.env.NODE_ENV !== 'test'
+    ? Math.floor((Date.now() + WAT_MS) / DAY_MS) - SEED_DAY
+    : 0;
+
+/** A sample-data timestamp, moved to the current demo day. */
+export function seedDate(iso: string): string {
+  return SEED_SHIFT_DAYS === 0
+    ? iso
+    : new Date(Date.parse(iso) + SEED_SHIFT_DAYS * DAY_MS).toISOString();
+}
 export type EventTemplateType = NonNullable<EventPublic['template']>;
 export type TonightMood = NonNullable<EventPublic['tonightMood']>;
 export type EventLineupSlot = NonNullable<EventPublic['lineup']>[number];
@@ -114,8 +136,8 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       'The flagship open-air concert and night market at SUB Field. Live Afrobeats sets, campus DJs, food stalls, and fast offline QR check-in at Gate A & Gate B.',
     category: 'SOCIAL_PARTY',
     status: 'PUBLISHED',
-    startsAt: '2026-11-01T19:00:00.000Z',
-    endsAt: '2026-11-01T23:00:00.000Z',
+    startsAt: seedDate('2026-11-01T19:00:00.000Z'),
+    endsAt: seedDate('2026-11-01T23:00:00.000Z'),
     venueName: 'SUB Main Field, University of Ibadan',
     venueDetail:
       'Enter via Student Union Building main gate opposite Queen Elizabeth II Hall. Gate A handles Verified Student QR Passes; Gate B handles Open RSVPs.',
@@ -123,8 +145,8 @@ export const SEED_EVENTS: EnrichedEvent[] = [
     capacity: 500,
     rsvpCount: 482,
     organizer: SEED_ORGANIZERS[0]!,
-    createdAt: '2026-10-25T10:00:00.000Z',
-    updatedAt: '2026-11-01T12:00:00.000Z',
+    createdAt: seedDate('2026-10-25T10:00:00.000Z'),
+    updatedAt: seedDate('2026-11-01T12:00:00.000Z'),
     template: 'CONCERT_PARTY',
     studentsOnly: false,
     waitlistEnabled: true,
@@ -148,7 +170,7 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       id: '22222222-2222-4222-8222-222222222205',
       slug: 'havana-official-afterparty-zik',
       title: 'Havana Official After-Party: Zik Hall Lounge',
-      startsAt: '2026-11-01T22:30:00.000Z',
+      startsAt: seedDate('2026-11-01T22:30:00.000Z'),
       venueName: 'Zik Hall Senior Common Room',
       accessRule: 'PRIORITY_CHECKED_IN',
     },
@@ -161,16 +183,16 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       'Under the floodlights at the UI New Stadium. Can Mellanby defend the title against Tedder Hall? Free entry with instant courtside RSVP.',
     category: 'SPORTS_RECREATION',
     status: 'PUBLISHED',
-    startsAt: '2026-11-01T17:30:00.000Z',
-    endsAt: '2026-11-01T19:30:00.000Z',
+    startsAt: seedDate('2026-11-01T17:30:00.000Z'),
+    endsAt: seedDate('2026-11-01T19:30:00.000Z'),
     venueName: 'UI New Stadium Complex (Awo Pitch)',
     venueDetail: 'Home stands (West) reserved for Mellanby & Kuti; East stands for Tedder & Indy.',
     coverImageUrl: '/demo/events/mellanby-vs-tedder-interhall-final.webp',
     capacity: 800,
     rsvpCount: 614,
     organizer: SEED_ORGANIZERS[2]!,
-    createdAt: '2026-10-26T10:00:00.000Z',
-    updatedAt: '2026-11-01T16:30:00.000Z',
+    createdAt: seedDate('2026-10-26T10:00:00.000Z'),
+    updatedAt: seedDate('2026-11-01T16:30:00.000Z'),
     template: 'MATCH_TOURNAMENT',
     studentsOnly: false,
     waitlistEnabled: true,
@@ -194,8 +216,8 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       'An immersive candlelight stage production by the Department of Theatre Arts featuring live bata percussion and contemporary choreography.',
     category: 'PERFORMANCE_ARTS',
     status: 'PUBLISHED',
-    startsAt: '2026-11-01T18:00:00.000Z',
-    endsAt: '2026-11-01T20:30:00.000Z',
+    startsAt: seedDate('2026-11-01T18:00:00.000Z'),
+    endsAt: seedDate('2026-11-01T20:30:00.000Z'),
     venueName: 'Wole Soyinka Arts Theatre',
     venueDetail:
       'Doors close strictly 10 minutes after curtain call. Pick your preferred showtime below.',
@@ -203,8 +225,8 @@ export const SEED_EVENTS: EnrichedEvent[] = [
     capacity: 220,
     rsvpCount: 198,
     organizer: SEED_ORGANIZERS[1]!,
-    createdAt: '2026-10-20T09:00:00.000Z',
-    updatedAt: '2026-11-01T10:00:00.000Z',
+    createdAt: seedDate('2026-10-20T09:00:00.000Z'),
+    updatedAt: seedDate('2026-11-01T10:00:00.000Z'),
     template: 'PLAY_CULTURAL',
     studentsOnly: false,
     waitlistEnabled: true,
@@ -221,13 +243,13 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       {
         id: 'st-1',
         label: 'Sun 6:00 PM · Opening Curtain',
-        startsAt: '2026-11-01T18:00:00.000Z',
+        startsAt: seedDate('2026-11-01T18:00:00.000Z'),
         spotsLeft: 12,
       },
       {
         id: 'st-2',
         label: 'Sun 8:30 PM · Encore Night',
-        startsAt: '2026-11-01T20:30:00.000Z',
+        startsAt: seedDate('2026-11-01T20:30:00.000Z'),
         spotsLeft: 34,
       },
     ],
@@ -240,8 +262,8 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       'Hands-on engineering workshop & founder panel on Web Crypto, IndexedDB sync, and resilient mobile UX. Refreshments provided.',
     category: 'ACADEMIC_CONFERENCE',
     status: 'PUBLISHED',
-    startsAt: '2026-11-02T14:00:00.000Z',
-    endsAt: '2026-11-02T17:00:00.000Z',
+    startsAt: seedDate('2026-11-02T14:00:00.000Z'),
+    endsAt: seedDate('2026-11-02T17:00:00.000Z'),
     venueName: 'Trenchard Hall, University of Ibadan',
     venueDetail:
       'Bring your laptop; local Wi-Fi hub and offline starter packs available at check-in.',
@@ -249,8 +271,8 @@ export const SEED_EVENTS: EnrichedEvent[] = [
     capacity: 300,
     rsvpCount: 245,
     organizer: SEED_ORGANIZERS[3]!,
-    createdAt: '2026-10-22T09:00:00.000Z',
-    updatedAt: '2026-11-01T09:00:00.000Z',
+    createdAt: seedDate('2026-10-22T09:00:00.000Z'),
+    updatedAt: seedDate('2026-11-01T09:00:00.000Z'),
     template: 'GENERIC',
     studentsOnly: true,
     waitlistEnabled: true,
@@ -266,16 +288,16 @@ export const SEED_EVENTS: EnrichedEvent[] = [
       'Keep your night going after SUB Field wraps! Linked directly to Sigma Havana Night—attendees checked in at the main concert get priority lane access.',
     category: 'CLUB_SOCIETY',
     status: 'PUBLISHED',
-    startsAt: '2026-11-01T22:30:00.000Z',
-    endsAt: '2026-11-02T01:30:00.000Z',
+    startsAt: seedDate('2026-11-01T22:30:00.000Z'),
+    endsAt: seedDate('2026-11-02T01:30:00.000Z'),
     venueName: 'Zik Hall Senior Common Room',
     venueDetail: 'Priority entry lane for guests holding a scanned Havana Night QR pass.',
     coverImageUrl: '/demo/events/havana-official-afterparty-zik.webp',
     capacity: 150,
     rsvpCount: 136,
     organizer: SEED_ORGANIZERS[0]!,
-    createdAt: '2026-10-28T11:00:00.000Z',
-    updatedAt: '2026-11-01T12:00:00.000Z',
+    createdAt: seedDate('2026-10-28T11:00:00.000Z'),
+    updatedAt: seedDate('2026-11-01T12:00:00.000Z'),
     template: 'CONCERT_PARTY',
     studentsOnly: true,
     waitlistEnabled: true,
@@ -305,8 +327,8 @@ export const SEED_STORIES: EnrichedStory[] = [
     mediaType: 'IMAGE',
     headline: 'Soundcheck Live at SUB Field 🔥',
     caption: 'Gate A & Gate B scanners are synced. 18 spots left before waitlist kicks in!',
-    createdAt: '2026-11-01T15:00:00.000Z',
-    expiresAt: '2026-11-02T15:00:00.000Z',
+    createdAt: seedDate('2026-11-01T15:00:00.000Z'),
+    expiresAt: seedDate('2026-11-02T15:00:00.000Z'),
   },
   {
     id: '33333333-3333-4333-8333-333333333302',
@@ -318,8 +340,8 @@ export const SEED_STORIES: EnrichedStory[] = [
     mediaType: 'IMAGE',
     headline: "GOAL! Mellanby takes a 2–1 lead (68')",
     caption: 'Floodlights are electric at the UI New Stadium. Tap below for live fixture details.',
-    createdAt: '2026-11-01T16:10:00.000Z',
-    expiresAt: '2026-11-02T16:10:00.000Z',
+    createdAt: seedDate('2026-11-01T16:10:00.000Z'),
+    expiresAt: seedDate('2026-11-02T16:10:00.000Z'),
   },
   {
     id: '33333333-3333-4333-8333-333333333303',
@@ -331,8 +353,8 @@ export const SEED_STORIES: EnrichedStory[] = [
     mediaType: 'IMAGE',
     headline: 'Backstage at Wole Soyinka Theatre 🎭',
     caption: 'Only 12 seats left for the 6:00 PM opening curtain.',
-    createdAt: '2026-11-01T14:30:00.000Z',
-    expiresAt: '2026-11-02T14:30:00.000Z',
+    createdAt: seedDate('2026-11-01T14:30:00.000Z'),
+    expiresAt: seedDate('2026-11-02T14:30:00.000Z'),
   },
   {
     id: '33333333-3333-4333-8333-333333333304',
@@ -344,8 +366,8 @@ export const SEED_STORIES: EnrichedStory[] = [
     mediaType: 'IMAGE',
     headline: 'Trenchard Hall Speaker Lineup Dropped 💻',
     caption: 'Verified @stu.ui.edu.ng students get priority workshop seating.',
-    createdAt: '2026-11-01T13:00:00.000Z',
-    expiresAt: '2026-11-02T13:00:00.000Z',
+    createdAt: seedDate('2026-11-01T13:00:00.000Z'),
+    expiresAt: seedDate('2026-11-02T13:00:00.000Z'),
   },
 ];
 
