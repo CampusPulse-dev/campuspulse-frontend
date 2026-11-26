@@ -44,8 +44,10 @@ async function capture(page, name) {
   return [name, webp];
 }
 
-async function openDemoAccount(email) {
+async function openDemoAccount(email, options = {}) {
   const context = await browser.newContext({
+    serviceWorkers: 'block',
+    ...options,
     baseURL: origin.origin,
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 2,
@@ -53,7 +55,6 @@ async function openDemoAccount(email) {
     hasTouch: true,
     reducedMotion: 'reduce',
     colorScheme: 'light',
-    serviceWorkers: 'block',
   });
   await context.route('**/*', (route) =>
     new URL(route.request().url()).origin === origin.origin ? route.continue() : route.abort(),
@@ -70,33 +71,24 @@ try {
     wait,
   );
   const feed = await capture(attendee, 'feed');
-  await attendee.goto('/e/havana-night-sub-field');
-  await attendee.getByRole('button', { name: 'RSVP — Free', exact: true }).click();
-  await attendee.getByRole('link', { name: 'Open Offline QR Pass →', exact: true }).click();
-  await expect(attendee.getByRole('img', { name: 'Event entry QR code' })).toBeVisible(wait);
-  await expect(attendee.getByText('DEMO PASS · Not valid for entry')).toBeVisible(wait);
-  const pass = await capture(attendee, 'pass');
 
-  const organizer = await openDemoAccount('organizer@campus.test');
-  await organizer.goto('/organizer/sigma-club-ui');
-  await expect(organizer.getByRole('heading', { name: 'Sigma Club UI', exact: true })).toBeVisible(
-    wait,
-  );
-  const dashboard = await capture(organizer, 'organizer');
+  // The door console stores itself for offline reloads through the service worker,
+  // and shows an error when it can't, so this context must allow service workers.
+  const organizer = await openDemoAccount('organizer@campus.test', { serviceWorkers: 'allow' });
   await organizer.goto('/organizer/door/demo-sigma-live');
+  await organizer.evaluate(() => navigator.serviceWorker?.ready);
   await organizer.getByRole('button', { name: 'Sync demo roster' }).click();
   await expect(organizer.getByText('Demo roster ready on this device')).toBeVisible({
     timeout: 30_000,
   });
+  await expect(organizer.getByText(/Could not prepare/)).toHaveCount(0);
   await organizer.getByRole('tab', { name: 'Manual Check-In' }).click();
   await expect(organizer.getByLabel('Find an attendee')).toBeVisible(wait);
   const door = await capture(organizer, 'door');
 
   await mkdir(output, { recursive: true });
   await Promise.all(
-    [feed, pass, dashboard, door].map(([name, webp]) =>
-      writeDemoWebp(new URL(name + '.webp', output), webp),
-    ),
+    [feed, door].map(([name, webp]) => writeDemoWebp(new URL(name + '.webp', output), webp)),
   );
 } finally {
   await browser.close();
