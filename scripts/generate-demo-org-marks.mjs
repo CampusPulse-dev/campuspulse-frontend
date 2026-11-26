@@ -1,6 +1,7 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 import sharp from 'sharp';
+import { writeDemoWebp } from './write-demo-webp.mjs';
 
 const size = 512;
 const maxBytes = 40_000;
@@ -19,7 +20,7 @@ const clubs = [
     'wole-soyinka-theatre',
     'WS',
     'performance',
-    '<path d="M36 238Q89 92 256 92t220 146M69 142q43 36 115 40m259-40q-43 36-115 40"/>',
+    '<path transform="translate(0 -42)" d="M36 238Q89 92 256 92t220 146M69 142q43 36 115 40m259-40q-43 36-115 40"/>',
   ],
   [
     'ui-sports-council',
@@ -114,7 +115,7 @@ try {
     </svg>`;
     const mark = await sharp(Buffer.from(svg)).webp({ quality: 85 }).toBuffer();
     if (mark.length > maxBytes) throw new Error(`${slug} exceeds ${maxBytes} bytes`);
-    await writeFile(new URL(`public/demo/orgs/${slug}.webp`, root), mark);
+    await writeDemoWebp(new URL(`public/demo/orgs/${slug}.webp`, root), mark);
   }
 } finally {
   await browser.close();
