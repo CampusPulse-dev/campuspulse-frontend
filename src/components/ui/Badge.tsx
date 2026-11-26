@@ -2,7 +2,7 @@ import React from 'react';
 import type { EventCategory } from '@/lib/api';
 import styles from './Badge.module.css';
 
-export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger';
+export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'onMedia';
 
 export interface BadgeProps {
   variant?: BadgeVariant;
