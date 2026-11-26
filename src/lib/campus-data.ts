@@ -119,6 +119,15 @@ export const SEED_ORGANIZERS: OrganizerPublic[] = [
     isVerified: true,
     followerCount: 1870,
   },
+  {
+    id: '11111111-1111-4111-8111-111111111106',
+    slug: 'ui-film-society',
+    name: 'UI Film Society',
+    bio: 'Student film screenings and discussions at the University of Ibadan.',
+    logoUrl: '/demo/orgs/ui-film-society.webp',
+    isVerified: true,
+    followerCount: 620,
+  },
 ];
 
 const MUTUAL_FRIENDS_SAMPLE: MutualFriend[] = [
@@ -368,6 +377,28 @@ export const SEED_STORIES: EnrichedStory[] = [
     caption: 'Verified @stu.ui.edu.ng students get priority workshop seating.',
     createdAt: seedDate('2026-11-01T13:00:00.000Z'),
     expiresAt: seedDate('2026-11-02T13:00:00.000Z'),
+  },
+  {
+    id: '33333333-3333-4333-8333-333333333305',
+    organizer: SEED_ORGANIZERS[4]!,
+    eventId: null,
+    mediaUrl: '/demo/orgs/jci-ibadan-varsity.webp',
+    mediaType: 'IMAGE',
+    headline: 'JCI campus debate',
+    caption: 'The club is collecting topics for its next student debate.',
+    createdAt: seedDate('2026-11-01T12:00:00.000Z'),
+    expiresAt: seedDate('2026-11-02T12:00:00.000Z'),
+  },
+  {
+    id: '33333333-3333-4333-8333-333333333306',
+    organizer: SEED_ORGANIZERS[5]!,
+    eventId: null,
+    mediaUrl: '/demo/orgs/ui-film-society.webp',
+    mediaType: 'IMAGE',
+    headline: 'Film Society screening',
+    caption: 'The club is putting together its next student short-film programme.',
+    createdAt: seedDate('2026-11-01T12:00:00.000Z'),
+    expiresAt: seedDate('2026-11-02T12:00:00.000Z'),
   },
 ];
 
