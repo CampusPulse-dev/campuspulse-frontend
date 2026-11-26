@@ -121,6 +121,7 @@
   --dur-modal-out: 180ms;
   --dur-move: 200ms;
   --dur-toast-in: 220ms;
+  --dur-draw: 320ms;
   /* Brand pulse: draw-in, then a heartbeat sweep (hero) / live mark. */
   --pulse-draw: 1100ms;
   --pulse-cycle: 2400ms;

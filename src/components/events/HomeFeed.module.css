@@ -278,3 +278,21 @@
     font-size: 30px;
   }
 }
+
+/* Saving pops the icon once; un-saving stays instant. */
+.savePop svg {
+  animation: savePop 160ms var(--ease-out);
+}
+@keyframes savePop {
+  from {
+    transform: scale(0.85);
+  }
+}
+
+/* Press feedback only for the card's own links, never its buttons. */
+.eventCard {
+  transition: transform var(--dur-press) var(--ease-out);
+}
+.eventCard:has(.posterLink:active, .titleLink:active) {
+  transform: scale(0.98);
+}

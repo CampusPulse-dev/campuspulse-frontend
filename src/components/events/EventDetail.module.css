@@ -291,6 +291,43 @@
   font: var(--type-meta);
   color: var(--color-text-muted);
 }
+
+/* RSVP confirmed: the tick draws after the sheet lands, then the saved badge settles. */
+.confirmMark {
+  width: 48px;
+  height: 48px;
+  fill: none;
+  stroke: var(--status-success);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.confirmMark circle,
+.confirmMark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: confirmDraw var(--dur-draw) var(--ease-out) forwards;
+  animation-delay: var(--dur-modal-in);
+}
+.confirmMark path {
+  animation-delay: calc(var(--dur-modal-in) + 120ms);
+}
+.confirmSaved {
+  justify-self: start;
+  animation: confirmSettle var(--dur-move) var(--ease-out) both;
+  animation-delay: calc(var(--dur-modal-in) + var(--dur-draw) + 60ms);
+}
+@keyframes confirmDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes confirmSettle {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
 .reportForm {
   display: grid;
   gap: var(--space-4);
@@ -349,5 +386,15 @@
   .scoreDigits {
     font-size: 26px;
     gap: var(--space-2);
+  }
+}
+
+/* Saving pops the icon once; un-saving stays instant. */
+.savePop svg {
+  animation: savePop 160ms var(--ease-out);
+}
+@keyframes savePop {
+  from {
+    transform: scale(0.85);
   }
 }
