@@ -7,6 +7,7 @@ import {
   WifiOff,
   Search,
   Ticket,
+  ShieldCheck,
   Users,
   CircleAlert,
   X,
@@ -14,6 +15,7 @@ import {
 import { Icon } from '@/components/ui/Icon';
 import { BrandLockup } from '@/components/ui/BrandLockup';
 import { PulseLine } from '@/components/ui/PulseLine';
+import { ListRow } from '@/components/ui/ListRow';
 import { EventCard } from '@/components/events/EventCard';
 import { isTonight, type EnrichedEvent } from '@/lib/campus-data';
 import { imageSource } from '@/lib/media';
@@ -21,7 +23,7 @@ import { SiteFooter } from './SiteFooter';
 import styles from './Landing.module.css';
 import previewStyles from './PhonePreview.module.css';
 
-function PhonePreview({ screen, alt }: { screen: 'feed' | 'organizer' | 'door'; alt: string }) {
+function PhonePreview({ screen, alt }: { screen: 'feed' | 'door'; alt: string }) {
   return (
     <div className={previewStyles.frame}>
       <Image
@@ -218,10 +220,23 @@ export function Landing({
         className={`${styles.section} ${styles.organizerSection}`}
         aria-labelledby="organizer-heading"
       >
-        <PhonePreview
-          screen="organizer"
-          alt="CampusPulse organizer dashboard showing Sigma Club UI’s event activity"
-        />
+        <div className={styles.productComposition}>
+          <div className={styles.productTitle}>
+            <Icon icon={Users} />
+            <span>Your next event</span>
+            <span>Organizer view</span>
+          </div>
+          <ListRow title="Before the doors open" meta="Publish your event. Know who’s coming." />
+          <ListRow
+            title="When the crowd arrives"
+            meta="Scan QR passes or check people in by name."
+          />
+          <ListRow title="After a good night" meta="See the RSVPs that became real check-ins." />
+          <div className={styles.productStatus}>
+            <Icon icon={ShieldCheck} />
+            <span>Verified clubs. Clear headcounts.</span>
+          </div>
+        </div>
         <div>
           <p className={styles.kicker}>For the people who make it happen.</p>
           <h2 id="organizer-heading">
