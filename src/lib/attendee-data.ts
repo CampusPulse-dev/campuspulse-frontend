@@ -1,5 +1,5 @@
 import { apiFetch, type Schemas, type EventPublic, enrichEventPublic } from './api';
-import { SEED_EVENTS, SEED_ORGANIZERS, DEFAULT_DEMO_USER } from './campus-data';
+import { SEED_EVENTS, SEED_ORGANIZERS, DEFAULT_DEMO_USER, seedDate } from './campus-data';
 import { DEMO_MODE, DATA_MODE, DEV_AUTH_MODE, getDevAuthEmail } from './mode';
 
 export type PersonaProfile = Schemas['AttendeePersona'];
@@ -120,7 +120,7 @@ export const demoNotices: Notice[] = [
     title: 'Your night starts here',
     body: 'Explore Havana Night and its official after-party.',
     href: '/e/havana-night-sub-field',
-    createdAt: '2026-11-01T14:00:00Z',
+    createdAt: seedDate('2026-11-01T14:00:00Z'),
     readAt: null,
   },
   {
@@ -128,7 +128,7 @@ export const demoNotices: Notice[] = [
     title: 'A new friend request',
     body: 'Kunle wants to connect with you.',
     href: '/friends',
-    createdAt: '2026-11-01T13:00:00Z',
+    createdAt: seedDate('2026-11-01T13:00:00Z'),
     readAt: null,
   },
 ];
