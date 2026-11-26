@@ -23,7 +23,7 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   CLUB_SOCIETY: 'Club / Society',
 };
 
-const CATEGORY_CLASS: Record<EventCategory, string> = {
+export const CATEGORY_CLASS: Record<EventCategory, string> = {
   SOCIAL_PARTY: styles.catSocial ?? '',
   PERFORMANCE_ARTS: styles.catPerformance ?? '',
   ACADEMIC_CONFERENCE: styles.catAcademic ?? '',
