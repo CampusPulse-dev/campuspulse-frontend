@@ -36,7 +36,7 @@
   padding: var(--space-5);
   color: var(--color-hero-text);
 }
-.heroOverlayTop span {
+.heroOverlayTop > :first-child {
   color: inherit;
 }
 .heroScrim {

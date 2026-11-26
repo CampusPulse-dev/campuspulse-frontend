@@ -2,7 +2,7 @@ import React from 'react';
 import type { EventCategory } from '@/lib/api';
 import styles from './Badge.module.css';
 
-export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger';
+export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'onMedia';
 
 export interface BadgeProps {
   variant?: BadgeVariant;
@@ -23,7 +23,7 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   CLUB_SOCIETY: 'Club / Society',
 };
 
-const CATEGORY_CLASS: Record<EventCategory, string> = {
+export const CATEGORY_CLASS: Record<EventCategory, string> = {
   SOCIAL_PARTY: styles.catSocial ?? '',
   PERFORMANCE_ARTS: styles.catPerformance ?? '',
   ACADEMIC_CONFERENCE: styles.catAcademic ?? '',

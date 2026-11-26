@@ -258,6 +258,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: demoId,
             role: demoRoleForEmail(body.email),
             isVerifiedStudent: false,
+            // Sign-in reuses the Tobi persona, so it keeps his photo; sign-up names a new person.
+            avatarUrl: 'displayName' in body ? null : DEFAULT_DEMO_USER.avatarUrl,
             displayName: 'displayName' in body ? body.displayName : 'Tobi Adeyemi',
           },
           accessToken: 'demo',
