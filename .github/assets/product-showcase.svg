@@ -1,0 +1,201 @@
+<svg width="1200" height="400" viewBox="0 0 1200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- PANEL 1: DISCOVER & RSVP -->
+  <g transform="translate(0, 0)">
+    <rect width="384" height="400" rx="20" fill="#10002B" stroke="#2F1A5E" stroke-width="1.5"/>
+    <rect x="24" y="22" width="174" height="26" rx="13" fill="#24104F" stroke="#452A7A" stroke-width="1"/>
+    <text x="38" y="39" fill="#E0AAFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" letter-spacing="0.06em">
+      1 · DISCOVER &amp; COMMIT
+    </text>
+
+    <!-- Mock Event Card -->
+    <rect x="24" y="64" width="336" height="258" rx="16" fill="#1A0840" stroke="#351C6B" stroke-width="1"/>
+    <!-- Cover Gradient Header -->
+    <rect x="36" y="76" width="312" height="72" rx="10" fill="#5A189A"/>
+    <rect x="48" y="88" width="108" height="22" rx="11" fill="#10002B" fill-opacity="0.72"/>
+    <circle cx="60" cy="99" r="4" fill="#C25CF0"/>
+    <text x="70" y="103" fill="#FFFFFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="600">
+      SOCIAL / PARTY
+    </text>
+    <rect x="246" y="88" width="90" height="22" rx="11" fill="#0D3B2E" stroke="#3EE2A8" stroke-opacity="0.4"/>
+    <text x="258" y="103" fill="#3EE2A8" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="10" font-weight="700">
+      SSR &lt; 2.5s
+    </text>
+    <text x="48" y="135" fill="#E0AAFF" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11" font-weight="600">
+      campuspulse.ng/e/havana-night
+    </text>
+
+    <!-- Event Copy -->
+    <text x="38" y="176" fill="#FFFFFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="19" font-weight="700">
+      Havana Night · SUB Field
+    </text>
+    <text x="38" y="198" fill="#B9A8D4" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13">
+      Tonight · 9:00 PM WAT · Sigma Club UI
+    </text>
+
+    <!-- Friends Going Row -->
+    <circle cx="48" cy="226" r="11" fill="#7B2CBF" stroke="#1A0840" stroke-width="2"/>
+    <text x="44" y="230" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10" font-weight="700">A</text>
+    <circle cx="64" cy="226" r="11" fill="#C25CF0" stroke="#1A0840" stroke-width="2"/>
+    <text x="60" y="230" fill="#10002B" font-family="Inter, sans-serif" font-size="10" font-weight="700">K</text>
+    <circle cx="80" cy="226" r="11" fill="#3EE2A8" stroke="#1A0840" stroke-width="2"/>
+    <text x="76" y="230" fill="#10002B" font-family="Inter, sans-serif" font-size="10" font-weight="700">F</text>
+    <text x="100" y="230" fill="#E0AAFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5" font-weight="600">
+      +12 friends going · 420 locked in
+    </text>
+
+    <!-- Primary CTA -->
+    <rect x="38" y="256" width="308" height="46" rx="12" fill="#E0AAFF"/>
+    <text x="192" y="284" text-anchor="middle" fill="#10002B" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14.5" font-weight="700">
+      One-Tap Free RSVP
+    </text>
+
+    <!-- Footer Caption -->
+    <text x="24" y="352" fill="#E5D9F8" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13.5" font-weight="600">
+      WhatsApp link to ticket in seconds
+    </text>
+    <text x="24" y="373" fill="#B9A8D4" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5">
+      Public SSR pages open in a plain browser tab — zero install.
+    </text>
+  </g>
+
+  <!-- PANEL 2: OFFLINE QR PASS -->
+  <g transform="translate(408, 0)">
+    <rect width="384" height="400" rx="20" fill="#10002B" stroke="#2F1A5E" stroke-width="1.5"/>
+    <rect x="24" y="22" width="156" height="26" rx="13" fill="#24104F" stroke="#452A7A" stroke-width="1"/>
+    <text x="38" y="39" fill="#E0AAFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" letter-spacing="0.06em">
+      2 · OFFLINE QR PASS
+    </text>
+
+    <!-- Ticket Card -->
+    <rect x="24" y="64" width="336" height="258" rx="16" fill="#1A0840" stroke="#351C6B" stroke-width="1"/>
+    <!-- Status Badge -->
+    <rect x="38" y="78" width="170" height="24" rx="12" fill="#0D3B2E" stroke="#3EE2A8" stroke-opacity="0.45"/>
+    <text x="50" y="94" fill="#3EE2A8" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700">
+      ✓ CONFIRMED · VERIFIED
+    </text>
+    <text x="346" y="94" text-anchor="end" fill="#B9A8D4" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11">
+      #CP-4819
+    </text>
+
+    <!-- Vector QR Box -->
+    <rect x="38" y="116" width="128" height="128" rx="12" fill="#FFFFFF"/>
+    <g transform="translate(50, 128)" fill="#10002B">
+      <!-- Top-Left Finder -->
+      <rect x="0" y="0" width="30" height="30" rx="4"/>
+      <rect x="5" y="5" width="20" height="20" rx="2" fill="#FFFFFF"/>
+      <rect x="9" y="9" width="12" height="12" rx="1.5"/>
+      <!-- Top-Right Finder -->
+      <rect x="74" y="0" width="30" height="30" rx="4"/>
+      <rect x="79" y="5" width="20" height="20" rx="2" fill="#FFFFFF"/>
+      <rect x="83" y="9" width="12" height="12" rx="1.5"/>
+      <!-- Bottom-Left Finder -->
+      <rect x="0" y="74" width="30" height="30" rx="4"/>
+      <rect x="5" y="79" width="20" height="20" rx="2" fill="#FFFFFF"/>
+      <rect x="9" y="83" width="12" height="12" rx="1.5"/>
+      <!-- Data Modules -->
+      <rect x="38" y="2" width="8" height="8" rx="1.5"/>
+      <rect x="52" y="2" width="14" height="8" rx="1.5"/>
+      <rect x="38" y="16" width="16" height="8" rx="1.5"/>
+      <rect x="60" y="16" width="8" height="16" rx="1.5"/>
+      <rect x="4" y="38" width="12" height="8" rx="1.5"/>
+      <rect x="22" y="38" width="16" height="8" rx="1.5"/>
+      <rect x="44" y="38" width="20" height="20" rx="4" fill="#5A189A"/>
+      <rect x="70" y="38" width="14" height="8" rx="1.5"/>
+      <rect x="90" y="38" width="14" height="16" rx="1.5"/>
+      <rect x="2" y="52" width="20" height="12" rx="1.5"/>
+      <rect x="28" y="54" width="10" height="12" rx="1.5"/>
+      <rect x="72" y="54" width="12" height="16" rx="1.5"/>
+      <rect x="38" y="74" width="12" height="12" rx="1.5"/>
+      <rect x="56" y="74" width="16" height="8" rx="1.5"/>
+      <rect x="78" y="76" width="26" height="10" rx="1.5"/>
+      <rect x="38" y="92" width="24" height="12" rx="1.5"/>
+      <rect x="68" y="92" width="14" height="12" rx="1.5"/>
+      <rect x="88" y="92" width="16" height="12" rx="1.5"/>
+    </g>
+
+    <!-- Ticket Details -->
+    <text x="182" y="138" fill="#FFFFFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700">
+      Tobi Adeyemi
+    </text>
+    <text x="182" y="160" fill="#B9A8D4" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5">
+      UI Verified Student
+    </text>
+    <rect x="182" y="176" width="162" height="28" rx="8" fill="#24104F" stroke="#452A7A"/>
+    <text x="194" y="194" fill="#E0AAFF" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11" font-weight="600">
+      Ed25519 Signed Pass
+    </text>
+    <rect x="182" y="212" width="162" height="28" rx="8" fill="#24104F" stroke="#452A7A"/>
+    <text x="194" y="230" fill="#C9B8E8" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11">
+      IDB: cp_my_tickets
+    </text>
+
+    <!-- Offline Ready Bar -->
+    <rect x="38" y="260" width="308" height="42" rx="10" fill="#24104F" stroke="#3EE2A8" stroke-opacity="0.35"/>
+    <circle cx="56" cy="281" r="4.5" fill="#3EE2A8"/>
+    <text x="70" y="285" fill="#F3ECFB" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5" font-weight="600">
+      Cached locally · Renders with zero signal
+    </text>
+
+    <!-- Footer Caption -->
+    <text x="24" y="352" fill="#E5D9F8" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13.5" font-weight="600">
+      Always open at the venue gate
+    </text>
+    <text x="24" y="373" fill="#B9A8D4" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5">
+      Passes stay in IndexedDB — never refetched on congested 3G.
+    </text>
+  </g>
+
+  <!-- PANEL 3: DOOR CONSOLE -->
+  <g transform="translate(816, 0)">
+    <rect width="384" height="400" rx="20" fill="#10002B" stroke="#2F1A5E" stroke-width="1.5"/>
+    <rect x="24" y="22" width="212" height="26" rx="13" fill="#24104F" stroke="#452A7A" stroke-width="1"/>
+    <text x="38" y="39" fill="#E0AAFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" letter-spacing="0.06em">
+      3 · OFFLINE DOOR CONSOLE
+    </text>
+
+    <!-- Door Console Card -->
+    <rect x="24" y="64" width="336" height="258" rx="16" fill="#1A0840" stroke="#351C6B" stroke-width="1"/>
+
+    <!-- Peer Tabs -->
+    <rect x="38" y="78" width="150" height="32" rx="9" fill="#5A189A"/>
+    <text x="113" y="98" text-anchor="middle" fill="#FFFFFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700">
+      QR Scanner
+    </text>
+    <rect x="196" y="78" width="150" height="32" rx="9" fill="#24104F" stroke="#452A7A"/>
+    <text x="271" y="98" text-anchor="middle" fill="#E0AAFF" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600">
+      Manual Check-In
+    </text>
+
+    <!-- 3 Verdict States -->
+    <rect x="38" y="124" width="308" height="44" rx="10" fill="#0D3B2E" stroke="#3EE2A8" stroke-opacity="0.7"/>
+    <text x="52" y="150" fill="#3EE2A8" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700">
+      ✓ VALID — Tobi Adeyemi
+    </text>
+    <text x="332" y="150" text-anchor="end" fill="#A6F4D6" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11">
+      &lt; 5ms
+    </text>
+
+    <rect x="38" y="176" width="308" height="44" rx="10" fill="#36270B" stroke="#FAC775" stroke-opacity="0.7"/>
+    <text x="52" y="202" fill="#FAC775" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700">
+      ! DUPLICATE — Scanned 14m ago
+    </text>
+
+    <rect x="38" y="228" width="308" height="44" rx="10" fill="#3B121C" stroke="#FF5D6C" stroke-opacity="0.7"/>
+    <text x="52" y="254" fill="#FF5D6C" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700">
+      ✕ INVALID — Wrong event or sig
+    </text>
+
+    <!-- Batch Outbox Bar -->
+    <text x="38" y="298" fill="#B9A8D4" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="11">
+      Offline Ready · 18 scans queued · Batch sync (500/req)
+    </text>
+
+    <!-- Footer Caption -->
+    <text x="24" y="352" fill="#E5D9F8" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13.5" font-weight="600">
+      Built for SUB Field dead zones
+    </text>
+    <text x="24" y="373" fill="#B9A8D4" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12.5">
+      Local Ed25519 verification + peer Manual Check-In tab.
+    </text>
+  </g>
+</svg>
