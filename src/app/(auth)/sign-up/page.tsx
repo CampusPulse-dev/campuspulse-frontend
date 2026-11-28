@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
+import { AuthBrandPanel } from '../AuthBrandPanel';
 
 function SignUpForm() {
   const router = useRouter();
@@ -140,6 +141,7 @@ function SignUpForm() {
 export default function SignUpPage() {
   return (
     <main className={styles.authPage}>
+      <AuthBrandPanel />
       <Suspense fallback={null}>
         <SignUpForm />
       </Suspense>

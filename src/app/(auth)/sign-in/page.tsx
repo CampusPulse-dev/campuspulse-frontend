@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { safeNext } from '@/lib/mode';
 import { useAuth } from '@/lib/auth-context';
 import styles from '../Auth.module.css';
+import { AuthBrandPanel } from '../AuthBrandPanel';
 
 function SignInForm() {
   const router = useRouter();
@@ -121,6 +122,7 @@ function SignInForm() {
 export default function SignInPage() {
   return (
     <main className={styles.authPage}>
+      <AuthBrandPanel />
       <Suspense fallback={null}>
         <SignInForm />
       </Suspense>
