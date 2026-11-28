@@ -264,3 +264,34 @@ select .page:has(.pass) {
     width: min(100%, 260px);
   }
 }
+.discover {
+  display: grid;
+  gap: var(--space-7);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.chip {
+  min-height: 40px;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-press) var(--ease-ui),
+    border-color var(--dur-press) var(--ease-ui);
+}
+.chip:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-raised);
+}
+.chip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

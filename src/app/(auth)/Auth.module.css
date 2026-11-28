@@ -331,3 +331,67 @@
   align-items: center;
   gap: var(--space-1);
 }
+
+/* Wide screens: brand panel beside the form. */
+.brandPanel {
+  display: none;
+}
+@media (min-width: 960px) {
+  .authPage:has(> .brandPanel) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
+    padding: 0;
+  }
+  .authPage:has(> .brandPanel) > .authCard {
+    align-self: center;
+    justify-self: center;
+    margin: var(--space-6);
+  }
+  .brandPanel {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--space-5);
+    padding: var(--space-8) var(--space-7);
+    background: var(--cp-ink);
+    color: var(--cp-white);
+    overflow: hidden;
+  }
+}
+.brandCopy {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 28rem;
+}
+.brandEyebrow {
+  margin: 0;
+  color: var(--cp-lavender);
+  font: 500 var(--text-xs) / 1.5 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.brandHeadline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+.brandPoints {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+  color: color-mix(in srgb, var(--cp-white) 82%, transparent);
+}
+.brandPoints li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.brandPoints svg {
+  color: var(--cp-lavender);
+  flex: none;
+}

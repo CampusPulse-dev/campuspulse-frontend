@@ -1,0 +1,95 @@
+.root {
+  display: grid;
+  gap: var(--space-6);
+}
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(
+      120% 140% at 0% 0%,
+      color-mix(in srgb, var(--cp-lavender) 28%, transparent),
+      transparent 60%
+    ),
+    var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.badge {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+.copy {
+  display: grid;
+  gap: var(--space-1);
+}
+.title {
+  margin: 0;
+  font: var(--type-headline);
+}
+.body {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-5);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--dur-press) var(--ease-ui);
+}
+.primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.primary:hover {
+  background: var(--color-primary-hover);
+}
+.secondary {
+  color: var(--color-primary);
+  border: 1px solid var(--color-border-strong);
+}
+.secondary:hover {
+  background: var(--color-surface-raised);
+}
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.suggestions {
+  display: grid;
+  gap: var(--space-3);
+}
+.eyebrow {
+  margin: 0;
+  color: var(--color-primary);
+  font: 500 var(--text-xs) / 1.5 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+@media (max-width: 520px) {
+  .card {
+    grid-template-columns: 1fr;
+    padding: var(--space-5);
+  }
+}
