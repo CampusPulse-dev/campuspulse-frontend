@@ -1,0 +1,13 @@
+.art {
+  display: block;
+  margin: 0 auto var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.fill {
+  fill: color-mix(in srgb, var(--cp-lavender) 34%, transparent);
+}
+
+.accent {
+  stroke: var(--color-primary);
+}

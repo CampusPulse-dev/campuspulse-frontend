@@ -12,6 +12,7 @@ import { prepareWalletRoute } from '@/lib/wallet-cache';
 import { Ticket, CalendarDays, MapPin, UserRound, Check, History, Bookmark } from 'lucide-react';
 import { EmptyState, Suggestions } from '@/components/ui/EmptyState';
 import { Icon } from '@/components/ui/Icon';
+import { EmptyArt } from '@/components/ui/EmptyArt';
 import { PulseLine } from '@/components/ui/PulseLine';
 import { ListRow } from '@/components/ui/ListRow';
 import { Badge } from '@/components/ui/Badge';
@@ -282,6 +283,7 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
                   {selected.length === 0 && !query.isPending && !query.error ? (
                     <EmptyState
                       icon={tab === 'Past' ? History : Ticket}
+                      art={<EmptyArt variant="ticket" />}
                       title={tab === 'Past' ? 'No past plans yet' : 'Your next night starts here'}
                       body={
                         tab === 'Past'

@@ -5,6 +5,8 @@ import styles from './EmptyState.module.css';
 
 export interface EmptyStateProps {
   icon: LucideIcon;
+  /** An illustration (e.g. <EmptyArt>) shown instead of the icon badge. */
+  art?: React.ReactNode;
   title: string;
   body: React.ReactNode;
   /** The one thing to do next. */
@@ -16,13 +18,23 @@ export interface EmptyStateProps {
 }
 
 /** A blank list that still says what to do next, instead of leaving the page empty. */
-export function EmptyState({ icon, title, body, action, secondary, children }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  art,
+  title,
+  body,
+  action,
+  secondary,
+  children,
+}: EmptyStateProps) {
   return (
     <section className={styles.root}>
       <div className={styles.card}>
-        <span className={styles.badge}>
-          <Icon icon={icon} size={24} />
-        </span>
+        {art ?? (
+          <span className={styles.badge}>
+            <Icon icon={icon} size={24} />
+          </span>
+        )}
         <div className={styles.copy}>
           <h2 className={styles.title}>{title}</h2>
           <p className={styles.body}>{body}</p>

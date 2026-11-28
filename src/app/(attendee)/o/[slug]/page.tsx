@@ -1,13 +1,25 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
+import { BookOpen, Clapperboard, PartyPopper, Trophy, Users } from 'lucide-react';
 import { notFound } from 'next/navigation';
-import { fetchOrganizerBySlug } from '@/lib/api';
+import { fetchOrganizerBySlug, type EventCategory } from '@/lib/api';
+import { imageSource } from '@/lib/media';
+import { Icon } from '@/components/ui/Icon';
 import { Avatar } from '@/components/ui/Avatar';
 import { VerifiedMark } from '@/components/ui/VerifiedMark';
-import { CategoryPill } from '@/components/ui/Badge';
+import { CATEGORY_CLASS, CategoryPill } from '@/components/ui/Badge';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { OrganizerFollowButton } from './OrganizerFollowButton';
 import styles from './OrganizerProfile.module.css';
+
+const CATEGORY_ICONS = {
+  SOCIAL_PARTY: PartyPopper,
+  PERFORMANCE_ARTS: Clapperboard,
+  ACADEMIC_CONFERENCE: BookOpen,
+  SPORTS_RECREATION: Trophy,
+  CLUB_SOCIETY: Users,
+} satisfies Record<EventCategory, typeof PartyPopper>;
 
 interface OrganizerPageProps {
   params: Promise<{ slug: string }>;
@@ -60,14 +72,35 @@ export default async function PublicOrganizerPage({ params }: OrganizerPageProps
             const wat = formatWatDateTime(ev.startsAt);
             return (
               <Link key={ev.id} href={`/e/${ev.slug}`} className={styles.eventRowCard}>
-                <div className={styles.eventMetaTop}>
-                  <CategoryPill category={ev.category} />
-                  <span className={styles.eventDateMono}>{wat.compactLabel} WAT</span>
+                {ev.coverImageUrl ? (
+                  <Image
+                    {...imageSource(ev.coverImageUrl)}
+                    width={144}
+                    height={144}
+                    sizes="(max-width: 479px) 64px, 72px"
+                    loading="lazy"
+                    alt=""
+                    aria-hidden="true"
+                    className={styles.eventThumbnail}
+                  />
+                ) : (
+                  <span
+                    className={`${styles.eventThumbnail} ${styles.eventThumbnailFallback} ${CATEGORY_CLASS[ev.category]}`}
+                    aria-hidden="true"
+                  >
+                    <Icon icon={CATEGORY_ICONS[ev.category]} size={26} />
+                  </span>
+                )}
+                <div className={styles.eventText}>
+                  <div className={styles.eventMetaTop}>
+                    <CategoryPill category={ev.category} />
+                    <span className={styles.eventDateMono}>{wat.compactLabel} WAT</span>
+                  </div>
+                  <h3 className={styles.eventTitle}>{ev.title}</h3>
+                  <p className={styles.eventVenue}>
+                    {ev.venueName} · <strong>{ev.rsvpCount} going</strong>
+                  </p>
                 </div>
-                <h3 className={styles.eventTitle}>{ev.title}</h3>
-                <p className={styles.eventVenue}>
-                  {ev.venueName} · <strong>{ev.rsvpCount} going</strong>
-                </p>
               </Link>
             );
           })}

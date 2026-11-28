@@ -16,6 +16,12 @@
   border: 1px solid var(--color-border);
 }
 
+.onMedia {
+  background: var(--color-scrim);
+  color: var(--color-hero-text);
+  border: 1px solid color-mix(in srgb, var(--cp-white) 36%, transparent);
+}
+
 .success {
   background: var(--status-success-bg);
   color: var(--color-text);
