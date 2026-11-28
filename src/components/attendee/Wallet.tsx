@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import QRCode from 'qrcode';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
@@ -10,7 +9,8 @@ import { DEMO_MODE } from '@/lib/mode';
 import { enrichEventPublic, fetchEventFeed } from '@/lib/api';
 import { formatWatDateTime } from '@/lib/campus-data';
 import { prepareWalletRoute } from '@/lib/wallet-cache';
-import { Ticket, CalendarDays, MapPin, UserRound, Check } from 'lucide-react';
+import { Ticket, CalendarDays, MapPin, UserRound, Check, History, Bookmark } from 'lucide-react';
+import { EmptyState, Suggestions } from '@/components/ui/EmptyState';
 import { Icon } from '@/components/ui/Icon';
 import { PulseLine } from '@/components/ui/PulseLine';
 import { ListRow } from '@/components/ui/ListRow';
@@ -75,6 +75,14 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
       }
       return all.filter((e) => interestedEventIds.includes(e.id));
     },
+  });
+  const showSuggestions =
+    !!user && !rsvpId && tab !== 'Saved' && query.isSuccess && query.data.length === 0;
+  const suggestions = useQuery({
+    queryKey: ['wallet-suggestions'],
+    enabled: showSuggestions,
+    retry: false,
+    queryFn: async () => (await fetchEventFeed()).items.slice(0, 3),
   });
   const pass = query.data?.find((t) => t.rsvpId === rsvpId);
   useEffect(() => {
@@ -238,7 +246,12 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
                     <EventCard key={e.id} event={e} />
                   ))}
                   {interests.data?.length === 0 ? (
-                    <p>Nothing saved yet. Tap the bookmark on any event to keep it here.</p>
+                    <EmptyState
+                      icon={Bookmark}
+                      title="Nothing saved yet"
+                      body="Tap the bookmark on any event to keep it here, and we'll remind you before it starts."
+                      action={{ href: '/explore', label: 'Browse events' }}
+                    />
                   ) : null}
                 </>
               ) : (
@@ -267,13 +280,29 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
                     </section>
                   ))}
                   {selected.length === 0 && !query.isPending && !query.error ? (
-                    <section className={styles.panel}>
-                      <h2>
-                        {tab === 'Past' ? 'No past plans yet' : 'Your next night starts here'}
-                      </h2>
-                      <p>Find an event and reserve your spot.</p>
-                      <Link href="/explore">Explore campus events</Link>
-                    </section>
+                    <EmptyState
+                      icon={tab === 'Past' ? History : Ticket}
+                      title={tab === 'Past' ? 'No past plans yet' : 'Your next night starts here'}
+                      body={
+                        tab === 'Past'
+                          ? 'Events you check in to will collect here, so you can look back on the semester.'
+                          : 'Reserve a spot and your pass lands here, ready to open at the door even offline.'
+                      }
+                      action={{ href: '/explore', label: 'Explore campus events' }}
+                      secondary={{ href: '/search', label: 'Search clubs' }}
+                    >
+                      {suggestions.data?.length ? (
+                        <Suggestions title="Coming up on campus">
+                          <div className={styles.grid}>
+                            {suggestions.data.map((e) => (
+                              <EventCard key={e.id} event={e} compact />
+                            ))}
+                          </div>
+                        </Suggestions>
+                      ) : suggestions.isPending && showSuggestions ? (
+                        <EventCardsSkeleton count={3} label="Loading events…" />
+                      ) : null}
+                    </EmptyState>
                   ) : null}
                 </div>
               )}
