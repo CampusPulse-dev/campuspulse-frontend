@@ -22,8 +22,13 @@ function tokenColor(el: Element, name: string, fallback: Color3): Color3 {
   return /^#[0-9a-f]{6}$/i.test(value) ? Color3.FromHexString(value) : fallback;
 }
 
-/** Starts the scene on `canvas`. Returns a cleanup function, or null when WebGL is unavailable. */
-export function mountPulseScene(canvas: HTMLCanvasElement): (() => void) | null {
+export interface PulseSceneController {
+  setPaused(paused: boolean): void;
+  dispose(): void;
+}
+
+/** Starts the scene on `canvas`, or returns null when WebGL is unavailable. */
+export function mountPulseScene(canvas: HTMLCanvasElement): PulseSceneController | null {
   let engine: Engine;
   try {
     engine = new Engine(canvas, true, { alpha: true, powerPreference: 'low-power' }, true);
@@ -86,8 +91,8 @@ export function mountPulseScene(canvas: HTMLCanvasElement): (() => void) | null 
   glow.intensity = 0.9;
 
   let time = 0;
+  let paused = false;
   scene.onBeforeRenderObservable.add(() => {
-    time += engine.getDeltaTime() / 1000;
     ring.rotation.y = Math.sin(time * 0.35) * 0.45;
     pulse.rotation.y = ring.rotation.y;
     glow.intensity = 0.75 + Math.max(0, Math.sin(time * 2.4)) * 0.5;
@@ -105,23 +110,39 @@ export function mountPulseScene(canvas: HTMLCanvasElement): (() => void) | null 
   let onScreen = true;
   const run = () => {
     engine.stopRenderLoop();
-    if (onScreen && !document.hidden) engine.runRenderLoop(() => scene.render());
+    if (!onScreen || document.hidden || paused) return;
+    let lastFrame = performance.now();
+    engine.runRenderLoop(() => {
+      const frame = performance.now();
+      time += (frame - lastFrame) / 1000;
+      lastFrame = frame;
+      scene.render();
+    });
   };
   const observer = new IntersectionObserver(([entry]) => {
     onScreen = !!entry?.isIntersecting;
     run();
   });
   observer.observe(canvas);
-  const onResize = () => engine.resize();
+  const onResize = () => {
+    engine.resize();
+    if (paused) scene.render();
+  };
   window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', run);
   run();
 
-  return () => {
-    observer.disconnect();
-    window.removeEventListener('resize', onResize);
-    document.removeEventListener('visibilitychange', run);
-    scene.dispose();
-    engine.dispose();
+  return {
+    setPaused(nextPaused) {
+      paused = nextPaused;
+      run();
+    },
+    dispose() {
+      observer.disconnect();
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', run);
+      scene.dispose();
+      engine.dispose();
+    },
   };
 }

@@ -30,3 +30,8 @@
 .stage[data-live] .canvas {
   opacity: 1;
 }
+.stage > .motionButton {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: 0;
+}

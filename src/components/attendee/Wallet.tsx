@@ -30,6 +30,7 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
   const [cacheError, setCacheError] = useState('');
   const [syncError, setSyncError] = useState('');
   const [svg, setSvg] = useState('');
+  const [now] = useState(() => Date.now());
   const query = useQuery({
     queryKey: ['tickets', user?.id],
     enabled: !!user,
@@ -77,8 +78,15 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
       return all.filter((e) => interestedEventIds.includes(e.id));
     },
   });
+  const selected = (query.data ?? [])
+    .filter((t) =>
+      tab === 'Past'
+        ? Date.parse(t.endsAt) < now || t.status === 'CANCELLED'
+        : Date.parse(t.endsAt) >= now && t.status !== 'CANCELLED',
+    )
+    .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
   const showSuggestions =
-    !!user && !rsvpId && tab !== 'Saved' && query.isSuccess && query.data.length === 0;
+    !!user && !rsvpId && tab !== 'Saved' && query.isSuccess && selected.length === 0;
   const suggestions = useQuery({
     queryKey: ['wallet-suggestions'],
     enabled: showSuggestions,
@@ -121,14 +129,6 @@ export function Wallet({ rsvpId }: { rsvpId?: string }) {
       alive = false;
     };
   }, [user, query.data, rsvpId]);
-  const [now] = useState(() => Date.now());
-  const selected = (query.data ?? [])
-    .filter((t) =>
-      tab === 'Past'
-        ? Date.parse(t.endsAt) < now || t.status === 'CANCELLED'
-        : Date.parse(t.endsAt) >= now && t.status !== 'CANCELLED',
-    )
-    .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
   const groups = new Map<string, typeof selected>();
   for (const ticket of selected) {
     const parent = selected.find((p) => p.eventSlug === ticket.parentEventSlug);

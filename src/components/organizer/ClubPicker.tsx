@@ -74,9 +74,11 @@ function Clubs() {
                         <Icon icon={CalendarPlus} size={16} /> New event
                       </Link>
                     ) : null}
-                    <Link href={`${base}/team`} className={styles.quietLink}>
-                      <Icon icon={Users} size={16} /> Team
-                    </Link>
+                    {role === 'OWNER' ? (
+                      <Link href={`${base}/team`} className={styles.quietLink}>
+                        <Icon icon={Users} size={16} /> Team
+                      </Link>
+                    ) : null}
                   </div>
                 </li>
               );
